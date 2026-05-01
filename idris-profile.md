@@ -1,8 +1,7 @@
 # 👦 Idris Profile — App Personalization File
-# Version: 1.0 | Last updated: 2026-05-01
+# Version: 2.0 | Last updated: 2026-05-01
+# Source: Questionnaire filled by Gavkhar (Idris's mom)
 # Purpose: AI personalization data for Idriszhon's learning app
-# HOW TO USE: Update this file as Idris grows and changes.
-#             The app reads this file to customize all content.
 
 ---
 
@@ -12,193 +11,340 @@
 name: "Idriszhon"
 nickname: "Idris"
 age: 7
-avatar_emoji: "🦁"         # His chosen animal icon
-primary_language: "en"     # English — dominant input from cartoons
+avatar_emoji: "🦁"
+primary_language: "en"        # English — confirmed by mom
 home_languages:
-  - "ru"  # Russian
-  - "uz"  # Uzbek
-  - "tg"  # Tajik
-  - "en"  # English
+  - "en"   # English — dominant, used with mama and papa
+  - "tg"   # Tajik — used with grandparents
+  - "uz"   # Uzbek — used with grandparents
 diagnosis: "ASD"
-app_ui_language: "en"      # App interface should be in English
+app_ui_language: "en"
+main_goal: "understanding"    # Mom's primary wish: понимание
 ```
 
 ---
 
-## ❤️ Things Idris LOVES (use these for rewards & game content)
-
-### 🚂 Trains (TOP INTEREST — use for counting, matching, rewards)
-- Steam trains
-- Electric trains
-- Thomas the Tank Engine characters
-- Railway stations, tracks, tunnels
-- Sound of train whistle
-- **Use**: Count train cars, match train types, reward = train animation
-
-### 🦕 Dinosaurs (2nd TOP INTEREST)
-- T-Rex, Brachiosaurus, Triceratops, Velociraptor
-- Fossil digging theme
-- Dinosaur roar sounds
-- **Use**: Match dinosaur names in 5 languages, "what dinosaur am I?" game
-
-### 🎨 Drawing & Colors
-- Loves to draw
-- Favorite colors: [ ] — *fill in when you find out*
-- **Use**: Coloring mini-games, "what color is this?" in all languages
-
-### 🎵 Music
-- Enjoys listening to music
-- Favorite songs: [ ] — *fill in*
-- **Use**: Rhythm games, sing-along challenges with family
-
-### 🌿 Nature & Animals (add specifics below)
-- Favorite animals: [ ] — *fill in*
-- **Use**: Animal sound matching game, "what sound does this animal make?"
-
----
-
-## 🎬 YouTube Cartoons He Watches
-
-### ✅ Watches & Enjoys
-| Cartoon | Language | Channel | Notes |
-|---------|----------|---------|-------|
-| Digimon (Цифрятня) | English | YouTube | Very engaged |
-| Маша и Медведь | Russian | YouTube | Familiar comfort show |
-| Синий Трактор | Russian | YouTube | Likes vehicles |
-| [ add more ] | | | |
-
-### ❌ Does NOT watch / Doesn't like
-| Cartoon | Reason |
-|---------|--------|
-| [ fill in ] | [ fill in ] |
-
-### 🎯 App Strategy with cartoons:
-- Use Digimon characters as reward animations (English)
-- Use Маша и Медведь scenarios for Russian language games
-- Синий Трактор → vehicle counting games
-
----
-
-## 🎨 Color Preferences
+## 🎨 Colors
 
 ```yaml
-# Fill in as you observe
-favorite_colors: []        # e.g. ["blue", "green", "red"]
-disliked_colors: []        # e.g. ["bright yellow", "flashing red"]
-ui_color_theme: "warm"    # warm / cool / neutral — observe reaction
-avoid_flashing: true       # WCAG 2.1 — no strobing effects
+favorite_colors:
+  - "yellow"    # 1st favorite — use for rewards and highlights
+  - "red"       # 2nd favorite
+  - "blue"      # 3rd favorite
+  - "green"     # 4th favorite
+
+favorite_toy_colors: ["yellow", "red", "blue"]
+disliked_colors: []           # Mom said: all colors are fine
+
+ui_strategy:
+  - Use yellow for star rewards and celebrations
+  - Use blue for counting games
+  - Use red for correct answer highlights
+  - Bright colors only — he prefers vivid tones
 ```
 
 ---
 
-## 🔊 Sensory Profile (Critical for autism app design)
+## 📺 YouTube Cartoons
 
 ```yaml
+watches_daily:
+  - name: "Super Simple Songs"
+    language: "en"
+    youtube: true
+    use_for: ["songs", "rewards", "sing-along games"]
+
+  - name: "Lucas and Friends"
+    language: "en"
+    youtube: true
+    use_for: ["rewards", "family challenges"]
+
+  - name: "Ms. Rachel"
+    language: "en"
+    youtube: true
+    use_for: ["speech development", "rewards", "speaking games"]
+    note: "Clinically excellent for ASD speech — prioritize this"
+
+watches_sometimes:
+  - name: "Tom and Jerry"
+    language: "en"
+    youtube: true
+    use_for: ["physical reward animations"]
+
+NEVER_show:
+  - name: "Cocomelon"
+    reason: "Mom explicitly said NO"
+    action: "Block completely — never show in rewards or content"
+
+content_preference:
+  - "Must have numbers, alphabet, or shapes"
+  - "Refuses cartoons without educational content"
+  - "Strong preference for structured learning content"
+```
+
+---
+
+## 🎵 Music & Songs
+
+```yaml
+favorite_songs:
+  - "The Wheels on the Bus"
+  - "One Little Finger"
+  - "If You're Happy and You Know It"
+
+sings_himself: true
+likes_being_sung_to: true
+
+dislikes_music:
+  - "Unfamiliar songs"
+  - "Loud or fast music"
+
+music_strategy:
+  - Always use known songs first
+  - "If You're Happy" → perfect for physical activity rewards (clapping!)
+  - "One Little Finger" → perfect for body parts learning
+  - Introduce new songs slowly, paired with familiar ones
+```
+
+---
+
+## 🐾 Animals
+
+```yaml
+favorite_animals:
+  - name: "fish"    emoji: "🐟"
+  - name: "cat"     emoji: "🐱"
+
+fears: []           # Mom unsure — monitor during sessions
+has_pet: false
+```
+
+---
+
+## 🍎 Food
+
+```yaml
+favorite_foods:
+  - name: "blueberry"   emoji: "🫐"
+  - name: "apple"       emoji: "🍎"
+  - name: "mandarin"    emoji: "🍊"
+  - name: "grapes"      emoji: "🍇"
+
+happy_trigger: "something sweet"
+
+does_not_eat:
+  - "tomato"    emoji: "🍅"
+  - "cucumber"  emoji: "🥒"
+  - "vegetables"
+
+food_strategy:
+  - Use fruits in counting games — he recognizes and likes them
+  - Never show tomato or cucumber as reward images
+  - Sweet/fruit theme for celebration screens
+```
+
+---
+
+## 🚗 Transport & Toys
+
+```yaml
+favorite_transport:
+  - "cars"    emoji: "🚗"    # CONFIRMED — not trains (earlier assumption was wrong)
+
+favorite_toys:
+  - "number toys"
+  - "alphabet toys"
+  - "puzzles"
+
+favorite_games:
+  - "colorful toy games"
+  - "pop-it"       # sensory toy
+  - "donuts"       # shape stacking toy
+
+toy_strategy:
+  - Use car emojis for counting games (not trains)
+  - Numbers and alphabet are his comfort zone — start here
+  - Puzzle format works well for matching games
+  - Pop-it inspires tap/press physical activities
+```
+
+---
+
+## 🌍 Languages
+
+```yaml
+language_map:
+  mama:      "en"    # English — PRIMARY confirmed
+  papa:      "en"    # English
+  babushka:  "tg"    # Tajik + Uzbek
+  deda:      "tg"    # Tajik + Uzbek
+  siblings:  null    # Does not speak with siblings yet
+
+dominant_language: "en"
+speech_status: "developing"
+
+words_he_says:
+  - category: "numbers"    examples: ["one", "two", "three"]
+  - category: "alphabet"   examples: ["A", "B", "C"]
+  - category: "shapes"     examples: ["circle", "square"]
+
+speech_strategy:
+  - English first in ALL games
+  - Tajik/Uzbek only when grandparents are selected
+  - Celebrate ANY word spoken — even single letters
+  - Numbers, alphabet, shapes are his comfort zone — start here
+  - Expand vocabulary gradually from known words
+```
+
+---
+
+## 🧠 Behavior & Sensory Profile
+
+```yaml
+session_length_minutes: 10     # Max 10-15 min confirmed
+best_time_of_day: "morning"    # Confirmed by mom
+
 sound_sensitivity:
-  loud_sudden_sounds: "avoid"     # No surprise loud sounds
-  music_background: "low"         # Keep background music soft
-  reward_sounds: "gentle"         # Soft chime, not fanfare
-  
-visual_sensitivity:
-  bright_flashing: "avoid"        # Never flash animations
-  high_contrast: "okay"           # He can handle contrast
-  moving_backgrounds: "minimal"   # Keep backgrounds calm
+  loud_sudden_sounds: "dislikes"
+  music_background: "low"
+  reward_sounds: "gentle"
+  known_songs_only: true        # CRITICAL — only familiar music
 
-touch_sensitivity:
-  haptic_feedback: "gentle"       # Soft vibration only
-  large_touch_targets: true       # Minimum 72px buttons
-  
-preferred_pace: "self-directed"  # He sets the speed, no timers
+visual_sensitivity:
+  bright_flashing: "likes"      # Confirmed: нравится!
+  lots_of_pictures: true        # Mom said: много картинок
+  lots_of_sounds: true          # Mom said: и звуков
+
+learning_style:
+  visual: true                  # confirmed
+  auditory: true                # confirmed
+  tactile: true                 # confirmed
+  verbal: true                  # confirmed
+  note: "ALL four styles confirmed — use multi-modal approach always"
+
+calming_strategy: "hugging"     # use hug emoji in calm-down screen
+happiness_trigger: "sweet food" # use fruit/sweet reward themes
+praise_response: "loves it"     # always praise every attempt
 ```
 
 ---
 
-## 👨‍👩‍👧‍👦 Family Members
+## 👨‍👩‍👧‍👦 Family
 
 ```yaml
 family:
   - id: "mama"
-    name: "Мама"
+    name: "Мама (Gavkhar)"
     emoji: "👩"
-    language: "uz"           # Primary language with Idris
-    
+    language: "en"
+    role: "primary_caregiver"
+    plays_most: true
+    favorite_for_idris: true
+    ritual: "hugs before sleep"
+
   - id: "papa"
     name: "Папа"
     emoji: "👨"
-    language: "uz"
-    
+    language: "en"
+
   - id: "deda"
-    name: "Дедушка"
+    name: "Дедушка (Farhod)"
     emoji: "👴"
-    language: "tg"           # Update with actual language
-    
+    language: "tg"
+
   - id: "babushka"
     name: "Бабушка"
     emoji: "👵"
-    language: "ru"
-    
-  - id: "sestra"
-    name: "Сестра"
+    language: "tg"
+
+  - id: "siblings"
+    name: "Сестра/Брат"
     emoji: "👧"
-    language: "ru"
-    
-  - id: "brat"
-    name: "Брат"
-    emoji: "👦"
-    language: "en"           # Update with actual language
+    language: "en"
+    note: "No verbal communication yet — use gesture and picture games only"
 ```
 
 ---
 
-## 🎮 Game Preferences (observe and fill in)
+## 🎯 Learning Goals
 
 ```yaml
-enjoys:
-  - matching_games: true
-  - counting: true
-  - music_games: []         # fill in
-  - coloring: true
-  
-needs_more_practice:
-  - speaking: []            # fill in
-  - writing: []             # fill in
-  
-session_length_minutes: 10  # Start short, increase if engaged
-best_time_of_day: ""        # e.g. "morning" "after lunch"
-needs_break_every_minutes: 5
+primary_goal: "understanding"       # понимание — mom's #1 priority
+secondary_goals:
+  - "speaking words"
+  - "counting to 10"
+  - "reading letters"
+  - "naming colors"
+  - "communicating with family"
+
+learning_priority_order:
+  1: "understanding context"
+  2: "speaking words (numbers, alphabet, shapes first)"
+  3: "counting 1-10"
+  4: "alphabet recognition"
+  5: "shapes"
+  6: "colors"
+  7: "family communication"
 ```
 
 ---
 
-## 📈 Progress Tracking
+## 🎁 Reward System
 
 ```yaml
-stars_earned: 12
-games_completed: 5
-days_streak: 3
+reward_types:
+  video:
+    - "Super Simple Songs clip"
+    - "Ms. Rachel clip"           # best for speech development
+    - "Lucas and Friends clip"
+    - "Tom and Jerry clip"
+
+  songs:
+    - "The Wheels on the Bus"
+    - "One Little Finger"
+    - "If You're Happy and You Know It"
+
+  animations:
+    - "yellow stars explosion"
+    - "cars racing"
+    - "fruit basket (blueberries, apples, grapes)"
+
+  physical:
+    - "Clap 3 times! 👏"          # ties to If You're Happy song
+    - "Jump up! ⬆️"
+    - "Touch your nose! 👃"        # ties to One Little Finger
+    - "Touch your toes! 🦶"
+    - "Give mama a hug! 🤗"        # his calming trigger
+    - "Sit up straight! 🧘"
+
+NEVER_use_as_reward:
+  - "Cocomelon"                    # explicitly banned by mom
+  - "unfamiliar songs"
+  - "loud sudden sounds"
+  - "tomato or cucumber images"
+```
+
+---
+
+## 📊 Progress Tracking
+
+```yaml
+skill_scores:
+  counting:         0    # baseline
+  vocabulary_en:    0    # baseline
+  alphabet:         0    # baseline — knows some already
+  shapes:           0    # baseline — knows some already
+  color_naming:     0    # baseline
+  family_interact:  0    # baseline
+  speech_clarity:   0    # baseline
+  last_updated: "2026-05-01"
+
+active_tasks: []           # filled after doctor approval
+doctor_instructions: []    # filled after first consultation
+doctor_name: ""
+
 milestones:
   - date: "2026-05-01"
-    achievement: "First app session"
-    notes: "Played counting and matching"
+    milestone: "Profile created from Gavkhar's questionnaire"
+    notes: "Baseline established. Goals: understanding, speaking, numbers."
 ```
-
----
-
-## 📝 Notes for Family & Therapist
-
-```
-DATE | OBSERVATION | BY WHOM
------|-------------|--------
-2026-05-01 | First session with app | Grandfather
-[ add observations here ]
-```
-
----
-
-## 🔄 How to Update This File
-
-**Add a cartoon**: Add a row to the YouTube table above
-**Add a favorite**: Add to the relevant ❤️ section
-**Update colors**: Fill in `favorite_colors` array
-**Log a session**: Add a row to Progress Tracking
-**Note a reaction**: Add to Notes table at bottom
