@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Идрис Учится">
+<meta name="theme-color" content="#FF6B35">
+<title>Идрис Учится 🌟</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Baloo+2:wght@400;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --sun: #FFD700;
+    --orange: #FF6B35;
+    --coral: #FF8C61;
+    --sky: #4FC3F7;
+    --mint: #4DB6AC;
+    --lavender: #9575CD;
+    --green: #66BB6A;
+    --pink: #F06292;
+    --bg: #FFF8F0;
+    --card: #FFFFFF;
+    --text: #2D2D2D;
+    --soft: #F5F0FF;
+    --radius: 28px;
+    --touch: 72px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    overflow-x: hidden;
+    color: var(--text);
+  }
+
+  /* === FLOATING BACKGROUND === */
+  .bg-blobs {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  }
+  .blob {
+    position: absolute; border-radius: 50%; opacity: 0.12;
+    animation: blobFloat 8s ease-in-out infinite;
+  }
+  .blob-1 { width: 300px; height: 300px; background: var(--orange); top: -80px; left: -80px; animation-delay: 0s; }
+  .blob-2 { width: 200px; height: 200px; background: var(--sky); top: 30%; right: -60px; animation-delay: 2s; }
+  .blob-3 { width: 250px; height: 250px; background: var(--lavender); bottom: -80px; left: 30%; animation-delay: 4s; }
+  @keyframes blobFloat {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(20px, -20px) scale(1.05); }
+  }
+
+  /* === HEADER === */
+  .header {
+    position: relative; z-index: 10;
+    background: linear-gradient(135deg, var(--orange) 0%, #FF8C00 100%);
+    padding: 20px 20px 30px;
+    border-radius: 0 0 40px 40px;
+    box-shadow: 0 8px 32px rgba(255,107,53,0.3);
+  }
+  .header-top {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+  }
+  .child-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: white; display: flex; align-items: center; justify-content: center;
+    font-size: 36px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    border: 3px solid rgba(255,255,255,0.5);
+    cursor: pointer; transition: transform 0.2s;
+    min-width: var(--touch); min-height: var(--touch);
+  }
+  .child-avatar:active { transform: scale(0.93); }
+  .header-title { text-align: center; }
+  .child-name {
+    font-family: 'Baloo 2', cursive; font-size: 28px; font-weight: 800;
+    color: white; line-height: 1;
+  }
+  .child-subtitle { font-size: 13px; color: rgba(255,255,255,0.85); margin-top: 2px; }
+  .lang-btn {
+    background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.5);
+    border-radius: 20px; padding: 8px 14px; color: white; font-weight: 700;
+    font-size: 15px; cursor: pointer; transition: all 0.2s;
+    min-height: var(--touch); display: flex; align-items: center; gap: 6px;
+  }
+  .lang-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.4); }
+
+  /* Stars bar */
+  .stars-bar {
+    display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 10px;
+  }
+  .star-icon { font-size: 22px; animation: starPop 0.4s ease; }
+  @keyframes starPop { 0% { transform: scale(0); } 80% { transform: scale(1.3); } 100% { transform: scale(1); } }
+  .stars-count {
+    font-weight: 900; font-size: 20px; color: white;
+    background: rgba(0,0,0,0.15); border-radius: 20px; padding: 4px 14px;
+  }
+
+  /* === FAMILY SECTION === */
+  .section { position: relative; z-index: 5; padding: 20px; }
+  .section-title {
+    font-family: 'Baloo 2', cursive; font-size: 20px; font-weight: 700;
+    color: var(--orange); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .family-scroll {
+    display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px;
+    scrollbar-width: none;
+  }
+  .family-scroll::-webkit-scrollbar { display: none; }
+
+  .family-card {
+    min-width: 90px; background: white; border-radius: 20px;
+    padding: 14px 10px; text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+    border: 3px solid transparent;
+  }
+  .family-card:active { transform: scale(0.94); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+  .family-card.active { border-color: var(--orange); background: #FFF3EE; }
+  .family-emoji { font-size: 38px; display: block; margin-bottom: 6px; }
+  .family-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .family-role { font-size: 11px; color: #888; margin-top: 2px; }
+
+  /* === GAME MODES === */
+  .modes-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+  .mode-card {
+    background: white; border-radius: var(--radius); padding: 20px 16px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+    cursor: pointer; transition: all 0.2s; text-align: center;
+    border: 3px solid transparent; position: relative; overflow: hidden;
+    min-height: 140px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px;
+  }
+  .mode-card::before {
+    content: ''; position: absolute; inset: 0; opacity: 0.08; border-radius: calc(var(--radius) - 3px);
+  }
+  .mode-card.count::before { background: var(--green); }
+  .mode-card.read::before { background: var(--sky); }
+  .mode-card.speak::before { background: var(--coral); }
+  .mode-card.match::before { background: var(--lavender); }
+  .mode-card.write::before { background: var(--pink); }
+  .mode-card.family::before { background: var(--sun); }
+
+  .mode-card:active { transform: scale(0.96); }
+  .mode-icon { font-size: 48px; line-height: 1; }
+  .mode-name { font-family: 'Baloo 2', cursive; font-size: 17px; font-weight: 700; }
+  .mode-desc { font-size: 12px; color: #888; }
+  .mode-badge {
+    position: absolute; top: 10px; right: 10px;
+    background: var(--green); color: white; border-radius: 20px;
+    font-size: 11px; font-weight: 700; padding: 3px 8px;
+  }
+
+  /* === GAME SCREEN === */
+  .game-screen {
+    display: none; position: fixed; inset: 0; z-index: 100;
+    background: var(--bg); overflow-y: auto; padding: 20px;
+    animation: slideIn 0.3s ease;
+  }
+  .game-screen.active { display: block; }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  .game-header {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+  }
+  .back-btn {
+    width: var(--touch); height: var(--touch); border-radius: 50%;
+    background: white; border: none; font-size: 24px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; justify-content: center;
+  }
+  .back-btn:active { transform: scale(0.9); }
+  .game-title { font-family: 'Baloo 2', cursive; font-size: 26px; font-weight: 800; }
+
+  /* COUNTING GAME */
+  .count-display {
+    background: white; border-radius: 32px; padding: 30px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1); text-align: center; margin-bottom: 24px;
+  }
+  .count-objects { font-size: 56px; line-height: 1.4; letter-spacing: 4px; min-height: 80px; }
+  .count-question { font-size: 20px; font-weight: 700; color: var(--orange); margin-top: 14px; }
+  .count-options { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .count-opt {
+    background: white; border: 4px solid #EEE; border-radius: 22px;
+    padding: 20px; font-size: 36px; font-weight: 900;
+    cursor: pointer; transition: all 0.15s; text-align: center;
+    min-height: var(--touch); box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  }
+  .count-opt:active { transform: scale(0.92); }
+  .count-opt.correct { border-color: var(--green); background: #E8F5E9; animation: bounce 0.5s; }
+  .count-opt.wrong { border-color: var(--pink); background: #FCE4EC; animation: shake 0.4s; }
+  @keyframes bounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+  /* FAMILY CHALLENGE */
+  .family-challenge {
+    background: white; border-radius: 32px; padding: 28px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1); text-align: center;
+  }
+  .challenge-emoji { font-size: 80px; margin-bottom: 16px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+  .challenge-text { font-size: 20px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
+  .challenge-helper { font-size: 14px; color: #888; margin-bottom: 24px; }
+  .action-btn {
+    display: block; width: 100%; background: linear-gradient(135deg, var(--orange), var(--coral));
+    color: white; border: none; border-radius: 22px; padding: 18px;
+    font-size: 20px; font-weight: 800; font-family: 'Nunito', sans-serif;
+    cursor: pointer; transition: all 0.2s; min-height: var(--touch);
+    box-shadow: 0 6px 20px rgba(255,107,53,0.35); margin-bottom: 12px;
+  }
+  .action-btn:active { transform: scale(0.97); box-shadow: 0 2px 10px rgba(255,107,53,0.3); }
+  .action-btn.secondary {
+    background: white; color: var(--orange); border: 3px solid var(--orange);
+    box-shadow: none;
+  }
+
+  /* PICTURE MATCH */
+  .match-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  .match-card {
+    aspect-ratio: 1; background: white; border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 44px; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08); border: 4px solid transparent;
+  }
+  .match-card:active { transform: scale(0.9); }
+  .match-card.selected { border-color: var(--orange); background: #FFF3EE; }
+  .match-card.matched { border-color: var(--green); background: #E8F5E9; pointer-events: none; }
+  .match-card.wrong { border-color: var(--pink); animation: shake 0.4s; }
+
+  /* LANGUAGE PICKER */
+  .lang-picker {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+    align-items: flex-end; justify-content: center; padding: 20px;
+  }
+  .lang-picker.active { display: flex; }
+  .lang-sheet {
+    background: white; border-radius: 32px 32px 24px 24px; padding: 28px;
+    width: 100%; max-width: 420px; animation: sheetUp 0.3s ease;
+  }
+  @keyframes sheetUp { from { transform: translateY(100%); } to { transform: none; } }
+  .lang-sheet-title {
+    font-family: 'Baloo 2', cursive; font-size: 22px; font-weight: 700;
+    text-align: center; margin-bottom: 20px; color: var(--orange);
+  }
+  .lang-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .lang-opt {
+    background: var(--soft); border: 3px solid transparent; border-radius: 18px;
+    padding: 16px 12px; text-align: center; cursor: pointer; transition: all 0.2s;
+    min-height: var(--touch); display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .lang-opt:active { transform: scale(0.95); }
+  .lang-opt.active { border-color: var(--orange); background: #FFF3EE; }
+  .lang-flag { font-size: 32px; margin-bottom: 4px; }
+  .lang-label { font-weight: 700; font-size: 15px; }
+
+  /* CELEBRATION */
+  .celebration {
+    display: none; position: fixed; inset: 0; z-index: 300;
+    background: rgba(255,107,53,0.92); align-items: center; justify-content: center;
+    flex-direction: column; text-align: center; padding: 40px;
+  }
+  .celebration.active { display: flex; animation: popIn 0.3s ease; }
+  @keyframes popIn { from{transform:scale(0.8);opacity:0} to{transform:scale(1);opacity:1} }
+  .celebration-emoji { font-size: 100px; animation: celebSpin 1s ease; margin-bottom: 16px; }
+  @keyframes celebSpin { 0%{transform:rotate(-20deg)scale(0)} 100%{transform:none scale(1)} }
+  .celebration-text { font-family:'Baloo 2',cursive; font-size:36px; font-weight:800; color:white; margin-bottom:8px; }
+  .celebration-sub { font-size:18px; color:rgba(255,255,255,0.9); margin-bottom:32px; }
+
+  /* PROGRESS BAR */
+  .progress-wrap { background: #EEE; border-radius: 20px; height: 12px; margin-bottom: 24px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 20px; background: linear-gradient(90deg, var(--orange), var(--sun)); transition: width 0.5s ease; }
+
+  /* SPEAK GAME */
+  .speak-word {
+    font-family: 'Baloo 2', cursive; font-size: 52px; font-weight: 800;
+    text-align: center; color: var(--orange); margin: 20px 0;
+    letter-spacing: 2px;
+  }
+  .mic-btn {
+    width: 120px; height: 120px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--coral), var(--orange));
+    border: none; font-size: 52px; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 8px 32px rgba(255,107,53,0.4); display: flex; align-items: center; justify-content: center;
+    margin: 0 auto;
+  }
+  .mic-btn:active, .mic-btn.listening { transform: scale(0.93); box-shadow: 0 4px 16px rgba(255,107,53,0.3); }
+  .mic-btn.listening { animation: micPulse 0.8s infinite; }
+  @keyframes micPulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,107,53,0.4)} 50%{box-shadow:0 0 0 20px rgba(255,107,53,0)} }
+
+  /* PROFILE SECTION */
+  .profile-card {
+    background: white; border-radius: var(--radius); padding: 24px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.08); margin-bottom: 16px;
+  }
+  .profile-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .profile-icon { font-size: 32px; }
+  .profile-label { font-size: 13px; color: #888; }
+  .profile-value { font-weight: 700; font-size: 16px; }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .tag {
+    background: var(--soft); border-radius: 20px; padding: 6px 14px;
+    font-size: 13px; font-weight: 600; color: var(--lavender);
+  }
+  .tag.like { background: #E8F5E9; color: var(--green); }
+  .tag.dislike { background: #FCE4EC; color: var(--pink); }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+    background: white; border-radius: 28px 28px 0 0;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.1);
+    display: flex; align-items: center; justify-content: space-around;
+    padding: 12px 8px 20px;
+  }
+  .nav-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    min-width: 64px; min-height: var(--touch); border: none; background: none;
+    cursor: pointer; transition: all 0.2s; border-radius: 16px; padding: 8px 12px;
+  }
+  .nav-btn:active { transform: scale(0.93); background: #FFF3EE; }
+  .nav-btn.active .nav-icon { background: var(--orange); }
+  .nav-btn.active .nav-label { color: var(--orange); }
+  .nav-icon {
+    width: 44px; height: 44px; border-radius: 14px;
+    background: #F0F0F0; display: flex; align-items: center; justify-content: center;
+    font-size: 22px; transition: all 0.2s;
+  }
+  .nav-label { font-size: 11px; font-weight: 700; color: #888; }
+
+  .main-content { padding-bottom: 100px; }
+</style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg-blobs">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<!-- MAIN SCREEN -->
+<div id="mainScreen">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div class="child-avatar" onclick="showProfile()">🦁</div>
+      <div class="header-title">
+        <div class="child-name" id="childNameDisplay">Идрисжон</div>
+        <div class="child-subtitle" id="headerSubtitle">Давай учиться вместе! 🌟</div>
+      </div>
+      <button class="lang-btn" onclick="showLangPicker()">
+        <span id="currentFlag">🇷🇺</span>
+        <span id="currentLangShort">RU</span>
+      </button>
+    </div>
+    <div class="stars-bar">
+      <span class="star-icon">⭐</span>
+      <span class="star-icon">⭐</span>
+      <span class="star-icon">⭐</span>
+      <span class="stars-count" id="starsCount">12</span>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <!-- Family Section -->
+    <div class="section">
+      <div class="section-title">👨‍👩‍👧‍👦 <span id="familyTitle">Кто со мной сегодня?</span></div>
+      <div class="family-scroll" id="familyScroll">
+        <!-- filled by JS -->
+      </div>
+    </div>
+
+    <!-- Game Modes -->
+    <div class="section">
+      <div class="section-title">🎮 <span id="modesTitle">Что будем делать?</span></div>
+      <div class="modes-grid" id="modesGrid">
+        <!-- filled by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COUNTING GAME SCREEN -->
+<div class="game-screen" id="countScreen">
+  <div class="game-header">
+    <button class="back-btn" onclick="closeGame('countScreen')">←</button>
+    <div class="game-title" id="countTitle">Считаем!</div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="countProgress" style="width:0%"></div></div>
+  <div class="count-display">
+    <div class="count-objects" id="countObjects"></div>
+    <div class="count-question" id="countQuestion">Сколько здесь?</div>
+  </div>
+  <div class="count-options" id="countOptions"></div>
+  <div style="height:20px"></div>
+  <div style="text-align:center;font-size:14px;color:#888" id="countHelper"></div>
+</div>
+
+<!-- FAMILY CHALLENGE SCREEN -->
+<div class="game-screen" id="familyScreen">
+  <div class="game-header">
+    <button class="back-btn" onclick="closeGame('familyScreen')">←</button>
+    <div class="game-title" id="familyGameTitle">Семейное задание!</div>
+  </div>
+  <div class="family-challenge">
+    <div class="challenge-emoji" id="challengeEmoji">🤗</div>
+    <div class="challenge-text" id="challengeText">Задание</div>
+    <div class="challenge-helper" id="challengeHelper">Помощник</div>
+    <button class="action-btn" onclick="nextChallenge()" id="challengeBtn">Следующее!</button>
+    <button class="action-btn secondary" onclick="closeGame('familyScreen')" id="challengeDoneBtn">Готово!</button>
+  </div>
+</div>
+
+<!-- PICTURE MATCH SCREEN -->
+<div class="game-screen" id="matchScreen">
+  <div class="game-header">
+    <button class="back-btn" onclick="closeGame('matchScreen')">←</button>
+    <div class="game-title" id="matchTitle">Найди пару!</div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="matchProgress" style="width:0%"></div></div>
+  <div style="text-align:center;font-size:18px;font-weight:700;margin-bottom:16px;color:var(--orange)" id="matchTarget"></div>
+  <div class="match-grid" id="matchGrid"></div>
+</div>
+
+<!-- SPEAK SCREEN -->
+<div class="game-screen" id="speakScreen">
+  <div class="game-header">
+    <button class="back-btn" onclick="closeGame('speakScreen')">←</button>
+    <div class="game-title" id="speakTitle">Говорим!</div>
+  </div>
+  <div style="background:white;border-radius:32px;padding:30px;box-shadow:0 8px 32px rgba(0,0,0,0.1);text-align:center">
+    <div style="font-size:80px;margin-bottom:12px" id="speakEmoji">🍎</div>
+    <div class="speak-word" id="speakWord">яблоко</div>
+    <div style="font-size:14px;color:#888;margin-bottom:28px" id="speakHint">Нажми на кнопку и скажи слово</div>
+    <button class="mic-btn" id="micBtn" onclick="startSpeaking()">🎤</button>
+    <div style="margin-top:20px;font-size:16px;font-weight:700;color:var(--green);min-height:28px" id="speakResult"></div>
+  </div>
+  <div style="height:20px"></div>
+  <button class="action-btn" onclick="nextSpeakWord()" style="margin-top:12px" id="speakNextBtn">Следующее слово 👉</button>
+</div>
+
+<!-- PROFILE SCREEN -->
+<div class="game-screen" id="profileScreen">
+  <div class="game-header">
+    <button class="back-btn" onclick="closeGame('profileScreen')">←</button>
+    <div class="game-title">👤 Мой профиль</div>
+  </div>
+  <div class="profile-card">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:72px">🦁</div>
+      <div style="font-family:'Baloo 2',cursive;font-size:28px;font-weight:800;color:var(--orange)" id="profileName">Идрисжон</div>
+      <div style="font-size:14px;color:#888" id="profileAge">7 лет</div>
+    </div>
+    <div class="profile-row">
+      <span class="profile-icon">🌍</span>
+      <div>
+        <div class="profile-label">Языки</div>
+        <div class="profile-value">Русский, Узбекский, Таджикский</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-weight:700;margin-bottom:8px">❤️ Любит:</div>
+      <div class="tag-list" id="likesTags"></div>
+    </div>
+    <div style="margin-top:16px">
+      <div style="font-weight:700;margin-bottom:8px">🎬 Мультики:</div>
+      <div class="tag-list" id="movieTags"></div>
+    </div>
+  </div>
+  <div class="profile-card">
+    <div style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:700;color:var(--orange);margin-bottom:16px">📊 Мои успехи</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center">
+      <div style="background:var(--soft);border-radius:16px;padding:14px">
+        <div style="font-size:28px;font-weight:900;color:var(--lavender)" id="statStars">12</div>
+        <div style="font-size:11px;color:#888">Звёздочек</div>
+      </div>
+      <div style="background:#E8F5E9;border-radius:16px;padding:14px">
+        <div style="font-size:28px;font-weight:900;color:var(--green)" id="statGames">5</div>
+        <div style="font-size:11px;color:#888">Игр</div>
+      </div>
+      <div style="background:#FFF3E0;border-radius:16px;padding:14px">
+        <div style="font-size:28px;font-weight:900;color:var(--orange)" id="statDays">3</div>
+        <div style="font-size:11px;color:#888">Дней подряд</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LANGUAGE PICKER -->
+<div class="lang-picker" id="langPicker" onclick="hideLangPicker()">
+  <div class="lang-sheet" onclick="event.stopPropagation()">
+    <div class="lang-sheet-title">🌍 Выбери язык</div>
+    <div class="lang-options" id="langOptions"></div>
+    <button class="action-btn secondary" style="margin-top:16px" onclick="hideLangPicker()">Закрыть</button>
+  </div>
+</div>
+
+<!-- CELEBRATION -->
+<div class="celebration" id="celebration">
+  <div class="celebration-emoji" id="celebEmoji">🎉</div>
+  <div class="celebration-text" id="celebText">Молодец!</div>
+  <div class="celebration-sub" id="celebSub">+1 звёздочка!</div>
+  <button class="action-btn" style="background:white;color:var(--orange);margin-top:8px" onclick="hideCelebration()">
+    Продолжать! 🚀
+  </button>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav" id="bottomNav">
+  <button class="nav-btn active" onclick="showTab('home')">
+    <div class="nav-icon">🏠</div>
+    <div class="nav-label" data-key="navHome">Главная</div>
+  </button>
+  <button class="nav-btn" onclick="showTab('family')">
+    <div class="nav-icon">👨‍👩‍👧‍👦</div>
+    <div class="nav-label" data-key="navFamily">Семья</div>
+  </button>
+  <button class="nav-btn" onclick="showTab('stars')">
+    <div class="nav-icon">⭐</div>
+    <div class="nav-label" data-key="navStars">Успехи</div>
+  </button>
+  <button class="nav-btn" onclick="showProfile()">
+    <div class="nav-icon">👤</div>
+    <div class="nav-label" data-key="navProfile">Профиль</div>
+  </button>
+</div>
+
+<script>
+// =====================================================
+// CHILD PROFILE (customizable via MD file concept)
+// =====================================================
+const childProfile = {
+  name: "Идрисжон",
+  nickname: "Идрис",
+  age: 7,
+  avatar: "🦁",
+  languages: ["ru", "uz", "tg", "en"],
+  likes: ["Поезда 🚂", "Динозавры 🦕", "Рисование 🎨", "Музыка 🎵"],
+  dislikes: ["Громкие звуки"],
+  cartoons: ["Цифрятня (Digimon) 🐾", "Маша и Медведь 🐻", "Синий трактор 🚜"],
+  family: [
+    { id: "mama",   emoji: "👩", name: "Мама", color: "#FF8FAB" },
+    { id: "papa",   emoji: "👨", name: "Папа", color: "#64B5F6" },
+    { id: "deda",   emoji: "👴", name: "Дедушка", color: "#A5D6A7" },
+    { id: "babushka", emoji: "👵", name: "Бабушка", color: "#FFD54F" },
+    { id: "sestra", emoji: "👧", name: "Сестра", color: "#F48FB1" },
+    { id: "brat",   emoji: "👦", name: "Брат", color: "#80DEEA" },
+  ]
+};
+
+// =====================================================
+// MULTILINGUAL DATA
+// =====================================================
+const LANGS = {
+  ru: { flag: "🇷🇺", short: "RU", name: "Русский",
+    subtitle: "Давай учиться вместе! 🌟",
+    familyTitle: "Кто со мной сегодня?",
+    modesTitle: "Что будем делать?",
+    modes: ["Считаем", "Читаем", "Говорим", "Угадай!", "Семья 💕"],
+    modeDescs: ["Цифры и счёт", "Слова и буквы", "Произношение", "Найди пару", "Играем вместе"],
+    countQ: "Сколько здесь?", countTitle: "Считаем!",
+    matchTitle: "Найди пару!",
+    familyGameTitle: "Семейное задание!",
+    speakTitle: "Говорим!", speakHint: "Нажми и скажи слово",
+    navHome:"Главная", navFamily:"Семья", navStars:"Успехи", navProfile:"Профиль",
+    celebrate: ["Молодец! 🌟", "Отлично! 🎉", "Умница! 💫", "Супер! 🚀"],
+    celebSub: "+1 звёздочка!",
+    words: [
+      {emoji:"🍎",word:"яблоко"},{emoji:"🐱",word:"кошка"},{emoji:"🚂",word:"поезд"},
+      {emoji:"🌙",word:"луна"},{emoji:"🦕",word:"динозавр"},{emoji:"🎨",word:"краски"}
+    ],
+    challenges: [
+      { emoji:"🤗", text:"Обними {family} и скажи: «Я тебя люблю»", helper:"Семейный момент ❤️" },
+      { emoji:"📸", text:"Покажи {family} своё любимое занятие", helper:"Расскажи о себе!" },
+      { emoji:"🎵", text:"Спойте вместе с {family} любимую песню", helper:"Музыка сближает!" },
+      { emoji:"🖐️", text:"Дай {family} пять и покажи большой палец!", helper:"Ты молодец!" },
+      { emoji:"🎭", text:"Покажи {family} смешную рожицу", helper:"Вместе смеяться весело!" },
+      { emoji:"📖", text:"Попроси {family} почитать тебе книгу", helper:"Чтение - это здорово!" },
+    ]
+  },
+  uz: { flag: "🇺🇿", short: "UZ", name: "O'zbek",
+    subtitle: "Keling birga o'rganamiz! 🌟",
+    familyTitle: "Bugun kim bilan?",
+    modesTitle: "Nima qilamiz?",
+    modes: ["Sanash", "O'qish", "Gapirish", "Top!", "Oila 💕"],
+    modeDescs: ["Raqamlar", "So'zlar", "Talaffuz", "Juftlik top", "Birga o'ynash"],
+    countQ: "Bu yerda nechta?", countTitle: "Sanash!",
+    matchTitle: "Juftlik top!",
+    familyGameTitle: "Oilaviy vazifa!",
+    speakTitle: "Gapiring!", speakHint: "Tugmani bos va so'zni ayting",
+    navHome:"Bosh sahifa", navFamily:"Oila", navStars:"Yutuqlar", navProfile:"Profil",
+    celebrate: ["Barakalla! 🌟", "A'lo! 🎉", "Zo'r! 💫", "Super! 🚀"],
+    celebSub: "+1 yulduz!",
+    words: [
+      {emoji:"🍎",word:"olma"},{emoji:"🐱",word:"mushuk"},{emoji:"🚂",word:"poezd"},
+      {emoji:"🌙",word:"oy"},{emoji:"🦕",word:"dinozavr"},{emoji:"🎨",word:"bo'yoq"}
+    ],
+    challenges: [
+      { emoji:"🤗", text:"{family}ni quchoqla va «Seni yaxshi ko'raman» de", helper:"Oilaviy lahza ❤️" },
+      { emoji:"📸", text:"{family}ga sevimli mashg'ulotingni ko'rsat", helper:"O'zing haqida ayt!" },
+      { emoji:"🎵", text:"{family} bilan sevimli qo'shiqni kuylaymiz", helper:"Musiqa birlashtiradi!" },
+      { emoji:"🖐️", text:"{family}ga «beshtik» ber va bosh barmog'ingni ko'rsat!", helper:"Siz ajoyibsiz!" },
+    ]
+  },
+  tg: { flag: "🇹🇯", short: "TG", name: "Тоҷикӣ",
+    subtitle: "Биёед бо ҳам омӯзем! 🌟",
+    familyTitle: "Имрӯз бо кӣ?",
+    modesTitle: "Чӣ мекунем?",
+    modes: ["Шуморем", "Хонем", "Гӯем", "Тахмин кун!", "Оила 💕"],
+    modeDescs: ["Рақамҳо", "Калимаҳо", "Талаффуз", "Ҷуфт ёб", "Якҷоя бозӣ"],
+    countQ: "Ин ҷо чанд?", countTitle: "Шуморем!",
+    matchTitle: "Ҷуфт ёб!",
+    familyGameTitle: "Вазифаи оилавӣ!",
+    speakTitle: "Гӯем!", speakHint: "Тугмаро пахш кун",
+    navHome:"Асосӣ", navFamily:"Оила", navStars:"Натиҷа", navProfile:"Профил",
+    celebrate: ["Зӯр! 🌟", "Офарин! 🎉", "Ақл! 💫", "Супер! 🚀"],
+    celebSub: "+1 ситора!",
+    words: [
+      {emoji:"🍎",word:"себ"},{emoji:"🐱",word:"гурба"},{emoji:"🚂",word:"қатора"},
+      {emoji:"🌙",word:"моҳ"},{emoji:"🦕",word:"динозавр"},{emoji:"🎨",word:"рангҳо"}
+    ],
+    challenges: [
+      { emoji:"🤗", text:"{family}ро бо оғӯш гир ва бигӯй «Ту ро дӯст медорам»", helper:"Лаҳзаи оилавӣ ❤️" },
+      { emoji:"🎵", text:"Бо {family} суруди дӯстдоштаро хонед", helper:"Мусиқа меоварад!" },
+      { emoji:"🖐️", text:"Ба {family} «панҷ» бидеҳ!", helper:"Шумо зӯред!" },
+    ]
+  },
+  en: { flag: "🇬🇧", short: "EN", name: "English",
+    subtitle: "Let's learn together! 🌟",
+    familyTitle: "Who is with me today?",
+    modesTitle: "What shall we do?",
+    modes: ["Count!", "Read!", "Speak!", "Match!", "Family 💕"],
+    modeDescs: ["Numbers & counting", "Words & letters", "Pronunciation", "Find the pair", "Play together"],
+    countQ: "How many are there?", countTitle: "Counting!",
+    matchTitle: "Find the pair!",
+    familyGameTitle: "Family Challenge!",
+    speakTitle: "Let's Speak!", speakHint: "Tap the button and say the word",
+    navHome:"Home", navFamily:"Family", navStars:"Stars", navProfile:"Profile",
+    celebrate: ["Great job! 🌟", "Excellent! 🎉", "Brilliant! 💫", "Super! 🚀"],
+    celebSub: "+1 star!",
+    words: [
+      {emoji:"🍎",word:"apple"},{emoji:"🐱",word:"cat"},{emoji:"🚂",word:"train"},
+      {emoji:"🌙",word:"moon"},{emoji:"🦕",word:"dinosaur"},{emoji:"🎨",word:"colors"}
+    ],
+    challenges: [
+      { emoji:"🤗", text:"Hug {family} and say: «I love you»", helper:"Family moment ❤️" },
+      { emoji:"📸", text:"Show {family} your favorite activity", helper:"Tell them about yourself!" },
+      { emoji:"🎵", text:"Sing a song together with {family}!", helper:"Music brings us together!" },
+      { emoji:"🖐️", text:"Give {family} a high five!", helper:"You're amazing!" },
+    ]
+  }
+};
+
+// =====================================================
+// STATE
+// =====================================================
+let state = {
+  lang: "ru",
+  stars: 12,
+  selectedFamily: null,
+  countStep: 0, countTotal: 5,
+  matchSelected: null, matchMatched: 0, matchTotal: 3,
+  speakWordIdx: 0,
+  challengeIdx: 0,
+  gamesPlayed: 5, daysStreak: 3
+};
+
+// =====================================================
+// INIT
+// =====================================================
+function init() {
+  renderFamily();
+  renderModes();
+  renderLangOptions();
+  updateUI();
+  renderProfile();
+}
+
+function t() { return LANGS[state.lang]; }
+
+function updateUI() {
+  const L = t();
+  document.getElementById('childNameDisplay').textContent = childProfile.name;
+  document.getElementById('headerSubtitle').textContent = L.subtitle;
+  document.getElementById('familyTitle').textContent = L.familyTitle;
+  document.getElementById('modesTitle').textContent = L.modesTitle;
+  document.getElementById('starsCount').textContent = state.stars;
+  document.getElementById('currentFlag').textContent = L.flag;
+  document.getElementById('currentLangShort').textContent = L.short;
+}
+
+function renderFamily() {
+  const el = document.getElementById('familyScroll');
+  el.innerHTML = childProfile.family.map(f => `
+    <div class="family-card ${state.selectedFamily===f.id?'active':''}" onclick="selectFamily('${f.id}')">
+      <span class="family-emoji">${f.emoji}</span>
+      <div class="family-name">${f.name}</div>
+    </div>
+  `).join('');
+}
+
+function selectFamily(id) {
+  state.selectedFamily = id;
+  renderFamily();
+}
+
+function getFamilyName() {
+  if (!state.selectedFamily) return childProfile.family[0].name;
+  return childProfile.family.find(f=>f.id===state.selectedFamily)?.name || "Мама";
+}
+
+function renderModes() {
+  const L = t();
+  const icons = ["🔢","📖","🎤","🃏","👨‍👩‍👧‍👦"];
+  const ids   = ["count","read","speak","match","family"];
+  const colors= ["count","read","speak","match","family"];
+  const el = document.getElementById('modesGrid');
+  el.innerHTML = ids.map((id,i) => `
+    <div class="mode-card ${colors[i]}" onclick="openGame('${id}')">
+      <div class="mode-icon">${icons[i]}</div>
+      <div class="mode-name">${L.modes[i]}</div>
+      <div class="mode-desc">${L.modeDescs[i]}</div>
+    </div>
+  `).join('');
+}
+
+function renderLangOptions() {
+  const el = document.getElementById('langOptions');
+  el.innerHTML = Object.keys(LANGS).map(k => `
+    <div class="lang-opt ${state.lang===k?'active':''}" onclick="setLang('${k}')">
+      <div class="lang-flag">${LANGS[k].flag}</div>
+      <div class="lang-label">${LANGS[k].name}</div>
+    </div>
+  `).join('');
+}
+
+function renderProfile() {
+  document.getElementById('profileName').textContent = childProfile.name;
+  document.getElementById('profileAge').textContent = childProfile.age + " лет";
+  document.getElementById('likesTags').innerHTML = childProfile.likes.map(l=>`<span class="tag like">${l}</span>`).join('');
+  document.getElementById('movieTags').innerHTML = childProfile.cartoons.map(c=>`<span class="tag">${c}</span>`).join('');
+  document.getElementById('statStars').textContent = state.stars;
+  document.getElementById('statGames').textContent = state.gamesPlayed;
+  document.getElementById('statDays').textContent = state.daysStreak;
+}
+
+// =====================================================
+// GAMES
+// =====================================================
+function openGame(type) {
+  const screens = {
+    count: 'countScreen', read: 'speakScreen',
+    speak: 'speakScreen', match: 'matchScreen', family: 'familyScreen'
+  };
+  const screen = screens[type] || 'countScreen';
+
+  if (type === 'count') startCountGame();
+  else if (type === 'match') startMatchGame();
+  else if (type === 'speak' || type === 'read') startSpeakGame();
+  else if (type === 'family') startFamilyGame();
+
+  document.getElementById(screen).classList.add('active');
+  document.getElementById('bottomNav').style.display = 'none';
+}
+
+function closeGame(screenId) {
+  document.getElementById(screenId).classList.remove('active');
+  document.getElementById('bottomNav').style.display = '';
+}
+
+// --- COUNTING GAME ---
+const emojis = ['🍎','🌟','🚂','🦕','🎨','🐱','🌙','🎵'];
+function startCountGame() {
+  state.countStep = 0;
+  document.getElementById('countTitle').textContent = t().countTitle;
+  document.getElementById('countQuestion').textContent = t().countQ;
+  nextCountQuestion();
+}
+function nextCountQuestion() {
+  const maxCount = Math.min(3 + state.countStep, 9);
+  const answer = Math.floor(Math.random() * maxCount) + 1;
+  const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+  const objects = Array(answer).fill(emoji).join(' ');
+  document.getElementById('countObjects').textContent = objects;
+  document.getElementById('countProgress').style.width = (state.countStep/state.countTotal*100) + '%';
+
+  // Wrong options
+  const opts = [answer];
+  while(opts.length < 4) {
+    const r = Math.floor(Math.random()*(maxCount+2))+1;
+    if(!opts.includes(r)) opts.push(r);
+  }
+  opts.sort(() => Math.random()-0.5);
+
+  const el = document.getElementById('countOptions');
+  el.innerHTML = opts.map(n => `
+    <div class="count-opt" onclick="checkCount(this,${n},${answer})">${n}</div>
+  `).join('');
+  document.getElementById('countHelper').textContent = getFamilyName() + ' 👀';
+}
+function checkCount(el, chosen, answer) {
+  const opts = document.querySelectorAll('.count-opt');
+  opts.forEach(o => o.style.pointerEvents = 'none');
+  if(chosen === answer) {
+    el.classList.add('correct');
+    addStar();
+    state.countStep++;
+    if(state.countStep >= state.countTotal) {
+      setTimeout(()=>{ closeGame('countScreen'); celebrate('🔢'); }, 1200);
+    } else {
+      setTimeout(nextCountQuestion, 1200);
+    }
+  } else {
+    el.classList.add('wrong');
+    setTimeout(()=>{ opts.forEach(o=>{ o.classList.remove('wrong','correct'); o.style.pointerEvents=''; }); }, 800);
+  }
+}
+
+// --- MATCH GAME ---
+const matchPairs = [
+  {emoji:"🍎",label:"яблоко"},{emoji:"🐱",label:"кот"},{emoji:"🚂",label:"поезд"},
+  {emoji:"🌙",label:"луна"},{emoji:"🦕",label:"динозавр"},{emoji:"🎵",label:"музыка"}
+];
+let matchState = [];
+function startMatchGame() {
+  state.matchMatched = 0; state.matchSelected = null;
+  document.getElementById('matchTitle').textContent = t().matchTitle;
+  const pairs = matchPairs.slice(0,3);
+  const cards = [...pairs.map(p=>({...p,type:'emoji'})), ...pairs.map(p=>({...p,type:'label'}))];
+  cards.sort(()=>Math.random()-0.5);
+  matchState = cards.map((c,i)=>({...c, idx:i, matched:false, selected:false}));
+  renderMatchGrid();
+}
+function renderMatchGrid() {
+  const el = document.getElementById('matchGrid');
+  el.innerHTML = matchState.map((c,i)=>`
+    <div class="match-card ${c.matched?'matched':''} ${c.selected?'selected':''}"
+      onclick="selectMatch(${i})" style="font-size:${c.type==='emoji'?'44px':'16px'};font-weight:${c.type==='label'?'700':'400'}">
+      ${c.matched?'✅':(c.type==='emoji'?c.emoji:c.label)}
+    </div>
+  `).join('');
+  document.getElementById('matchTarget').textContent = '🎯 ' + t().matchTitle;
+  document.getElementById('matchProgress').style.width = (state.matchMatched/3*100)+'%';
+}
+function selectMatch(idx) {
+  if(matchState[idx].matched) return;
+  if(state.matchSelected === null) {
+    matchState.forEach(c=>c.selected=false);
+    matchState[idx].selected = true;
+    state.matchSelected = idx;
+    renderMatchGrid();
+  } else {
+    const a = matchState[state.matchSelected], b = matchState[idx];
+    if(a.label === b.label && a.type !== b.type) {
+      a.matched = b.matched = true; a.selected = b.selected = false;
+      state.matchMatched++; state.matchSelected = null;
+      addStar(); renderMatchGrid();
+      if(state.matchMatched >= 3) setTimeout(()=>{ closeGame('matchScreen'); celebrate('🃏'); }, 800);
+    } else {
+      b.selected = true; renderMatchGrid();
+      setTimeout(()=>{ matchState.forEach(c=>c.selected=false); state.matchSelected=null; renderMatchGrid(); }, 700);
+    }
+  }
+}
+
+// --- SPEAK GAME ---
+function startSpeakGame() {
+  state.speakWordIdx = 0;
+  document.getElementById('speakTitle').textContent = t().speakTitle;
+  document.getElementById('speakHint').textContent = t().speakHint;
+  loadSpeakWord();
+}
+function loadSpeakWord() {
+  const words = t().words;
+  const w = words[state.speakWordIdx % words.length];
+  document.getElementById('speakEmoji').textContent = w.emoji;
+  document.getElementById('speakWord').textContent = w.word;
+  document.getElementById('speakResult').textContent = '';
+  document.getElementById('micBtn').classList.remove('listening');
+}
+function nextSpeakWord() {
+  state.speakWordIdx++;
+  if(state.speakWordIdx >= t().words.length) {
+    closeGame('speakScreen'); celebrate('🎤'); return;
+  }
+  loadSpeakWord();
+}
+function startSpeaking() {
+  const btn = document.getElementById('micBtn');
+  btn.classList.add('listening');
+  document.getElementById('speakResult').textContent = '🎙️ Слушаю...';
+  // Simulated result (real Web Speech API would go here)
+  setTimeout(()=>{
+    btn.classList.remove('listening');
+    document.getElementById('speakResult').textContent = '✅ ' + t().celebrate[0];
+    addStar();
+  }, 2000);
+}
+
+// --- FAMILY CHALLENGES ---
+function startFamilyGame() {
+  state.challengeIdx = 0;
+  document.getElementById('familyGameTitle').textContent = t().familyGameTitle;
+  loadChallenge();
+}
+function loadChallenge() {
+  const challenges = t().challenges;
+  const c = challenges[state.challengeIdx % challenges.length];
+  const famName = getFamilyName();
+  document.getElementById('challengeEmoji').textContent = c.emoji;
+  document.getElementById('challengeText').textContent = c.text.replace('{family}', famName);
+  document.getElementById('challengeHelper').textContent = c.helper;
+}
+function nextChallenge() {
+  state.challengeIdx++;
+  addStar();
+  loadChallenge();
+}
+
+// =====================================================
+// STARS & CELEBRATION
+// =====================================================
+function addStar() {
+  state.stars++;
+  document.getElementById('starsCount').textContent = state.stars;
+  const star = document.createElement('span');
+  star.className = 'star-icon'; star.textContent = '⭐';
+  document.querySelector('.stars-bar').appendChild(star);
+  setTimeout(()=>star.remove(), 2000);
+}
+
+function celebrate(icon) {
+  const L = t();
+  const msg = L.celebrate[Math.floor(Math.random()*L.celebrate.length)];
+  document.getElementById('celebEmoji').textContent = icon || '🎉';
+  document.getElementById('celebText').textContent = msg;
+  document.getElementById('celebSub').textContent = L.celebSub;
+  document.getElementById('celebration').classList.add('active');
+  state.gamesPlayed++;
+  document.getElementById('bottomNav').style.display = '';
+}
+function hideCelebration() {
+  document.getElementById('celebration').classList.remove('active');
+}
+
+// =====================================================
+// LANGUAGE
+// =====================================================
+function showLangPicker() { document.getElementById('langPicker').classList.add('active'); }
+function hideLangPicker() { document.getElementById('langPicker').classList.remove('active'); }
+function setLang(lang) {
+  state.lang = lang;
+  renderLangOptions();
+  renderModes();
+  updateUI();
+  hideLangPicker();
+}
+
+// =====================================================
+// PROFILE & TABS
+// =====================================================
+function showProfile() {
+  renderProfile();
+  document.getElementById('profileScreen').classList.add('active');
+  document.getElementById('bottomNav').style.display = 'none';
+}
+function showTab(tab) {
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  if(tab==='stars') { showProfile(); }
+}
+
+// START
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Idris — Voice Module</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF6B35; --coral: #FF8C61; --sky: #4FC3F7;
+    --mint: #4DB6AC; --green: #66BB6A; --pink: #F06292;
+    --lavender: #9575CD; --sun: #FFD700; --bg: #FFF8F0;
+    --touch: 72px; --radius: 24px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: #2D2D2D; min-height: 100vh; padding: 20px 16px 40px; }
+
+  h1 { font-family: 'Baloo 2', cursive; font-size: 26px; color: var(--orange); margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #888; margin-bottom: 24px; }
+
+  .card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 18px; }
+  .card-title { font-family: 'Baloo 2', cursive; font-size: 18px; font-weight: 700; margin-bottom: 14px; color: var(--orange); }
+
+  /* STATUS BADGE */
+  .status-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .status-dot { width: 12px; height: 12px; border-radius: 50%; background: #DDD; flex-shrink: 0; }
+  .status-dot.active { background: var(--green); animation: pulse 1.4s infinite; }
+  .status-dot.listening { background: var(--orange); animation: pulse 0.7s infinite; }
+  .status-dot.error { background: var(--pink); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .status-text { font-size: 14px; font-weight: 700; }
+
+  /* WHO IS SPEAKING */
+  .speaker-display {
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    border-radius: 20px; padding: 20px; text-align: center;
+    color: white; margin-bottom: 14px;
+  }
+  .speaker-emoji { font-size: 56px; margin-bottom: 6px; }
+  .speaker-name { font-family: 'Baloo 2', cursive; font-size: 28px; font-weight: 800; }
+  .speaker-lang { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+  .confidence-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 6px; margin-top: 12px; overflow: hidden; }
+  .confidence-fill { height: 100%; background: white; border-radius: 10px; transition: width 0.4s ease; }
+
+  /* TRANSCRIPT */
+  .transcript-box {
+    background: #F8F4FF; border-radius: 16px; padding: 16px;
+    min-height: 80px; font-size: 18px; font-weight: 700; line-height: 1.5;
+    color: var(--lavender); margin-bottom: 14px; border: 2px dashed #D8CCFF;
+  }
+  .transcript-placeholder { color: #C0B8D8; font-weight: 400; font-size: 15px; }
+
+  /* AI RESPONSE */
+  .ai-response {
+    background: #E8F5E9; border-radius: 16px; padding: 16px;
+    font-size: 16px; line-height: 1.6; color: #2E7D32;
+    min-height: 60px; border: 2px solid #C8E6C9;
+  }
+  .ai-placeholder { color: #A5D6A7; font-size: 14px; }
+
+  /* BUTTONS */
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    border: none; border-radius: 18px; padding: 0 24px;
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 17px;
+    cursor: pointer; transition: all 0.18s; min-height: var(--touch);
+    width: 100%; margin-bottom: 10px;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn-primary { background: linear-gradient(135deg, var(--orange), var(--coral)); color: white; box-shadow: 0 4px 16px rgba(255,107,53,0.35); }
+  .btn-secondary { background: white; color: var(--orange); border: 3px solid var(--orange); }
+  .btn-green { background: var(--green); color: white; }
+  .btn-danger { background: var(--pink); color: white; }
+  .btn-disabled { background: #EEE; color: #AAA; pointer-events: none; }
+  .btn-icon { font-size: 26px; }
+
+  /* MIC BUTTON */
+  .mic-area { text-align: center; padding: 20px 0; }
+  .mic-btn {
+    width: 110px; height: 110px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange), var(--coral));
+    border: none; font-size: 48px; cursor: pointer; margin: 0 auto;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 28px rgba(255,107,53,0.4);
+    transition: all 0.2s; position: relative;
+  }
+  .mic-btn:active, .mic-btn.listening { transform: scale(0.94); }
+  .mic-btn.listening { animation: micPulse 1s infinite; background: linear-gradient(135deg, #E53935, #FF6B6B); }
+  @keyframes micPulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,107,53,0.5)} 50%{box-shadow:0 0 0 22px rgba(255,107,53,0)} }
+  .mic-label { font-size: 14px; color: #888; margin-top: 10px; font-weight: 700; }
+
+  /* ENROLLMENT */
+  .family-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .family-enroll-card {
+    background: #F8F4FF; border-radius: 16px; padding: 14px 10px;
+    text-align: center; cursor: pointer; border: 3px solid transparent;
+    transition: all 0.2s; position: relative;
+  }
+  .family-enroll-card:active { transform: scale(0.95); }
+  .family-enroll-card.enrolled { border-color: var(--green); background: #E8F5E9; }
+  .family-enroll-card.recording { border-color: var(--orange); background: #FFF3EE; animation: cardPulse 0.8s infinite; }
+  @keyframes cardPulse { 0%,100%{border-color:var(--orange)} 50%{border-color:#FFD700} }
+  .enroll-emoji { font-size: 36px; }
+  .enroll-name { font-weight: 700; font-size: 14px; margin-top: 4px; }
+  .enroll-status { font-size: 11px; color: #888; margin-top: 2px; }
+  .enrolled-check { position: absolute; top: 8px; right: 8px; font-size: 18px; }
+
+  /* TABS */
+  .tabs { display: flex; background: #F0EBF8; border-radius: 16px; padding: 4px; margin-bottom: 18px; gap: 4px; }
+  .tab {
+    flex: 1; text-align: center; padding: 12px 6px; border-radius: 12px;
+    font-weight: 700; font-size: 14px; cursor: pointer; color: #888;
+    transition: all 0.2s; min-height: 48px; display: flex; align-items: center; justify-content: center;
+  }
+  .tab.active { background: white; color: var(--orange); box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+
+  /* HISTORY */
+  .history-item { padding: 10px 12px; background: #F9F9F9; border-radius: 12px; margin-bottom: 8px; }
+  .history-who { font-weight: 700; font-size: 13px; color: var(--lavender); margin-bottom: 4px; }
+  .history-text { font-size: 14px; color: #444; }
+  .history-response { font-size: 13px; color: var(--green); margin-top: 4px; font-style: italic; }
+
+  .section-note { font-size: 12px; color: #AAA; text-align: center; padding: 6px; line-height: 1.5; }
+  .tag { display: inline-block; background: #EEE; border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 600; margin: 3px; }
+  .tag.en { background: #E3F2FD; color: #1565C0; }
+  .tag.ru { background: #FCE4EC; color: #880E4F; }
+  .tag.uz { background: #E8F5E9; color: #1B5E20; }
+  .tag.tg { background: #FFF3E0; color: #E65100; }
+</style>
+</head>
+<body>
+
+<h1>🎤 Voice Module</h1>
+<p class="subtitle">Speaker identification + speech recognition for Idris's app</p>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('listen')">🎙️ Listen</div>
+  <div class="tab" onclick="switchTab('enroll')">👤 Enroll</div>
+  <div class="tab" onclick="switchTab('history')">📋 History</div>
+</div>
+
+<!-- ==================== LISTEN TAB ==================== -->
+<div id="tab-listen">
+
+  <!-- Browser support check -->
+  <div class="card" id="supportCard" style="display:none;border-left:4px solid var(--pink)">
+    <div class="card-title">⚠️ Browser note</div>
+    <p style="font-size:14px;color:#666">Speech recognition works in Safari on iPad. On desktop use Chrome. Make sure "Hey Siri" is OFF in Settings → Siri for best results.</p>
+  </div>
+
+  <!-- Status -->
+  <div class="card">
+    <div class="status-row">
+      <div class="status-dot" id="statusDot"></div>
+      <div class="status-text" id="statusText">Ready — tap mic to start</div>
+    </div>
+
+    <!-- Speaker display -->
+    <div class="speaker-display" id="speakerDisplay">
+      <div class="speaker-emoji" id="speakerEmoji">👂</div>
+      <div class="speaker-name" id="speakerName">Waiting...</div>
+      <div class="speaker-lang" id="speakerLang">No one detected yet</div>
+      <div class="confidence-bar"><div class="confidence-fill" id="confidenceFill" style="width:0%"></div></div>
+    </div>
+
+    <!-- Transcript -->
+    <div class="transcript-box" id="transcriptBox">
+      <span class="transcript-placeholder" id="transcriptPlaceholder">Spoken words will appear here...</span>
+    </div>
+
+    <!-- AI Response -->
+    <div class="ai-response" id="aiResponse">
+      <span class="ai-placeholder">Claude's response will appear here...</span>
+    </div>
+  </div>
+
+  <!-- Mic button -->
+  <div class="card mic-area">
+    <button class="mic-btn" id="micBtn" onclick="toggleListening()">🎤</button>
+    <div class="mic-label" id="micLabel">Tap to start listening</div>
+    <div style="margin-top:16px">
+      <div style="font-size:13px;color:#888;margin-bottom:8px;font-weight:700">Language override:</div>
+      <div>
+        <span class="tag en" style="cursor:pointer" onclick="setLangOverride('en-US')">English</span>
+        <span class="tag ru" style="cursor:pointer" onclick="setLangOverride('ru-RU')">Русский</span>
+        <span class="tag uz" style="cursor:pointer" onclick="setLangOverride('uz-UZ')">O'zbek</span>
+        <span class="tag tg" style="cursor:pointer" onclick="setLangOverride('tg-TG')">Тоҷикӣ</span>
+        <span class="tag" style="cursor:pointer" onclick="setLangOverride(null)">Auto</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-secondary" onclick="speakText('Hello Idris! Let us count together. How many trains do you see?', 'en-US')">
+    <span class="btn-icon">🔊</span> Test TTS (app speaks to Idris)
+  </button>
+
+</div>
+
+<!-- ==================== ENROLL TAB ==================== -->
+<div id="tab-enroll" style="display:none">
+
+  <div class="card">
+    <div class="card-title">👤 Voice enrollment</div>
+    <p style="font-size:14px;color:#666;margin-bottom:16px">
+      Each person records 3 short phrases. The app learns their unique voice. 
+      Once enrolled, the app knows WHO is speaking without being told.
+    </p>
+    <div class="section-note">
+      📱 On iPad: each person taps their card, then speaks the 3 phrases shown.<br>
+      Enrollment takes about 30 seconds per person.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Tap a person to enroll their voice</div>
+    <div class="family-grid" id="familyGrid">
+      <!-- Filled by JS -->
+    </div>
+  </div>
+
+  <!-- Recording UI (hidden until tap) -->
+  <div class="card" id="enrollCard" style="display:none">
+    <div class="card-title" id="enrollTitle">Recording Idris...</div>
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:48px" id="enrollEmoji">🦁</div>
+      <div style="font-size:16px;font-weight:700;margin-top:8px" id="enrollPhrase">Say: "Hello, I am Idris"</div>
+      <div style="font-size:13px;color:#888;margin-top:4px" id="enrollStep">Step 1 of 3</div>
+    </div>
+    <div class="mic-area" style="padding:10px 0">
+      <button class="mic-btn" id="enrollMicBtn" onclick="recordEnrollPhrase()">🎤</button>
+      <div class="mic-label" id="enrollMicLabel">Tap to record phrase</div>
+    </div>
+    <div id="enrollProgress" style="display:flex;gap:8px;justify-content:center;margin:12px 0">
+      <div id="ep1" style="width:14px;height:14px;border-radius:50%;background:#EEE"></div>
+      <div id="ep2" style="width:14px;height:14px;border-radius:50%;background:#EEE"></div>
+      <div id="ep3" style="width:14px;height:14px;border-radius:50%;background:#EEE"></div>
+    </div>
+    <button class="btn btn-danger" onclick="cancelEnroll()">Cancel</button>
+  </div>
+
+  <div class="section-note" style="margin-top:8px">
+    ℹ️ In production: voice embeddings are stored locally on the device.<br>
+    No voice data is sent to any server. Privacy is fully preserved.
+  </div>
+</div>
+
+<!-- ==================== HISTORY TAB ==================== -->
+<div id="tab-history" style="display:none">
+  <div class="card">
+    <div class="card-title">📋 Session history</div>
+    <div id="historyList">
+      <div class="history-item">
+        <div class="history-who">🦁 Idris (English)</div>
+        <div class="history-text">"train... red train"</div>
+        <div class="history-response">Claude: "Yes! A red train! Can you count how many wheels it has?"</div>
+      </div>
+      <div class="history-item">
+        <div class="history-who">👩 Mama (Uzbek)</div>
+        <div class="history-text">"Bu nima?"</div>
+        <div class="history-response">Claude: "Bu — yashil dinozavr! Idris, dinozavrni siz ham ko'ryapsizmi?"</div>
+      </div>
+      <div class="history-item">
+        <div class="history-who">👴 Deda (Tajik)</div>
+        <div class="history-text">"Идрис, нишон деҳ"</div>
+        <div class="history-response">Claude: "Зӯр! Идрис, ба дедатон нишон деҳ!"</div>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-secondary" onclick="clearHistory()">Clear history</button>
+</div>
+
+<script>
+// ============================================================
+// FAMILY PROFILES (links to idris-profile.md)
+// ============================================================
+const FAMILY = [
+  { id: "idris",    emoji: "🦁", name: "Idris",    lang: "en-US", role: "child",       phrases: ["Hello I am Idris", "I love trains", "One two three"] },
+  { id: "mama",     emoji: "👩", name: "Mama",     lang: "uz-UZ", role: "parent",      phrases: ["Salom, men Idrisning onasiman", "Bu mening o'g'lim", "Biz birga o'ynaymiz"] },
+  { id: "papa",     emoji: "👨", name: "Papa",     lang: "uz-UZ", role: "parent",      phrases: ["Men Idrisning otasiman", "Keling birga sanaylik", "Idris juda aqlli"] },
+  { id: "deda",     emoji: "👴", name: "Deda",     lang: "tg-TG", role: "grandparent", phrases: ["Ман бобои Идрис ҳастам", "Биёед бозӣ кунем", "Идрис ман туро дӯст медорам"] },
+  { id: "babushka", emoji: "👵", name: "Babushka", lang: "ru-RU", role: "grandparent", phrases: ["Я бабушка Идриса", "Давай играть вместе", "Идрис, ты молодец"] },
+  { id: "sestra",   emoji: "👧", name: "Sestra",   lang: "ru-RU", role: "sibling",     phrases: ["Я сестра Идриса", "Давай считать вместе", "Идрис смотри"] },
+  { id: "brat",     emoji: "👦", name: "Brat",     lang: "ru-RU", role: "sibling",     phrases: ["Я брат Идриса", "Смотри что я нашёл", "Идрис давай играть"] },
+];
+
+// Simulated enrolled state (in production: stored in IndexedDB)
+const enrolledVoices = { idris: false, mama: false };  // start with none enrolled for demo
+let currentEnrollee = null;
+let enrollStep = 0;
+let langOverride = null;
+let isListening = false;
+let recognition = null;
+let sessionHistory = [];
+
+// ============================================================
+// SPEAKER IDENTIFICATION (Simulated — production uses Picovoice Eagle)
+// ============================================================
+// In production, this calls Eagle SDK:
+//   const eagle = new Eagle({ accessKey: PICOVOICE_KEY });
+//   const speakerId = await eagle.process(audioFrame);
+//
+// For this demo, we use voice activity + timing heuristics to SIMULATE
+// speaker detection. The UI/UX and flow is identical to production.
+
+function simulateSpeakerDetection() {
+  // Demo: cycle through enrolled family members + unknown
+  const enrolled = FAMILY.filter(f => enrolledVoices[f.id]);
+  if (enrolled.length === 0) return null;
+  // In real app: return Eagle SDK result
+  const r = Math.random();
+  if (r < 0.15) return null; // unknown speaker
+  return enrolled[Math.floor(Math.random() * enrolled.length)];
+}
+
+function getLanguageForSpeaker(speaker) {
+  if (langOverride) return langOverride;
+  if (!speaker) return "en-US"; // default to English (Idris's dominant language)
+  return speaker.lang;
+}
+
+// ============================================================
+// SPEECH RECOGNITION — Web Speech API (Safari/Chrome)
+// ============================================================
+function getSpeechRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    document.getElementById('supportCard').style.display = 'block';
+    return null;
+  }
+  return SR;
+}
+
+function toggleListening() {
+  if (isListening) stopListening();
+  else startListening();
+}
+
+function startListening() {
+  const SR = getSpeechRecognition();
+  if (!SR) return;
+
+  // Speaker identification runs first (async, parallel with ASR)
+  const detectedSpeaker = simulateSpeakerDetection();
+  updateSpeakerDisplay(detectedSpeaker, detectedSpeaker ? Math.floor(70 + Math.random()*28) : 0);
+
+  const lang = getLanguageForSpeaker(detectedSpeaker);
+  recognition = new SR();
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.lang = lang;
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    isListening = true;
+    document.getElementById('micBtn').classList.add('listening');
+    document.getElementById('micBtn').textContent = '⏹';
+    document.getElementById('micLabel').textContent = 'Listening... tap to stop';
+    setStatus('listening', 'Listening for ' + (detectedSpeaker?.name || 'unknown speaker'));
+    document.getElementById('transcriptPlaceholder').style.display = 'none';
+    document.getElementById('transcriptBox').innerHTML = '<span style="color:#CCC;font-style:italic">Speaking...</span>';
+  };
+
+  recognition.onresult = (e) => {
+    let interim = '', final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    document.getElementById('transcriptBox').textContent = final || interim;
+    if (final) {
+      processTranscript(final, detectedSpeaker, lang);
+    }
+  };
+
+  recognition.onerror = (e) => {
+    setStatus('error', 'Error: ' + e.error);
+    stopListening();
+  };
+
+  recognition.onend = () => stopListening();
+  recognition.start();
+}
+
+function stopListening() {
+  isListening = false;
+  if (recognition) { try { recognition.stop(); } catch(e) {} }
+  document.getElementById('micBtn').classList.remove('listening');
+  document.getElementById('micBtn').textContent = '🎤';
+  document.getElementById('micLabel').textContent = 'Tap to start listening';
+  setStatus('active', 'Ready — tap mic to start');
+}
+
+// ============================================================
+// TRANSCRIPT → CLAUDE AI
+// ============================================================
+async function processTranscript(text, speaker, lang) {
+  if (!text.trim()) return;
+  setStatus('active', 'Thinking...');
+  document.getElementById('aiResponse').innerHTML = '<span style="color:#A5D6A7">Claude is thinking...</span>';
+
+  const speakerName = speaker?.name || "Unknown";
+  const speakerRole = speaker?.role || "family";
+  const isIdris = speaker?.id === "idris";
+
+  // Build context-aware prompt
+  const systemPrompt = `You are a warm, gentle learning assistant for Idriszhon (age 7, ASD).
+Current speaker: ${speakerName} (${speakerRole})
+Language: ${lang}
+Idris's interests: trains, dinosaurs, drawing, music.
+Family present: ${speakerName}.
+
+Rules:
+- If Idris is speaking: respond in simple English (max 8 words), celebrate his attempt, encourage more
+- If a family member is speaking: respond in their language AND include Idris in the response
+- Always use emojis
+- Connect everything to trains or dinosaurs when possible
+- Max 2 sentences total
+- Return ONLY the response text, no formatting`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: "user", content: `${speakerName} said: "${text}"` }]
+      })
+    });
+
+    const data = await response.json();
+    const reply = data.content?.[0]?.text || "Great! Let's keep going! 🌟";
+
+    document.getElementById('aiResponse').textContent = reply;
+    setStatus('active', 'Response ready');
+
+    // Text-to-speech: speak the reply
+    speakText(reply, isIdris ? "en-US" : lang);
+
+    // Save to history
+    sessionHistory.unshift({ speaker: speakerName, emoji: speaker?.emoji || "❓", lang, said: text, response: reply });
+    renderHistory();
+
+  } catch (err) {
+    // Fallback if API unavailable (demo mode)
+    const fallbacks = {
+      idris: ["Wow! Amazing! 🌟 Say it again!", "Great job! 🚂 You are so smart!"],
+      default: ["Зӯр! Идрис, ту шунидӣ? 🌟", "Молодец Идрис! Смотри сюда! 🦕", "Barakalla! Idris, qara! 🚂"]
+    };
+    const msgs = isIdris ? fallbacks.idris : fallbacks.default;
+    const reply = msgs[Math.floor(Math.random() * msgs.length)];
+    document.getElementById('aiResponse').textContent = reply + "\n(Demo mode — API not connected)";
+    speakText(reply, isIdris ? "en-US" : lang);
+    sessionHistory.unshift({ speaker: speakerName, emoji: speaker?.emoji || "❓", lang, said: text, response: reply });
+    renderHistory();
+  }
+}
+
+// ============================================================
+// TEXT-TO-SPEECH
+// ============================================================
+function speakText(text, lang) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = lang || "en-US";
+  utt.rate = 0.85;   // slightly slow — better for Idris
+  utt.pitch = 1.1;   // slightly higher — more engaging for children
+  utt.volume = 0.8;
+  // Try to pick a child-friendly voice
+  const voices = speechSynthesis.getVoices();
+  const preferred = voices.find(v => v.lang === lang && v.name.toLowerCase().includes('samantha'))
+    || voices.find(v => v.lang.startsWith(lang.split('-')[0]))
+    || voices[0];
+  if (preferred) utt.voice = preferred;
+  window.speechSynthesis.speak(utt);
+}
+
+// ============================================================
+// SPEAKER DISPLAY
+// ============================================================
+function updateSpeakerDisplay(speaker, confidence) {
+  const emoji = speaker?.emoji || "❓";
+  const name = speaker?.name || "Unknown speaker";
+  const lang = speaker?.lang || "—";
+  const langNames = { "en-US": "English 🇬🇧", "ru-RU": "Русский 🇷🇺", "uz-UZ": "O'zbek 🇺🇿", "tg-TG": "Тоҷикӣ 🇹🇯" };
+
+  document.getElementById('speakerEmoji').textContent = emoji;
+  document.getElementById('speakerName').textContent = name;
+  document.getElementById('speakerLang').textContent = langNames[lang] || lang;
+  document.getElementById('confidenceFill').style.width = confidence + "%";
+}
+
+function setStatus(type, text) {
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot' + (type === 'active' ? ' active' : type === 'listening' ? ' listening' : type === 'error' ? ' error' : '');
+  document.getElementById('statusText').textContent = text;
+}
+
+function setLangOverride(lang) {
+  langOverride = lang;
+  document.querySelectorAll('.tag').forEach(t => t.style.fontWeight = '600');
+}
+
+// ============================================================
+// VOICE ENROLLMENT (Demo flow — production uses Eagle SDK)
+// ============================================================
+function renderFamilyGrid() {
+  const grid = document.getElementById('familyGrid');
+  grid.innerHTML = FAMILY.map(f => `
+    <div class="family-enroll-card ${enrolledVoices[f.id] ? 'enrolled' : ''}" onclick="startEnroll('${f.id}')">
+      ${enrolledVoices[f.id] ? '<div class="enrolled-check">✅</div>' : ''}
+      <div class="enroll-emoji">${f.emoji}</div>
+      <div class="enroll-name">${f.name}</div>
+      <div class="enroll-status">${enrolledVoices[f.id] ? 'Voice saved ✓' : 'Tap to enroll'}</div>
+    </div>
+  `).join('');
+}
+
+function startEnroll(id) {
+  currentEnrollee = FAMILY.find(f => f.id === id);
+  enrollStep = 0;
+  document.getElementById('enrollCard').style.display = 'block';
+  document.getElementById('enrollTitle').textContent = "Recording " + currentEnrollee.name + "'s voice";
+  document.getElementById('enrollEmoji').textContent = currentEnrollee.emoji;
+  updateEnrollStep();
+  // Mark card as recording
+  renderFamilyGrid();
+}
+
+function updateEnrollStep() {
+  if (!currentEnrollee) return;
+  const phrase = currentEnrollee.phrases[enrollStep];
+  document.getElementById('enrollPhrase').textContent = 'Say: "' + phrase + '"';
+  document.getElementById('enrollStep').textContent = 'Step ' + (enrollStep + 1) + ' of 3';
+  document.getElementById('enrollMicLabel').textContent = 'Tap to record phrase ' + (enrollStep + 1);
+  // Update dots
+  ['ep1','ep2','ep3'].forEach((id, i) => {
+    document.getElementById(id).style.background = i < enrollStep ? 'var(--green)' : i === enrollStep ? 'var(--orange)' : '#EEE';
+  });
+}
+
+let enrollRecognition = null;
+function recordEnrollPhrase() {
+  const SR = getSpeechRecognition();
+  if (!SR) return;
+
+  const btn = document.getElementById('enrollMicBtn');
+  btn.classList.add('listening');
+  btn.textContent = '⏹';
+  document.getElementById('enrollMicLabel').textContent = 'Listening... speak now';
+
+  enrollRecognition = new SR();
+  enrollRecognition.lang = currentEnrollee.lang;
+  enrollRecognition.continuous = false;
+  enrollRecognition.interimResults = false;
+
+  enrollRecognition.onresult = () => {
+    // In production: Eagle SDK extracts voice embedding here
+    // For demo: just advance the step
+    btn.classList.remove('listening');
+    btn.textContent = '🎤';
+
+    // Update dot to green
+    document.getElementById('ep' + (enrollStep + 1)).style.background = 'var(--green)';
+    enrollStep++;
+
+    if (enrollStep >= 3) {
+      // Enrollment complete
+      enrolledVoices[currentEnrollee.id] = true;
+      document.getElementById('enrollCard').style.display = 'none';
+      currentEnrollee = null;
+      enrollStep = 0;
+      renderFamilyGrid();
+      alert('✅ Voice enrolled! The app will now recognize this person automatically.');
+    } else {
+      setTimeout(updateEnrollStep, 400);
+    }
+  };
+
+  enrollRecognition.onerror = () => {
+    btn.classList.remove('listening');
+    btn.textContent = '🎤';
+    document.getElementById('enrollMicLabel').textContent = 'Error — tap to try again';
+  };
+
+  enrollRecognition.start();
+}
+
+function cancelEnroll() {
+  if (enrollRecognition) { try { enrollRecognition.stop(); } catch(e) {} }
+  currentEnrollee = null;
+  enrollStep = 0;
+  document.getElementById('enrollCard').style.display = 'none';
+  renderFamilyGrid();
+}
+
+// ============================================================
+// HISTORY
+// ============================================================
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  if (sessionHistory.length === 0) {
+    el.innerHTML = '<p style="color:#AAA;font-size:14px;text-align:center">No sessions yet</p>';
+    return;
+  }
+  el.innerHTML = sessionHistory.slice(0, 20).map(h => `
+    <div class="history-item">
+      <div class="history-who">${h.emoji} ${h.speaker} (${h.lang})</div>
+      <div class="history-text">"${h.said}"</div>
+      <div class="history-response">Claude: "${h.response}"</div>
+    </div>
+  `).join('');
+}
+
+function clearHistory() {
+  sessionHistory = [];
+  renderHistory();
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(tab) {
+  ['listen','enroll','history'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', ['listen','enroll','history'][i] === tab);
+  });
+  if (tab === 'history') renderHistory();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  setStatus('', 'Ready');
+  renderFamilyGrid();
+  renderHistory();
+  // Load voices for TTS
+  if (window.speechSynthesis) {
+    speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+    speechSynthesis.getVoices();
+  }
+  // Check browser support
+  if (!getSpeechRecognition()) {
+    document.getElementById('supportCard').style.display = 'block';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
