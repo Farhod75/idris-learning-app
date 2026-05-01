@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FF6B35">
+<title>Learning App — Setup</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;600;700;900&family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF6B35; --coral: #FF8C61; --sun: #FFD700;
+    --sky: #4FC3F7; --mint: #4DB6AC; --green: #66BB6A;
+    --lavender: #9575CD; --pink: #F06292; --red: #EF5350;
+    --bg: #FFF8F0; --card: #FFFFFF; --text: #2D2D2D;
+    --touch: 72px; --radius: 24px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* RTL support */
+  [dir="rtl"] { font-family: 'Noto Sans Arabic', 'Nunito', sans-serif; }
+  [dir="rtl"] .step-header { flex-direction: row-reverse; }
+  [dir="rtl"] .lang-grid { direction: rtl; }
+  [dir="rtl"] .family-scroll { flex-direction: row-reverse; }
+  [dir="rtl"] input, [dir="rtl"] select { text-align: right; }
+
+  /* SCREEN SYSTEM */
+  .screen {
+    display: none; min-height: 100vh;
+    flex-direction: column; align-items: center;
+    padding: 24px 20px 40px;
+  }
+  .screen.active { display: flex; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+  /* WELCOME SCREEN */
+  .welcome-hero {
+    text-align: center; padding: 40px 0 32px;
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .app-logo { font-size: 80px; margin-bottom: 16px; animation: bounce 2s ease-in-out infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  .app-name {
+    font-family: 'Baloo 2', cursive; font-size: 32px; font-weight: 800;
+    color: var(--orange); margin-bottom: 8px;
+  }
+  .app-tagline { font-size: 16px; color: #888; max-width: 280px; line-height: 1.5; }
+
+  /* LANGUAGE GRID */
+  .lang-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px; width: 100%; max-width: 420px; margin: 24px 0;
+  }
+  .lang-card {
+    background: white; border-radius: 18px; padding: 16px 12px;
+    text-align: center; cursor: pointer; transition: all 0.2s;
+    border: 3px solid transparent; box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    min-height: var(--touch);
+  }
+  .lang-card:active { transform: scale(0.95); }
+  .lang-card.selected { border-color: var(--orange); background: #FFF3EE; }
+  .lang-flag { font-size: 28px; display: block; margin-bottom: 4px; }
+  .lang-name { font-weight: 700; font-size: 14px; }
+  .lang-native { font-size: 12px; color: #888; margin-top: 2px; }
+
+  /* STEP INDICATOR */
+  .step-dots {
+    display: flex; gap: 8px; justify-content: center; margin-bottom: 24px;
+  }
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%; background: #DDD;
+    transition: all 0.3s;
+  }
+  .dot.active { background: var(--orange); width: 24px; border-radius: 5px; }
+  .dot.done { background: var(--green); }
+
+  /* STEP HEADER */
+  .step-header {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; max-width: 420px; margin-bottom: 8px;
+  }
+  .back-btn {
+    width: 48px; height: 48px; border-radius: 50%; background: white;
+    border: none; font-size: 20px; cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .step-title {
+    font-family: 'Baloo 2', cursive; font-size: 22px; font-weight: 800;
+    color: var(--orange);
+  }
+  .step-sub { font-size: 14px; color: #888; margin-bottom: 24px; text-align: center; }
+
+  /* FORM */
+  .form-group { width: 100%; max-width: 420px; margin-bottom: 16px; }
+  .form-label {
+    font-weight: 700; font-size: 14px; color: #555;
+    margin-bottom: 8px; display: block;
+  }
+  .form-input {
+    width: 100%; background: white; border: 2px solid #EEE;
+    border-radius: 16px; padding: 16px 18px; font-size: 17px;
+    font-family: 'Nunito', sans-serif; color: var(--text);
+    transition: border-color 0.2s; outline: none;
+    min-height: 56px;
+  }
+  .form-input:focus { border-color: var(--orange); }
+  .form-input::placeholder { color: #CCC; }
+
+  /* AGE SELECTOR */
+  .age-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 10px; width: 100%; max-width: 420px; margin-bottom: 16px;
+  }
+  .age-btn {
+    background: white; border: 3px solid #EEE; border-radius: 14px;
+    padding: 14px 8px; font-size: 18px; font-weight: 900;
+    cursor: pointer; transition: all 0.2s; text-align: center;
+    min-height: var(--touch);
+  }
+  .age-btn:active { transform: scale(0.93); }
+  .age-btn.selected { border-color: var(--orange); background: #FFF3EE; color: var(--orange); }
+
+  /* LANGUAGE TAGS */
+  .lang-tags {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    width: 100%; max-width: 420px; margin-bottom: 16px;
+  }
+  .lang-tag {
+    background: white; border: 3px solid #EEE; border-radius: 14px;
+    padding: 12px 16px; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; min-height: 48px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .lang-tag:active { transform: scale(0.95); }
+  .lang-tag.selected { border-color: var(--sky); background: #E1F5FE; }
+
+  /* INTEREST GRID */
+  .interest-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; width: 100%; max-width: 420px; margin-bottom: 16px;
+  }
+  .interest-btn {
+    background: white; border: 3px solid #EEE; border-radius: 16px;
+    padding: 14px 8px; text-align: center; cursor: pointer;
+    transition: all 0.2s; min-height: 80px;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 6px;
+  }
+  .interest-btn:active { transform: scale(0.93); }
+  .interest-btn.selected { border-color: var(--lavender); background: #F3E5F5; }
+  .interest-emoji { font-size: 28px; }
+  .interest-label { font-size: 11px; font-weight: 700; color: #666; }
+
+  /* FAMILY SCROLL */
+  .family-scroll {
+    display: flex; gap: 10px; overflow-x: auto;
+    padding-bottom: 8px; width: 100%; max-width: 420px;
+    scrollbar-width: none; margin-bottom: 16px;
+  }
+  .family-scroll::-webkit-scrollbar { display: none; }
+  .family-member {
+    min-width: 80px; background: white; border-radius: 16px;
+    padding: 12px 8px; text-align: center; cursor: pointer;
+    border: 3px solid transparent; transition: all 0.2s; flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  }
+  .family-member:active { transform: scale(0.94); }
+  .family-member.selected { border-color: var(--green); background: #E8F5E9; }
+  .family-emoji-icon { font-size: 32px; display: block; margin-bottom: 4px; }
+  .family-label { font-size: 12px; font-weight: 700; }
+
+  /* PRIMARY BUTTON */
+  .btn-primary {
+    width: 100%; max-width: 420px; background: linear-gradient(135deg, var(--orange), var(--coral));
+    color: white; border: none; border-radius: 20px; padding: 20px;
+    font-size: 19px; font-weight: 800; font-family: 'Nunito', sans-serif;
+    cursor: pointer; transition: all 0.2s; min-height: var(--touch);
+    box-shadow: 0 6px 20px rgba(255,107,53,0.35); margin-top: 8px;
+  }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-primary:disabled { background: #DDD; box-shadow: none; color: #AAA; }
+
+  /* SUCCESS SCREEN */
+  .success-hero { text-align: center; padding: 40px 0; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .success-emoji { font-size: 90px; animation: popIn 0.5s ease; }
+  @keyframes popIn { from{transform:scale(0) rotate(-20deg)} to{transform:scale(1) rotate(0deg)} }
+  .success-name { font-family: 'Baloo 2', cursive; font-size: 34px; font-weight: 800; color: var(--orange); margin: 16px 0 8px; }
+  .success-msg { font-size: 16px; color: #888; max-width: 280px; line-height: 1.5; }
+
+  /* PROFILES LIST */
+  .profiles-list { width: 100%; max-width: 420px; }
+  .profile-item {
+    background: white; border-radius: 18px; padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px; margin-bottom: 12px;
+    cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    border: 3px solid transparent; min-height: var(--touch);
+  }
+  .profile-item:active { transform: scale(0.97); }
+  .profile-item.selected { border-color: var(--orange); }
+  .profile-avatar { font-size: 40px; }
+  .profile-info { flex: 1; }
+  .profile-name { font-weight: 800; font-size: 18px; }
+  .profile-detail { font-size: 13px; color: #888; margin-top: 2px; }
+  .profile-arrow { font-size: 20px; color: #CCC; }
+
+  .add-child-btn {
+    width: 100%; max-width: 420px; background: white;
+    border: 3px dashed #DDD; border-radius: 18px; padding: 20px;
+    font-size: 16px; font-weight: 700; color: #AAA;
+    cursor: pointer; transition: all 0.2s; min-height: var(--touch);
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .add-child-btn:active { border-color: var(--orange); color: var(--orange); }
+
+  .section-label {
+    font-size: 13px; font-weight: 700; color: #AAA;
+    text-transform: uppercase; letter-spacing: 1px;
+    width: 100%; max-width: 420px; margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== SCREEN 0: LANGUAGE SELECT ==================== -->
+<div class="screen active" id="screen-lang">
+  <div class="welcome-hero">
+    <div class="app-logo">🌟</div>
+    <div class="app-name" id="appName">Learning App</div>
+    <div class="app-tagline" id="appTagline">A learning companion for every child</div>
+  </div>
+
+  <div class="lang-grid" id="langGrid">
+    <!-- filled by JS -->
+  </div>
+
+  <button class="btn-primary" onclick="goToStep1()" id="langNextBtn" disabled>
+    <span id="langNextLabel">Continue →</span>
+  </button>
+</div>
+
+<!-- ==================== SCREEN 1: CHILD NAME & AGE ==================== -->
+<div class="screen" id="screen-step1">
+  <div class="step-dots">
+    <div class="dot active" id="dot1"></div>
+    <div class="dot" id="dot2"></div>
+    <div class="dot" id="dot3"></div>
+    <div class="dot" id="dot4"></div>
+  </div>
+
+  <div class="step-header">
+    <button class="back-btn" onclick="showScreen('screen-lang')">←</button>
+    <div class="step-title" id="step1Title">About your child</div>
+  </div>
+  <div class="step-sub" id="step1Sub">Tell us a little about them</div>
+
+  <div class="form-group">
+    <label class="form-label" id="nameLabel">Child's name</label>
+    <input class="form-input" type="text" id="childName"
+      placeholder="e.g. Idris" oninput="checkStep1()">
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" id="ageLabel">Age</label>
+    <div class="age-grid" id="ageGrid">
+      <!-- filled by JS -->
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" id="diagnosisLabel">Diagnosis (optional)</label>
+    <select class="form-input" id="diagnosis">
+      <!-- filled by JS -->
+    </select>
+  </div>
+
+  <button class="btn-primary" onclick="goToStep2()" id="step1Btn" disabled>
+    <span id="step1BtnLabel">Next →</span>
+  </button>
+</div>
+
+<!-- ==================== SCREEN 2: LANGUAGES ==================== -->
+<div class="screen" id="screen-step2">
+  <div class="step-dots">
+    <div class="dot done"></div>
+    <div class="dot active"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+
+  <div class="step-header">
+    <button class="back-btn" onclick="showScreen('screen-step1')">←</button>
+    <div class="step-title" id="step2Title">Languages</div>
+  </div>
+  <div class="step-sub" id="step2Sub">Which languages does your family speak?</div>
+
+  <div class="lang-tags" id="langTagsGrid">
+    <!-- filled by JS -->
+  </div>
+
+  <button class="btn-primary" onclick="goToStep3()" id="step2Btn">
+    <span id="step2BtnLabel">Next →</span>
+  </button>
+</div>
+
+<!-- ==================== SCREEN 3: INTERESTS ==================== -->
+<div class="screen" id="screen-step3">
+  <div class="step-dots">
+    <div class="dot done"></div>
+    <div class="dot done"></div>
+    <div class="dot active"></div>
+    <div class="dot"></div>
+  </div>
+
+  <div class="step-header">
+    <button class="back-btn" onclick="showScreen('screen-step2')">←</button>
+    <div class="step-title" id="step3Title">Interests</div>
+  </div>
+  <div class="step-sub" id="step3Sub">What does your child love? (pick all that apply)</div>
+
+  <div class="interest-grid" id="interestGrid">
+    <!-- filled by JS -->
+  </div>
+
+  <button class="btn-primary" onclick="goToStep4()" id="step3Btn">
+    <span id="step3BtnLabel">Next →</span>
+  </button>
+</div>
+
+<!-- ==================== SCREEN 4: FAMILY ==================== -->
+<div class="screen" id="screen-step4">
+  <div class="step-dots">
+    <div class="dot done"></div>
+    <div class="dot done"></div>
+    <div class="dot done"></div>
+    <div class="dot active"></div>
+  </div>
+
+  <div class="step-header">
+    <button class="back-btn" onclick="showScreen('screen-step3')">←</button>
+    <div class="step-title" id="step4Title">Family</div>
+  </div>
+  <div class="step-sub" id="step4Sub">Who plays with your child?</div>
+
+  <div class="family-scroll" id="familyGrid">
+    <!-- filled by JS -->
+  </div>
+
+  <div class="form-group" style="margin-top:8px">
+    <label class="form-label" id="doctorLabel">Doctor's name (optional)</label>
+    <input class="form-input" type="text" id="doctorName" placeholder="Dr. ...">
+  </div>
+
+  <button class="btn-primary" onclick="saveProfile()" id="step4Btn">
+    <span id="step4BtnLabel">Create profile 🎉</span>
+  </button>
+</div>
+
+<!-- ==================== SCREEN 5: SUCCESS ==================== -->
+<div class="screen" id="screen-success">
+  <div class="success-hero">
+    <div class="success-emoji" id="successEmoji">🦁</div>
+    <div class="success-name" id="successName">Idris</div>
+    <div class="success-msg" id="successMsg">
+      Profile created! The app is now personalized just for them.
+    </div>
+  </div>
+  <button class="btn-primary" onclick="startApp()" id="startBtn">
+    Let's start learning! 🚀
+  </button>
+</div>
+
+<!-- ==================== SCREEN 6: PROFILES (returning user) ==================== -->
+<div class="screen" id="screen-profiles">
+  <div class="welcome-hero" style="flex:0;padding:24px 0 16px">
+    <div class="app-logo" style="font-size:48px;margin-bottom:8px">🌟</div>
+    <div class="app-name" id="profilesTitle">Who is learning today?</div>
+  </div>
+
+  <div class="section-label" id="profilesLabel">YOUR CHILDREN</div>
+  <div class="profiles-list" id="profilesList">
+    <!-- filled by JS -->
+  </div>
+
+  <button class="add-child-btn" onclick="addNewChild()" style="margin-top:8px">
+    <span style="font-size:24px">+</span>
+    <span id="addChildLabel">Add another child</span>
+  </button>
+</div>
+
+<script>
+// ============================================================
+// MULTILINGUAL CONTENT
+// ============================================================
+const LANGUAGES = {
+  en: {
+    flag: "🇬🇧", name: "English", native: "English", dir: "ltr",
+    appName: "Learning App",
+    appTagline: "A learning companion for every child",
+    langNext: "Continue →",
+    step1Title: "About your child", step1Sub: "Tell us a little about them",
+    nameLabel: "Child's name", namePlaceholder: "e.g. Idris",
+    ageLabel: "Age",
+    diagnosisLabel: "Diagnosis (optional)",
+    diagnoses: ["None / Not diagnosed", "ASD — Autism Spectrum", "ADHD", "Down Syndrome", "Speech delay", "Other"],
+    step1Btn: "Next →",
+    step2Title: "Languages", step2Sub: "Which languages does your family speak?",
+    step2Btn: "Next →",
+    step3Title: "Interests", step3Sub: "What does your child love?",
+    step3Btn: "Next →",
+    step4Title: "Family", step4Sub: "Who plays with your child?",
+    doctorLabel: "Doctor's name (optional)",
+    step4Btn: "Create profile 🎉",
+    successMsg: "Profile created! The app is now personalized just for them.",
+    startBtn: "Let's start learning! 🚀",
+    profilesTitle: "Who is learning today?",
+    profilesLabel: "YOUR CHILDREN",
+    addChildLabel: "Add another child",
+    familyMembers: ["Mama", "Papa", "Grandpa", "Grandma", "Sister", "Brother", "Uncle", "Aunt"],
+    familyEmojis: ["👩","👨","👴","👵","👧","👦","👨‍🦱","👩‍🦱"],
+    interests: [
+      {emoji:"🚗", label:"Cars"}, {emoji:"🦕", label:"Dinos"}, {emoji:"🎨", label:"Drawing"},
+      {emoji:"🎵", label:"Music"}, {emoji:"🧩", label:"Puzzles"}, {emoji:"📚", label:"Books"},
+      {emoji:"🐾", label:"Animals"}, {emoji:"⚽", label:"Sports"}, {emoji:"🚂", label:"Trains"},
+      {emoji:"🌈", label:"Colors"}, {emoji:"🔢", label:"Numbers"}, {emoji:"🌟", label:"Stars"},
+    ]
+  },
+  ru: {
+    flag: "🇷🇺", name: "Русский", native: "Русский", dir: "ltr",
+    appName: "Учимся вместе",
+    appTagline: "Приложение для развития каждого ребёнка",
+    langNext: "Продолжить →",
+    step1Title: "О вашем ребёнке", step1Sub: "Расскажите немного о нём",
+    nameLabel: "Имя ребёнка", namePlaceholder: "напр. Идрис",
+    ageLabel: "Возраст",
+    diagnosisLabel: "Диагноз (необязательно)",
+    diagnoses: ["Нет / Не поставлен", "РАС — Аутизм", "СДВГ", "Синдром Дауна", "Задержка речи", "Другое"],
+    step1Btn: "Далее →",
+    step2Title: "Языки", step2Sub: "На каких языках говорит ваша семья?",
+    step2Btn: "Далее →",
+    step3Title: "Интересы", step3Sub: "Что любит ваш ребёнок?",
+    step3Btn: "Далее →",
+    step4Title: "Семья", step4Sub: "Кто играет с вашим ребёнком?",
+    doctorLabel: "Имя врача (необязательно)",
+    step4Btn: "Создать профиль 🎉",
+    successMsg: "Профиль создан! Приложение настроено для вашего ребёнка.",
+    startBtn: "Начинаем учиться! 🚀",
+    profilesTitle: "Кто учится сегодня?",
+    profilesLabel: "ВАШИ ДЕТИ",
+    addChildLabel: "Добавить ребёнка",
+    familyMembers: ["Мама","Папа","Дедушка","Бабушка","Сестра","Брат","Дядя","Тётя"],
+    familyEmojis: ["👩","👨","👴","👵","👧","👦","👨‍🦱","👩‍🦱"],
+    interests: [
+      {emoji:"🚗", label:"Машины"}, {emoji:"🦕", label:"Дино"}, {emoji:"🎨", label:"Рисование"},
+      {emoji:"🎵", label:"Музыка"}, {emoji:"🧩", label:"Пазлы"}, {emoji:"📚", label:"Книги"},
+      {emoji:"🐾", label:"Животные"}, {emoji:"⚽", label:"Спорт"}, {emoji:"🚂", label:"Поезда"},
+      {emoji:"🌈", label:"Цвета"}, {emoji:"🔢", label:"Цифры"}, {emoji:"🌟", label:"Звёзды"},
+    ]
+  },
+  uz: {
+    flag: "🇺🇿", name: "O'zbek", native: "O'zbek", dir: "ltr",
+    appName: "Birga o'rganamiz",
+    appTagline: "Har bir bola uchun o'quv do'sti",
+    langNext: "Davom etish →",
+    step1Title: "Farzandingiz haqida", step1Sub: "Biroz ma'lumot bering",
+    nameLabel: "Bolaning ismi", namePlaceholder: "mas. Idris",
+    ageLabel: "Yoshi",
+    diagnosisLabel: "Tashxis (ixtiyoriy)",
+    diagnoses: ["Yo'q / Qo'yilmagan", "ASD — Autizm", "ADHD", "Daun sindromi", "Nutq kechikishi", "Boshqa"],
+    step1Btn: "Keyingi →",
+    step2Title: "Tillar", step2Sub: "Oilangizda qaysi tillar gapiriladir?",
+    step2Btn: "Keyingi →",
+    step3Title: "Qiziqishlar", step3Sub: "Bolangiz nimani yaxshi ko'radi?",
+    step3Btn: "Keyingi →",
+    step4Title: "Oila", step4Sub: "Kim bola bilan o'ynaydi?",
+    doctorLabel: "Shifokor ismi (ixtiyoriy)",
+    step4Btn: "Profil yaratish 🎉",
+    successMsg: "Profil yaratildi! Ilova farzandingiz uchun sozlandi.",
+    startBtn: "O'rganishni boshlaymiz! 🚀",
+    profilesTitle: "Bugun kim o'rganadi?",
+    profilesLabel: "FARZANDLARINGIZ",
+    addChildLabel: "Boshqa bola qo'shish",
+    familyMembers: ["Ona","Ota","Bobo","Buvi","Singil","Aka","Tog'a","Xola"],
+    familyEmojis: ["👩","👨","👴","👵","👧","👦","👨‍🦱","👩‍🦱"],
+    interests: [
+      {emoji:"🚗", label:"Mashinalar"}, {emoji:"🦕", label:"Dinozavr"}, {emoji:"🎨", label:"Chizish"},
+      {emoji:"🎵", label:"Musiqa"}, {emoji:"🧩", label:"Boshqotirma"}, {emoji:"📚", label:"Kitoblar"},
+      {emoji:"🐾", label:"Hayvonlar"}, {emoji:"⚽", label:"Sport"}, {emoji:"🚂", label:"Poezd"},
+      {emoji:"🌈", label:"Ranglar"}, {emoji:"🔢", label:"Raqamlar"}, {emoji:"🌟", label:"Yulduzlar"},
+    ]
+  },
+  tg: {
+    flag: "🇹🇯", name: "Тоҷикӣ", native: "Тоҷикӣ", dir: "ltr",
+    appName: "Якҷоя меомӯзем",
+    appTagline: "Барномаи таълимӣ барои ҳар кӯдак",
+    langNext: "Идома →",
+    step1Title: "Дар бораи фарзандатон", step1Sub: "Каме маълумот диҳед",
+    nameLabel: "Номи кӯдак", namePlaceholder: "масалан Идрис",
+    ageLabel: "Синну сол",
+    diagnosisLabel: "Ташхис (ихтиёрӣ)",
+    diagnoses: ["Не / Гузошта нашудааст", "ASD — Аутизм", "ADHD", "Синдроми Даун", "Таъхири нутқ", "Дигар"],
+    step1Btn: "Баъдӣ →",
+    step2Title: "Забонҳо", step2Sub: "Оилаатон бо кадом забонҳо гап мезанад?",
+    step2Btn: "Баъдӣ →",
+    step3Title: "Шавқу ҳавас", step3Sub: "Фарзандатон чиро дӯст медорад?",
+    step3Btn: "Баъдӣ →",
+    step4Title: "Оила", step4Sub: "Бо кӣ бозӣ мекунад?",
+    doctorLabel: "Номи духтур (ихтиёрӣ)",
+    step4Btn: "Профил сохтан 🎉",
+    successMsg: "Профил сохта шуд! Барнома барои фарзандатон танзим шуд.",
+    startBtn: "Омӯхтанро оғоз кунем! 🚀",
+    profilesTitle: "Имрӯз кӣ меомӯзад?",
+    profilesLabel: "ФАРЗАНДОНИ ШУМО",
+    addChildLabel: "Кӯдаки дигар илова кардан",
+    familyMembers: ["Модар","Падар","Бобо","Момо","Хоҳар","Бародар","Амак","Холо"],
+    familyEmojis: ["👩","👨","👴","👵","👧","👦","👨‍🦱","👩‍🦱"],
+    interests: [
+      {emoji:"🚗", label:"Мошин"}, {emoji:"🦕", label:"Динозавр"}, {emoji:"🎨", label:"Расм"},
+      {emoji:"🎵", label:"Мусиқа"}, {emoji:"🧩", label:"Паззл"}, {emoji:"📚", label:"Китоб"},
+      {emoji:"🐾", label:"Ҳайвонот"}, {emoji:"⚽", label:"Варзиш"}, {emoji:"🚂", label:"Қатора"},
+      {emoji:"🌈", label:"Рангҳо"}, {emoji:"🔢", label:"Рақамҳо"}, {emoji:"🌟", label:"Ситора"},
+    ]
+  },
+  ar: {
+    flag: "🇸🇦", name: "العربية", native: "العربية", dir: "rtl",
+    appName: "نتعلم معاً",
+    appTagline: "رفيق تعليمي لكل طفل",
+    langNext: "← متابعة",
+    step1Title: "عن طفلك", step1Sub: "أخبرنا قليلاً عنه",
+    nameLabel: "اسم الطفل", namePlaceholder: "مثال: أحمد",
+    ageLabel: "العمر",
+    diagnosisLabel: "التشخيص (اختياري)",
+    diagnoses: ["لا يوجد / غير مشخص", "اضطراب طيف التوحد", "اضطراب نقص الانتباه", "متلازمة داون", "تأخر في الكلام", "أخرى"],
+    step1Btn: "← التالي",
+    step2Title: "اللغات", step2Sub: "ما هي لغات عائلتك؟",
+    step2Btn: "← التالي",
+    step3Title: "الاهتمامات", step3Sub: "ماذا يحب طفلك؟",
+    step3Btn: "← التالي",
+    step4Title: "العائلة", step4Sub: "من يلعب مع طفلك؟",
+    doctorLabel: "اسم الطبيب (اختياري)",
+    step4Btn: "إنشاء الملف 🎉",
+    successMsg: "تم إنشاء الملف! التطبيق الآن مخصص لطفلك.",
+    startBtn: "← لنبدأ التعلم! 🚀",
+    profilesTitle: "من يتعلم اليوم؟",
+    profilesLabel: "أطفالك",
+    addChildLabel: "إضافة طفل آخر",
+    familyMembers: ["الأم","الأب","الجد","الجدة","الأخت","الأخ","العم","الخالة"],
+    familyEmojis: ["👩","👨","👴","👵","👧","👦","👨‍🦱","👩‍🦱"],
+    interests: [
+      {emoji:"🚗", label:"سيارات"}, {emoji:"🦕", label:"ديناصور"}, {emoji:"🎨", label:"رسم"},
+      {emoji:"🎵", label:"موسيقى"}, {emoji:"🧩", label:"ألغاز"}, {emoji:"📚", label:"كتب"},
+      {emoji:"🐾", label:"حيوانات"}, {emoji:"⚽", label:"رياضة"}, {emoji:"🚂", label:"قطار"},
+      {emoji:"🌈", label:"ألوان"}, {emoji:"🔢", label:"أرقام"}, {emoji:"🌟", label:"نجوم"},
+    ]
+  },
+  es: {
+    flag: "🇪🇸", name: "Español", native: "Español", dir: "ltr",
+    appName: "Aprendemos juntos",
+    appTagline: "Un compañero de aprendizaje para cada niño",
+    langNext: "Continuar →",
+    step1Title: "Sobre tu hijo/a", step1Sub: "Cuéntanos un poco sobre él/ella",
+    nameLabel: "Nombre del niño/a", namePlaceholder: "p.ej. Miguel",
+    ageLabel: "Edad",
+    diagnosisLabel: "Diagnóstico (opcional)",
+    diagnoses: ["Ninguno / Sin diagnóstico", "TEA — Autismo", "TDAH", "Síndrome de Down", "Retraso del habla", "Otro"],
+    step1Btn: "Siguiente →",
+    step2Title: "Idiomas", step2Sub: "¿Qué idiomas habla tu familia?",
+    step2Btn: "Siguiente →",
+    step3Title: "Intereses", step3Sub: "¿Qué le gusta a tu hijo/a?",
+    step3Btn: "Siguiente →",
+    step4Title: "Familia", step4Sub: "¿Quién juega con tu hijo/a?",
+    doctorLabel: "Nombre del médico (opcional)",
+    step4Btn: "Crear perfil 🎉",
+    successMsg: "¡Perfil creado! La app está personalizada para tu hijo/a.",
+    startBtn: "¡Empecemos a aprender! 🚀",
+    profilesTitle: "¿Quién aprende hoy?",
+    profilesLabel: "TUS HIJOS",
+    addChildLabel: "Añadir otro niño",
+    familyMembers: ["Mamá","Papá","Abuelo","Abuela","Hermana","Hermano","Tío","Tía"],
+    familyEmojis: ["👩","👨","👴","👵","👧","👦","👨‍🦱","👩‍🦱"],
+    interests: [
+      {emoji:"🚗", label:"Coches"}, {emoji:"🦕", label:"Dinos"}, {emoji:"🎨", label:"Dibujar"},
+      {emoji:"🎵", label:"Música"}, {emoji:"🧩", label:"Puzzles"}, {emoji:"📚", label:"Libros"},
+      {emoji:"🐾", label:"Animales"}, {emoji:"⚽", label:"Deporte"}, {emoji:"🚂", label:"Trenes"},
+      {emoji:"🌈", label:"Colores"}, {emoji:"🔢", label:"Números"}, {emoji:"🌟", label:"Estrellas"},
+    ]
+  },
+  fr: {
+    flag: "🇫🇷", name: "Français", native: "Français", dir: "ltr",
+    appName: "Apprenons ensemble",
+    appTagline: "Un compagnon d'apprentissage pour chaque enfant",
+    langNext: "Continuer →",
+    step1Title: "À propos de votre enfant", step1Sub: "Dites-nous un peu sur lui/elle",
+    nameLabel: "Prénom de l'enfant", namePlaceholder: "ex. Lucas",
+    ageLabel: "Âge",
+    diagnosisLabel: "Diagnostic (optionnel)",
+    diagnoses: ["Aucun / Non diagnostiqué", "TSA — Autisme", "TDAH", "Trisomie 21", "Retard de langage", "Autre"],
+    step1Btn: "Suivant →",
+    step2Title: "Langues", step2Sub: "Quelles langues parle votre famille?",
+    step2Btn: "Suivant →",
+    step3Title: "Centres d'intérêt", step3Sub: "Qu'est-ce que votre enfant aime?",
+    step3Btn: "Suivant →",
+    step4Title: "Famille", step4Sub: "Qui joue avec votre enfant?",
+    doctorLabel: "Nom du médecin (optionnel)",
+    step4Btn: "Créer le profil 🎉",
+    successMsg: "Profil créé! L'app est maintenant personnalisée pour votre enfant.",
+    startBtn: "Commençons à apprendre! 🚀",
+    profilesTitle: "Qui apprend aujourd'hui?",
+    profilesLabel: "VOS ENFANTS",
+    addChildLabel: "Ajouter un autre enfant",
+    familyMembers: ["Maman","Papa","Grand-père","Grand-mère","Sœur","Frère","Oncle","Tante"],
+    familyEmojis: ["👩","👨","👴","👵","👧","👦","👨‍🦱","👩‍🦱"],
+    interests: [
+      {emoji:"🚗", label:"Voitures"}, {emoji:"🦕", label:"Dinos"}, {emoji:"🎨", label:"Dessin"},
+      {emoji:"🎵", label:"Musique"}, {emoji:"🧩", label:"Puzzles"}, {emoji:"📚", label:"Livres"},
+      {emoji:"🐾", label:"Animaux"}, {emoji:"⚽", label:"Sport"}, {emoji:"🚂", label:"Trains"},
+      {emoji:"🌈", label:"Couleurs"}, {emoji:"🔢", label:"Chiffres"}, {emoji:"🌟", label:"Étoiles"},
+    ]
+  }
+};
+
+const LANG_OPTIONS = [
+  { code:"en", flag:"🇬🇧", label:"English" },
+  { code:"ru", flag:"🇷🇺", label:"Русский" },
+  { code:"uz", flag:"🇺🇿", label:"O'zbek" },
+  { code:"tg", flag:"🇹🇯", label:"Тоҷикӣ" },
+  { code:"ar", flag:"🇸🇦", label:"العربية" },
+  { code:"es", flag:"🇪🇸", label:"Español" },
+  { code:"fr", flag:"🇫🇷", label:"Français" },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  uiLang: "en",
+  childName: "",
+  childAge: null,
+  diagnosis: "",
+  homeLangs: [],
+  interests: [],
+  family: [],
+  doctorName: "",
+  profiles: []
+};
+
+function L() { return LANGUAGES[state.uiLang]; }
+
+// ============================================================
+// SCREEN SYSTEM
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ============================================================
+// SCREEN 0 — LANGUAGE SELECT
+// ============================================================
+function renderLangGrid() {
+  const grid = document.getElementById('langGrid');
+  grid.innerHTML = LANG_OPTIONS.map(l => `
+    <div class="lang-card ${state.uiLang === l.code ? 'selected' : ''}"
+      onclick="selectUILang('${l.code}')">
+      <span class="lang-flag">${l.flag}</span>
+      <div class="lang-name">${l.label}</div>
+    </div>
+  `).join('');
+}
+
+function selectUILang(code) {
+  state.uiLang = code;
+  const lang = LANGUAGES[code];
+  // Set RTL
+  document.documentElement.dir = lang.dir;
+  document.documentElement.lang = code;
+  // Update text
+  document.getElementById('appName').textContent = lang.appName;
+  document.getElementById('appTagline').textContent = lang.appTagline;
+  document.getElementById('langNextLabel').textContent = lang.langNext;
+  document.getElementById('langNextBtn').disabled = false;
+  renderLangGrid();
+}
+
+function goToStep1() {
+  renderStep1();
+  showScreen('screen-step1');
+}
+
+// ============================================================
+// SCREEN 1 — NAME & AGE
+// ============================================================
+function renderStep1() {
+  const l = L();
+  document.getElementById('step1Title').textContent = l.step1Title;
+  document.getElementById('step1Sub').textContent = l.step1Sub;
+  document.getElementById('nameLabel').textContent = l.nameLabel;
+  document.getElementById('childName').placeholder = l.namePlaceholder;
+  document.getElementById('ageLabel').textContent = l.ageLabel;
+  document.getElementById('diagnosisLabel').textContent = l.diagnosisLabel;
+  document.getElementById('step1BtnLabel').textContent = l.step1Btn;
+
+  // Age grid 2-12
+  const ageGrid = document.getElementById('ageGrid');
+  ageGrid.innerHTML = Array.from({length:11}, (_,i) => i+2).map(age => `
+    <div class="age-btn ${state.childAge === age ? 'selected' : ''}"
+      onclick="selectAge(${age})">${age}</div>
+  `).join('');
+
+  // Diagnosis select
+  const sel = document.getElementById('diagnosis');
+  sel.innerHTML = l.diagnoses.map((d,i) => `<option value="${i}">${d}</option>`).join('');
+}
+
+function selectAge(age) {
+  state.childAge = age;
+  document.querySelectorAll('.age-btn').forEach(b => b.classList.remove('selected'));
+  event.target.classList.add('selected');
+  checkStep1();
+}
+
+function checkStep1() {
+  const name = document.getElementById('childName').value.trim();
+  state.childName = name;
+  document.getElementById('step1Btn').disabled = !(name.length > 0 && state.childAge);
+}
+
+function goToStep2() {
+  state.childName = document.getElementById('childName').value.trim();
+  state.diagnosis = document.getElementById('diagnosis').value;
+  renderStep2();
+  showScreen('screen-step2');
+}
+
+// ============================================================
+// SCREEN 2 — LANGUAGES
+// ============================================================
+function renderStep2() {
+  const l = L();
+  document.getElementById('step2Title').textContent = l.step2Title;
+  document.getElementById('step2Sub').textContent = l.step2Sub;
+  document.getElementById('step2BtnLabel').textContent = l.step2Btn;
+
+  const grid = document.getElementById('langTagsGrid');
+  grid.innerHTML = LANG_OPTIONS.map(lang => `
+    <div class="lang-tag ${state.homeLangs.includes(lang.code) ? 'selected' : ''}"
+      onclick="toggleLang('${lang.code}')">
+      <span>${lang.flag}</span>
+      <span>${lang.label}</span>
+    </div>
+  `).join('');
+}
+
+function toggleLang(code) {
+  if (state.homeLangs.includes(code)) {
+    state.homeLangs = state.homeLangs.filter(l => l !== code);
+  } else {
+    state.homeLangs.push(code);
+  }
+  renderStep2();
+}
+
+function goToStep3() {
+  renderStep3();
+  showScreen('screen-step3');
+}
+
+// ============================================================
+// SCREEN 3 — INTERESTS
+// ============================================================
+function renderStep3() {
+  const l = L();
+  document.getElementById('step3Title').textContent = l.step3Title;
+  document.getElementById('step3Sub').textContent = l.step3Sub;
+  document.getElementById('step3BtnLabel').textContent = l.step3Btn;
+
+  const grid = document.getElementById('interestGrid');
+  grid.innerHTML = l.interests.map((item, i) => `
+    <div class="interest-btn ${state.interests.includes(i) ? 'selected' : ''}"
+      onclick="toggleInterest(${i})">
+      <div class="interest-emoji">${item.emoji}</div>
+      <div class="interest-label">${item.label}</div>
+    </div>
+  `).join('');
+}
+
+function toggleInterest(i) {
+  if (state.interests.includes(i)) {
+    state.interests = state.interests.filter(x => x !== i);
+  } else {
+    state.interests.push(i);
+  }
+  renderStep3();
+}
+
+function goToStep4() {
+  renderStep4();
+  showScreen('screen-step4');
+}
+
+// ============================================================
+// SCREEN 4 — FAMILY
+// ============================================================
+function renderStep4() {
+  const l = L();
+  document.getElementById('step4Title').textContent = l.step4Title;
+  document.getElementById('step4Sub').textContent = l.step4Sub;
+  document.getElementById('doctorLabel').textContent = l.doctorLabel;
+  document.getElementById('step4BtnLabel').textContent = l.step4Btn;
+
+  const grid = document.getElementById('familyGrid');
+  grid.innerHTML = l.familyMembers.map((name, i) => `
+    <div class="family-member ${state.family.includes(i) ? 'selected' : ''}"
+      onclick="toggleFamily(${i})">
+      <span class="family-emoji-icon">${l.familyEmojis[i]}</span>
+      <div class="family-label">${name}</div>
+    </div>
+  `).join('');
+}
+
+function toggleFamily(i) {
+  if (state.family.includes(i)) {
+    state.family = state.family.filter(x => x !== i);
+  } else {
+    state.family.push(i);
+  }
+  renderStep4();
+}
+
+// ============================================================
+// SAVE PROFILE
+// ============================================================
+function saveProfile() {
+  const l = L();
+  state.doctorName = document.getElementById('doctorName').value.trim();
+
+  const profile = {
+    id: Date.now(),
+    name: state.childName,
+    age: state.childAge,
+    diagnosis: state.diagnosis,
+    uiLang: state.uiLang,
+    homeLangs: state.homeLangs.length > 0 ? state.homeLangs : [state.uiLang],
+    interests: state.interests,
+    family: state.family,
+    doctorName: state.doctorName,
+    avatar: getAvatar(state.interests),
+    createdAt: new Date().toISOString(),
+    stars: 0,
+    sessions: 0
+  };
+
+  // Load existing profiles
+  let profiles = [];
+  try { profiles = JSON.parse(localStorage.getItem('childProfiles') || '[]'); } catch {}
+  profiles.push(profile);
+  localStorage.setItem('childProfiles', JSON.stringify(profiles));
+  localStorage.setItem('activeProfileId', profile.id);
+
+  // Show success
+  document.getElementById('successEmoji').textContent = profile.avatar;
+  document.getElementById('successName').textContent = profile.name;
+  document.getElementById('successMsg').textContent = l.successMsg;
+  document.getElementById('startBtn').textContent = l.startBtn;
+  showScreen('screen-success');
+}
+
+function getAvatar(interests) {
+  const avatars = ['🦁','🐯','🐻','🐼','🦊','🐨','🐸','🦋','🌟','🚀'];
+  if (interests.includes(0)) return '🚗';
+  if (interests.includes(1)) return '🦕';
+  if (interests.includes(6)) return '🐾';
+  return avatars[Math.floor(Math.random() * avatars.length)];
+}
+
+function startApp() {
+  // In production: redirect to main app index.html
+  alert('✅ Profile saved! Redirecting to the learning app...\n\n(Connect to index.html here)');
+}
+
+// ============================================================
+// PROFILES SCREEN (returning user)
+// ============================================================
+function renderProfilesScreen() {
+  let profiles = [];
+  try { profiles = JSON.parse(localStorage.getItem('childProfiles') || '[]'); } catch {}
+
+  if (profiles.length === 0) {
+    showScreen('screen-lang');
+    return;
+  }
+
+  const list = document.getElementById('profilesList');
+  list.innerHTML = profiles.map(p => `
+    <div class="profile-item" onclick="selectProfile(${p.id})">
+      <div class="profile-avatar">${p.avatar}</div>
+      <div class="profile-info">
+        <div class="profile-name">${p.name}</div>
+        <div class="profile-detail">Age ${p.age} · ${LANGUAGES[p.uiLang]?.name || p.uiLang} · ⭐ ${p.stars}</div>
+      </div>
+      <div class="profile-arrow">›</div>
+    </div>
+  `).join('');
+
+  showScreen('screen-profiles');
+}
+
+function selectProfile(id) {
+  localStorage.setItem('activeProfileId', id);
+  alert('✅ Profile selected! Loading app for this child...');
+}
+
+function addNewChild() {
+  // Reset state
+  state.childName = ''; state.childAge = null;
+  state.homeLangs = []; state.interests = [];
+  state.family = []; state.doctorName = '';
+  showScreen('screen-lang');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  renderLangGrid();
+  // Check if returning user
+  let profiles = [];
+  try { profiles = JSON.parse(localStorage.getItem('childProfiles') || '[]'); } catch {}
+  if (profiles.length > 0) {
+    renderProfilesScreen();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
