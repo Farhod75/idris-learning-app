@@ -458,6 +458,9 @@ async function save(key: string, val: unknown) {
 ```
 
 ---
+## FP-018 | Onboarding | Age grid missing age 1
+Symptom: Youngest children (age 1) cannot be registered
+Fix: Array.from({length:12}, (_,i) => i+1) not i+2
 
 ## STATS
 | Source | Count | Most critical |

@@ -713,7 +713,7 @@ function renderStep1() {
 
   // Age grid 2-12
   const ageGrid = document.getElementById('ageGrid');
-  ageGrid.innerHTML = Array.from({length:11}, (_,i) => i+2).map(age => `
+  ageGrid.innerHTML = Array.from({length:12}, (_,i) => i+1).map(age => `
     <div class="age-btn ${state.childAge === age ? 'selected' : ''}"
       onclick="selectAge(${age})">${age}</div>
   `).join('');
