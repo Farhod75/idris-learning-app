@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FF6B35">
+<title>AAC — Communication Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF6B35; --coral: #FF8C61; --sun: #FFD700;
+    --sky: #4FC3F7; --mint: #4DB6AC; --green: #66BB6A;
+    --lavender: #9575CD; --pink: #F06292; --red: #EF5350;
+    --blue: #42A5F5; --bg: #FFF8F0; --text: #2D2D2D;
+    --touch: 72px; --radius: 20px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, var(--lavender), #7B5EA7);
+    padding: 16px 20px; border-radius: 0 0 28px 28px;
+    box-shadow: 0 4px 20px rgba(149,117,205,0.35);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-title { font-family: 'Baloo 2', cursive; font-size: 22px; font-weight: 800; color: white; }
+  .header-sub { font-size: 12px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+  .lang-pill {
+    background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.4);
+    border-radius: 20px; padding: 8px 14px; color: white;
+    font-weight: 700; font-size: 14px; cursor: pointer;
+    min-height: 44px; display: flex; align-items: center; gap: 6px;
+  }
+
+  /* CATEGORY TABS */
+  .cat-scroll {
+    display: flex; gap: 8px; overflow-x: auto; padding: 14px 16px 10px;
+    scrollbar-width: none;
+  }
+  .cat-scroll::-webkit-scrollbar { display: none; }
+  .cat-tab {
+    flex-shrink: 0; background: white; border-radius: 20px;
+    padding: 8px 16px; font-size: 13px; font-weight: 700;
+    cursor: pointer; border: 3px solid transparent;
+    transition: all 0.2s; white-space: nowrap;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    min-height: 44px; display: flex; align-items: center; gap: 6px;
+  }
+  .cat-tab.active { border-color: var(--lavender); background: #F3E5F5; color: var(--lavender); }
+  .cat-tab:active { transform: scale(0.95); }
+
+  /* AAC GRID */
+  .aac-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; padding: 12px 16px; padding-bottom: 100px;
+  }
+
+  /* AAC BUTTON */
+  .aac-btn {
+    background: white; border-radius: var(--radius);
+    padding: 16px 10px; text-align: center; cursor: pointer;
+    transition: all 0.15s; position: relative; overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    border: 3px solid transparent;
+    min-height: 110px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 8px;
+    -webkit-user-select: none; user-select: none;
+  }
+  .aac-btn:active { transform: scale(0.93); }
+  .aac-btn.speaking { border-color: var(--orange); background: #FFF3EE; }
+  .aac-btn.custom { border-color: var(--green); }
+
+  .aac-emoji { font-size: 44px; line-height: 1; display: block; }
+  .aac-label {
+    font-family: 'Baloo 2', cursive; font-size: 15px; font-weight: 700;
+    line-height: 1.2; color: var(--text);
+  }
+
+  /* Color coding by category */
+  .aac-btn.needs { background: #FFF8E1; }
+  .aac-btn.needs:active { background: #FFF3CD; }
+  .aac-btn.feelings { background: #FCE4EC; }
+  .aac-btn.feelings:active { background: #F8BBD0; }
+  .aac-btn.actions { background: #E8F5E9; }
+  .aac-btn.actions:active { background: #C8E6C9; }
+  .aac-btn.food { background: #FFF3E0; }
+  .aac-btn.food:active { background: #FFE0B2; }
+  .aac-btn.people { background: #E3F2FD; }
+  .aac-btn.people:active { background: #BBDEFB; }
+  .aac-btn.places { background: #F3E5F5; }
+  .aac-btn.places:active { background: #E1BEE7; }
+
+  /* SPEAKING ANIMATION */
+  .sound-wave {
+    position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 2px; align-items: flex-end; height: 14px;
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .aac-btn.speaking .sound-wave { opacity: 1; }
+  .wave-bar {
+    width: 3px; background: var(--orange); border-radius: 2px;
+    animation: wave 0.6s ease-in-out infinite;
+  }
+  .wave-bar:nth-child(1) { animation-delay: 0s; height: 6px; }
+  .wave-bar:nth-child(2) { animation-delay: 0.1s; height: 10px; }
+  .wave-bar:nth-child(3) { animation-delay: 0.2s; height: 14px; }
+  .wave-bar:nth-child(4) { animation-delay: 0.1s; height: 10px; }
+  .wave-bar:nth-child(5) { animation-delay: 0s; height: 6px; }
+  @keyframes wave { 0%,100%{transform:scaleY(0.5)} 50%{transform:scaleY(1)} }
+
+  /* LAST SPOKEN banner */
+  .last-spoken {
+    position: fixed; top: 100px; left: 50%; transform: translateX(-50%);
+    background: var(--lavender); color: white; border-radius: 20px;
+    padding: 10px 24px; font-size: 18px; font-weight: 700;
+    box-shadow: 0 4px 20px rgba(149,117,205,0.4);
+    opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    white-space: nowrap; z-index: 100;
+  }
+  .last-spoken.show { opacity: 1; }
+
+  /* ADD BUTTON */
+  .add-btn {
+    background: white; border-radius: var(--radius);
+    padding: 16px 10px; text-align: center; cursor: pointer;
+    border: 3px dashed #DDD; min-height: 110px;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 8px; transition: all 0.2s;
+  }
+  .add-btn:active { border-color: var(--green); background: #E8F5E9; }
+  .add-icon { font-size: 32px; color: #CCC; }
+  .add-label { font-size: 13px; font-weight: 700; color: #AAA; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+    align-items: flex-end; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: white; border-radius: 32px 32px 24px 24px;
+    padding: 28px; width: 100%; max-width: 420px;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:none} }
+  .modal-title {
+    font-family: 'Baloo 2', cursive; font-size: 20px; font-weight: 700;
+    color: var(--lavender); margin-bottom: 16px; text-align: center;
+  }
+  .modal-input {
+    width: 100%; border: 2px solid #EEE; border-radius: 14px;
+    padding: 14px 16px; font-size: 16px; font-family: 'Nunito', sans-serif;
+    outline: none; margin-bottom: 12px;
+  }
+  .modal-input:focus { border-color: var(--lavender); }
+  .emoji-picker {
+    display: grid; grid-template-columns: repeat(6, 1fr);
+    gap: 8px; margin-bottom: 16px;
+  }
+  .emoji-opt {
+    font-size: 28px; text-align: center; padding: 8px;
+    border-radius: 12px; cursor: pointer; border: 3px solid transparent;
+    transition: all 0.15s;
+  }
+  .emoji-opt:active, .emoji-opt.selected { border-color: var(--lavender); background: #F3E5F5; }
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-btn {
+    flex: 1; padding: 16px; border: none; border-radius: 16px;
+    font-size: 16px; font-weight: 700; font-family: 'Nunito', sans-serif;
+    cursor: pointer; min-height: var(--touch); transition: all 0.2s;
+  }
+  .modal-btn:active { transform: scale(0.97); }
+  .modal-btn.save { background: var(--lavender); color: white; }
+  .modal-btn.cancel { background: #F0F0F0; color: #666; }
+
+  /* LANG PICKER */
+  .lang-picker {
+    display: none; position: fixed; inset: 0; z-index: 300;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+    align-items: flex-end; justify-content: center; padding: 20px;
+  }
+  .lang-picker.active { display: flex; }
+  .lang-sheet {
+    background: white; border-radius: 32px 32px 24px 24px;
+    padding: 24px; width: 100%; max-width: 420px;
+  }
+  .lang-sheet-title {
+    font-family: 'Baloo 2', cursive; font-size: 20px; font-weight: 700;
+    text-align: center; color: var(--lavender); margin-bottom: 16px;
+  }
+  .lang-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .lang-opt {
+    background: #F5F0FF; border: 3px solid transparent; border-radius: 16px;
+    padding: 14px 10px; text-align: center; cursor: pointer;
+    transition: all 0.2s; min-height: 60px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .lang-opt.active { border-color: var(--lavender); background: #EDE7F6; }
+  .lang-opt:active { transform: scale(0.95); }
+
+  /* BOTTOM NAV placeholder */
+  .bottom-spacer { height: 80px; }
+</style>
+</head>
+<body>
+
+<!-- LAST SPOKEN BANNER -->
+<div class="last-spoken" id="lastSpoken"></div>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="header-title">💬 Talk Board</div>
+    <div class="header-sub" id="headerSub">Tap a picture to speak</div>
+  </div>
+  <div class="lang-pill" onclick="showLangPicker()">
+    <span id="currentFlag">🇬🇧</span>
+    <span id="currentLangShort">EN</span>
+  </div>
+</div>
+
+<!-- CATEGORY TABS -->
+<div class="cat-scroll" id="catScroll"></div>
+
+<!-- AAC GRID -->
+<div class="aac-grid" id="aacGrid"></div>
+
+<!-- ADD CUSTOM BUTTON MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title">➕ Add your own button</div>
+    <input class="modal-input" id="newLabel" placeholder="Word (e.g. TRAIN)" maxlength="20">
+    <div style="font-size:13px;font-weight:700;color:#888;margin-bottom:8px">Pick an emoji:</div>
+    <div class="emoji-picker" id="emojiPicker"></div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeAddModal()">Cancel</button>
+      <button class="modal-btn save" onclick="saveCustomBtn()">Save ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- LANGUAGE PICKER -->
+<div class="lang-picker" id="langPicker" onclick="closeLangPicker()">
+  <div class="lang-sheet" onclick="event.stopPropagation()">
+    <div class="lang-sheet-title">🌍 Choose language</div>
+    <div class="lang-opts" id="langOpts"></div>
+    <button onclick="closeLangPicker()" style="width:100%;margin-top:14px;padding:16px;border:none;border-radius:16px;background:#F0F0F0;font-size:16px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif">Close</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// AAC DATA — multilingual
+// ============================================================
+const LANGS = {
+  en: { flag:"🇬🇧", short:"EN", name:"English",
+    sub: "Tap a picture to speak",
+    categories: ["All","Needs","Feelings","Actions","Food","People","Places"],
+    addLabel: "Add button",
+  },
+  ru: { flag:"🇷🇺", short:"RU", name:"Русский",
+    sub: "Нажми на картинку — и прозвучит слово",
+    categories: ["Все","Нужды","Чувства","Действия","Еда","Люди","Места"],
+    addLabel: "Добавить",
+  },
+  uz: { flag:"🇺🇿", short:"UZ", name:"O'zbek",
+    sub: "Rasmga bosing — so'z aytiladi",
+    categories: ["Hammasi","Ehtiyoj","His","Harakat","Ovqat","Odamlar","Joylar"],
+    addLabel: "Qo'shish",
+  },
+  tg: { flag:"🇹🇯", short:"TG", name:"Тоҷикӣ",
+    sub: "Акро пахш кун — калима мегӯяд",
+    categories: ["Ҳама","Ниёзҳо","Эҳсосот","Амалҳо","Хӯрок","Одамон","Ҷойҳо"],
+    addLabel: "Илова кардан",
+  },
+  ar: { flag:"🇸🇦", short:"AR", name:"العربية",
+    sub: "اضغط على الصورة للتحدث",
+    categories: ["الكل","الاحتياجات","المشاعر","الأفعال","الطعام","الأشخاص","الأماكن"],
+    addLabel: "إضافة",
+  },
+  es: { flag:"🇪🇸", short:"ES", name:"Español",
+    sub: "Toca una imagen para hablar",
+    categories: ["Todo","Necesidades","Sentimientos","Acciones","Comida","Personas","Lugares"],
+    addLabel: "Agregar",
+  },
+  fr: { flag:"🇫🇷", short:"FR", name:"Français",
+    sub: "Touche une image pour parler",
+    categories: ["Tout","Besoins","Émotions","Actions","Nourriture","Personnes","Lieux"],
+    addLabel: "Ajouter",
+  },
+};
+
+// AAC buttons — each has label per language
+const AAC_BUTTONS = [
+  // NEEDS
+  { id:"eat",      emoji:"🍎", cat:"needs",   en:"EAT",      ru:"ЕСТЬ",     uz:"YE",       tg:"ХӮР",      ar:"أكل",     es:"COMER",    fr:"MANGER" },
+  { id:"drink",    emoji:"💧", cat:"needs",   en:"DRINK",    ru:"ПИТЬ",     uz:"ICH",      tg:"НӮШ",      ar:"اشرب",    es:"BEBER",    fr:"BOIRE" },
+  { id:"bathroom", emoji:"🚽", cat:"needs",   en:"BATHROOM", ru:"ТУАЛЕТ",   uz:"HOJAT",    tg:"ҲОҶАТХОНА", ar:"حمام",   es:"BAÑO",     fr:"TOILETTE" },
+  { id:"sleep",    emoji:"😴", cat:"needs",   en:"SLEEP",    ru:"СПАТЬ",    uz:"UXLA",     tg:"ХОБ",      ar:"نوم",     es:"DORMIR",   fr:"DORMIR" },
+  { id:"hurt",     emoji:"🤒", cat:"needs",   en:"HURT",     ru:"БОЛЬНО",   uz:"OG'RIQ",   tg:"ДАД",      ar:"أتألم",   es:"DUELE",    fr:"MAL" },
+  { id:"help",     emoji:"🙋", cat:"needs",   en:"HELP",     ru:"ПОМОГИТЕ", uz:"YORDAM",   tg:"КӮМАК",    ar:"مساعدة",  es:"AYUDA",    fr:"AIDE" },
+  // FEELINGS
+  { id:"happy",    emoji:"😊", cat:"feelings", en:"HAPPY",   ru:"РАДОСТЬ",  uz:"XURSAND",  tg:"ХУРСАНД",  ar:"سعيد",    es:"FELIZ",    fr:"HEUREUX" },
+  { id:"sad",      emoji:"😢", cat:"feelings", en:"SAD",     ru:"ГРУСТНО",  uz:"XAFA",     tg:"ДАМ",      ar:"حزين",    es:"TRISTE",   fr:"TRISTE" },
+  { id:"scared",   emoji:"😨", cat:"feelings", en:"SCARED",  ru:"СТРАШНО",  uz:"QOʻRQAMAN",tg:"МЕТАРСАМ", ar:"خائف",    es:"MIEDO",    fr:"PEUR" },
+  { id:"angry",    emoji:"😠", cat:"feelings", en:"ANGRY",   ru:"ЗЛОЙ",     uz:"JAHL",     tg:"ХАШМ",     ar:"غاضب",    es:"ENOJADO",  fr:"EN COLÈRE" },
+  { id:"tired",    emoji:"😪", cat:"feelings", en:"TIRED",   ru:"УСТАЛ",    uz:"CHARCHAD", tg:"ХАСТА",    ar:"متعب",    es:"CANSADO",  fr:"FATIGUÉ" },
+  { id:"hug",      emoji:"🤗", cat:"feelings", en:"HUG",     ru:"ОБНЯТЬ",   uz:"QUCHOQ",   tg:"БӮСА",     ar:"احضان",   es:"ABRAZO",   fr:"CÂLIN" },
+  // ACTIONS
+  { id:"play",     emoji:"🎮", cat:"actions",  en:"PLAY",    ru:"ИГРАТЬ",   uz:"OʻYNA",    tg:"БОЗӢ",     ar:"العب",    es:"JUGAR",    fr:"JOUER" },
+  { id:"stop",     emoji:"✋", cat:"actions",  en:"STOP",    ru:"СТОП",     uz:"TOʻXTA",   tg:"ИСТ",      ar:"توقف",    es:"PARA",     fr:"STOP" },
+  { id:"more",     emoji:"➕", cat:"actions",  en:"MORE",    ru:"ЕЩЁ",      uz:"YANA",     tg:"БОЗ",      ar:"المزيد",  es:"MÁS",      fr:"ENCORE" },
+  { id:"go",       emoji:"🚶", cat:"actions",  en:"GO",      ru:"ИДЁМ",     uz:"BORA",     tg:"РАВ",      ar:"اذهب",    es:"IR",       fr:"ALLER" },
+  { id:"music",    emoji:"🎵", cat:"actions",  en:"MUSIC",   ru:"МУЗЫКА",   uz:"MUSIQA",   tg:"МУСИҚА",   ar:"موسيقى",  es:"MÚSICA",   fr:"MUSIQUE" },
+  { id:"read",     emoji:"📖", cat:"actions",  en:"READ",    ru:"ЧИТАТЬ",   uz:"OʻQI",     tg:"ХОН",      ar:"اقرأ",    es:"LEER",     fr:"LIRE" },
+  // FOOD
+  { id:"apple",    emoji:"🍎", cat:"food",     en:"APPLE",   ru:"ЯБЛОКО",   uz:"OLMA",     tg:"СЕБ",      ar:"تفاح",    es:"MANZANA",  fr:"POMME" },
+  { id:"water",    emoji:"💧", cat:"food",     en:"WATER",   ru:"ВОДА",     uz:"SUV",      tg:"ОБ",       ar:"ماء",     es:"AGUA",     fr:"EAU" },
+  { id:"milk",     emoji:"🥛", cat:"food",     en:"MILK",    ru:"МОЛОКО",   uz:"SUT",      tg:"ШИР",      ar:"حليب",    es:"LECHE",    fr:"LAIT" },
+  { id:"bread",    emoji:"🍞", cat:"food",     en:"BREAD",   ru:"ХЛЕБ",     uz:"NON",      tg:"НОН",      ar:"خبز",     es:"PAN",      fr:"PAIN" },
+  { id:"fruit",    emoji:"🍇", cat:"food",     en:"FRUIT",   ru:"ФРУКТЫ",   uz:"MEVA",     tg:"МЕВА",     ar:"فاكهة",   es:"FRUTA",    fr:"FRUIT" },
+  { id:"sweet",    emoji:"🍬", cat:"food",     en:"SWEET",   ru:"СЛАДКОЕ",  uz:"SHIRINLIK",tg:"ШИРИНӢ",   ar:"حلوى",    es:"DULCE",    fr:"BONBON" },
+  // PEOPLE
+  { id:"mama",     emoji:"👩", cat:"people",   en:"MAMA",    ru:"МАМА",     uz:"ONA",      tg:"МОДАР",    ar:"ماما",    es:"MAMÁ",     fr:"MAMAN" },
+  { id:"papa",     emoji:"👨", cat:"people",   en:"PAPA",    ru:"ПАПА",     uz:"OTA",      tg:"ПАДАР",    ar:"بابا",    es:"PAPÁ",     fr:"PAPA" },
+  { id:"grandma",  emoji:"👵", cat:"people",   en:"GRANDMA", ru:"БАБУШКА",  uz:"BUVI",     tg:"МОМО",     ar:"جدة",     es:"ABUELA",   fr:"MAMIE" },
+  { id:"grandpa",  emoji:"👴", cat:"people",   en:"GRANDPA", ru:"ДЕДУШКА",  uz:"BOBO",     tg:"БОБО",     ar:"جد",      es:"ABUELO",   fr:"PAPI" },
+  { id:"friend",   emoji:"👫", cat:"people",   en:"FRIEND",  ru:"ДРУГ",     uz:"DOʻST",    tg:"ДӮСТ",     ar:"صديق",    es:"AMIGO",    fr:"AMI" },
+  { id:"teacher",  emoji:"👩‍🏫",cat:"people",   en:"TEACHER", ru:"УЧИТЕЛЬ",  uz:"OʻQITUVCHI",tg:"МУАЛЛИМ", ar:"معلم",   es:"MAESTRO",  fr:"PROF" },
+  // PLACES
+  { id:"home",     emoji:"🏠", cat:"places",   en:"HOME",    ru:"ДОМ",      uz:"UY",       tg:"ХОН",      ar:"بيت",     es:"CASA",     fr:"MAISON" },
+  { id:"school",   emoji:"🏫", cat:"places",   en:"SCHOOL",  ru:"ШКОЛА",    uz:"MAKTAB",   tg:"МАКТАБ",   ar:"مدرسة",   es:"ESCUELA",  fr:"ÉCOLE" },
+  { id:"park",     emoji:"🌳", cat:"places",   en:"PARK",    ru:"ПАРК",     uz:"PARK",     tg:"БОҒ",      ar:"حديقة",   es:"PARQUE",   fr:"PARC" },
+  { id:"car",      emoji:"🚗", cat:"places",   en:"CAR",     ru:"МАШИНА",   uz:"MASHINA",  tg:"МОШИН",    ar:"سيارة",   es:"CARRO",    fr:"VOITURE" },
+  { id:"outside",  emoji:"🌤️", cat:"places",   en:"OUTSIDE", ru:"ГУЛЯТЬ",   uz:"TASHQARI", tg:"БЕРУН",    ar:"خارج",    es:"AFUERA",   fr:"DEHORS" },
+  { id:"store",    emoji:"🛒", cat:"places",   en:"STORE",   ru:"МАГАЗИН",  uz:"DO'KON",   tg:"ДӮКОН",    ar:"متجر",    es:"TIENDA",   fr:"MAGASIN" },
+];
+
+const EMOJI_OPTIONS = ["🚂","🚗","🐱","🐟","🦕","🌟","⭐","🎨","🎵","🏀","⚽","🧩","📚","🍕","🍦","🧁","🎁","🌈","🌙","☀️","🐶","🐸","🦋","🌺"];
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  lang: "en",
+  activeCat: "all",
+  customBtns: [],
+  selectedEmoji: "🌟",
+  speakingId: null,
+};
+
+// Load custom buttons from localStorage
+try { state.customBtns = JSON.parse(localStorage.getItem('aac-custom') || '[]'); } catch {}
+
+// ============================================================
+// RENDER
+// ============================================================
+function L() { return LANGS[state.lang]; }
+
+function render() {
+  const l = L();
+  document.getElementById('headerSub').textContent = l.sub;
+  document.getElementById('currentFlag').textContent = l.flag;
+  document.getElementById('currentLangShort').textContent = l.short;
+  renderCats();
+  renderGrid();
+  renderLangOpts();
+}
+
+function renderCats() {
+  const l = L();
+  const catKeys = ["all","needs","feelings","actions","food","people","places"];
+  const el = document.getElementById('catScroll');
+  el.innerHTML = catKeys.map((key, i) => `
+    <div class="cat-tab ${state.activeCat === key ? 'active' : ''}"
+      onclick="setCategory('${key}')">
+      ${getCatEmoji(key)} ${l.categories[i]}
+    </div>
+  `).join('');
+}
+
+function getCatEmoji(cat) {
+  const map = { all:"🔤", needs:"⭐", feelings:"❤️", actions:"🤸", food:"🍎", people:"👨‍👩‍👧", places:"🏠" };
+  return map[cat] || "🔤";
+}
+
+function setCategory(cat) {
+  state.activeCat = cat;
+  renderCats();
+  renderGrid();
+}
+
+function renderGrid() {
+  const l = L();
+  const lang = state.lang;
+
+  // Filter buttons by category
+  let buttons = AAC_BUTTONS.filter(b =>
+    state.activeCat === "all" || b.cat === state.activeCat
+  );
+
+  // Add custom buttons
+  let customs = state.customBtns.filter(b =>
+    state.activeCat === "all" || b.cat === state.activeCat
+  );
+
+  const el = document.getElementById('aacGrid');
+  el.innerHTML = buttons.map(b => `
+    <div class="aac-btn ${b.cat} ${state.speakingId === b.id ? 'speaking' : ''}"
+      onclick="speak('${b.id}', '${b[lang] || b.en}', '${b.emoji}')">
+      <span class="aac-emoji">${b.emoji}</span>
+      <div class="aac-label">${b[lang] || b.en}</div>
+      <div class="sound-wave">
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+      </div>
+    </div>
+  `).join('') +
+
+  customs.map((b, i) => `
+    <div class="aac-btn custom ${state.speakingId === 'custom-'+i ? 'speaking' : ''}"
+      onclick="speak('custom-${i}', '${b.label}', '${b.emoji}')"
+      onlongpress="removeCustom(${i})">
+      <span class="aac-emoji">${b.emoji}</span>
+      <div class="aac-label">${b.label}</div>
+      <div class="sound-wave">
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+      </div>
+    </div>
+  `).join('') +
+
+  // Add button
+  `<div class="add-btn" onclick="showAddModal()">
+    <div class="add-icon">➕</div>
+    <div class="add-label">${l.addLabel}</div>
+  </div>`;
+}
+
+// ============================================================
+// SPEAK
+// ============================================================
+function speak(id, word, emoji) {
+  if (!word) return;
+
+  // Visual feedback
+  state.speakingId = id;
+  renderGrid();
+  setTimeout(() => { state.speakingId = null; renderGrid(); }, 1800);
+
+  // Banner
+  const banner = document.getElementById('lastSpoken');
+  banner.textContent = emoji + ' ' + word;
+  banner.classList.add('show');
+  setTimeout(() => banner.classList.remove('show'), 2000);
+
+  // TTS
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+
+  const langMap = { en:'en-US', ru:'ru-RU', uz:'uz-UZ', tg:'ru-RU', ar:'ar-SA', es:'es-ES', fr:'fr-FR' };
+  const utt = new SpeechSynthesisUtterance(word);
+  utt.lang = langMap[state.lang] || 'en-US';
+  utt.rate = 0.8;
+  utt.pitch = 1.1;
+  utt.volume = 1.0;
+
+  // Pick child-friendly voice if available
+  const voices = speechSynthesis.getVoices();
+  const match = voices.find(v => v.lang.startsWith(utt.lang.split('-')[0]));
+  if (match) utt.voice = match;
+
+  window.speechSynthesis.speak(utt);
+}
+
+// ============================================================
+// ADD CUSTOM BUTTON
+// ============================================================
+function showAddModal() {
+  state.selectedEmoji = '🌟';
+  document.getElementById('newLabel').value = '';
+  renderEmojiPicker();
+  document.getElementById('addModal').classList.add('active');
+}
+
+function closeAddModal() {
+  document.getElementById('addModal').classList.remove('active');
+}
+
+function renderEmojiPicker() {
+  const el = document.getElementById('emojiPicker');
+  el.innerHTML = EMOJI_OPTIONS.map(e => `
+    <div class="emoji-opt ${state.selectedEmoji === e ? 'selected' : ''}"
+      onclick="selectEmoji('${e}')">${e}</div>
+  `).join('');
+}
+
+function selectEmoji(e) {
+  state.selectedEmoji = e;
+  renderEmojiPicker();
+}
+
+function saveCustomBtn() {
+  const label = document.getElementById('newLabel').value.trim().toUpperCase();
+  if (!label) return;
+
+  state.customBtns.push({
+    label,
+    emoji: state.selectedEmoji,
+    cat: state.activeCat === 'all' ? 'needs' : state.activeCat
+  });
+
+  try { localStorage.setItem('aac-custom', JSON.stringify(state.customBtns)); } catch {}
+  closeAddModal();
+  renderGrid();
+}
+
+function removeCustom(i) {
+  if (confirm('Remove this button?')) {
+    state.customBtns.splice(i, 1);
+    try { localStorage.setItem('aac-custom', JSON.stringify(state.customBtns)); } catch {}
+    renderGrid();
+  }
+}
+
+// ============================================================
+// LANGUAGE
+// ============================================================
+function showLangPicker() { document.getElementById('langPicker').classList.add('active'); }
+function closeLangPicker() { document.getElementById('langPicker').classList.remove('active'); }
+
+function renderLangOpts() {
+  const el = document.getElementById('langOpts');
+  el.innerHTML = Object.keys(LANGS).map(k => `
+    <div class="lang-opt ${state.lang === k ? 'active' : ''}" onclick="setLang('${k}')">
+      <div style="font-size:24px">${LANGS[k].flag}</div>
+      <div style="font-weight:700;font-size:13px;margin-top:4px">${LANGS[k].name}</div>
+    </div>
+  `).join('');
+}
+
+function setLang(lang) {
+  state.lang = lang;
+  closeLangPicker();
+  render();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.speechSynthesis?.getVoices();
+speechSynthesis?.addEventListener?.('voiceschanged', () => speechSynthesis.getVoices());
+render();
+</script>
+</body>
+</html>
