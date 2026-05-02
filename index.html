@@ -130,9 +130,9 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 .mode-card.aac::before{background:var(--sky)}
 .mode-card.voice::before{background:var(--pink)}
 .mode-card:active{transform:scale(.96)}
-.mode-icon{font-size:44px;line-height:1}
-.mode-name{font-family:'Baloo 2',cursive;font-size:16px;font-weight:700}
-.mode-desc{font-size:11px;color:#888}
+.mode-icon{font-size:44px;line-height:1;position:relative}
+.mode-name{font-family:'Baloo 2',cursive;font-size:16px;font-weight:700;position:relative}
+.mode-desc{font-size:11px;color:#888;position:relative}
 
 /* ═══════════════════════════════════════════
    GAME SCREENS
@@ -558,14 +558,6 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
         <div class="song-nm" id="rSongNm">The Wheels on the Bus</div>
       </div>
     </div>
-    <div class="cartoon-strip" onclick="openCartoon()">
-      <div style="font-size:32px">📺</div>
-      <div style="flex:1;text-align:left">
-        <div style="font-size:11px;font-weight:700;color:#1565C0;text-transform:uppercase" id="rCartLbl">Watch reward!</div>
-        <div style="font-family:'Baloo 2',cursive;font-size:15px;font-weight:700;color:#0D47A1" id="rCartNm">Ms. Rachel</div>
-      </div>
-      <div style="font-size:18px;color:#90CAF9">▶</div>
-    </div>
     <button class="continue-btn" id="rContinueBtn" onclick="closeReward()">Keep going! 🚀</button>
   </div>
 </div>
@@ -854,10 +846,10 @@ const AAC_DATA = [
 const PROFILE_DATA = {
   songs:["The Wheels on the Bus","One Little Finger","If You're Happy and You Know It"],
   cartoons:[
-    {name:"Ms. Rachel",emoji:"👩‍🏫",url:"https://www.youtube.com/results?search_query=ms+rachel+for+toddlers"},
-    {name:"Super Simple Songs",emoji:"🎵",url:"https://www.youtube.com/results?search_query=super+simple+songs+kids"},
-    {name:"Lucas and Friends",emoji:"🚌",url:"https://www.youtube.com/results?search_query=lucas+and+friends+RV"},
-    {name:"Tom and Jerry",emoji:"🐭",url:"https://www.youtube.com/results?search_query=tom+and+jerry+cartoon"},
+    {name:"Ms. Rachel",emoji:"👩‍🏫"},
+    {name:"Super Simple Songs",emoji:"🎵"},
+    {name:"Lucas and Friends",emoji:"🚌"},
+    {name:"Tom and Jerry",emoji:"🐭"},
   ],
 };
 
@@ -873,7 +865,7 @@ let S = {
   speakIdx:0, challengeIdx:0,
   aacCat:"all", timerInt:null,
   actDots:[], actDone:0,
-  currentCartoon:null, currentProfile:null,
+  currentProfile:null,
   profiles:[],
 };
 
@@ -1112,7 +1104,7 @@ function renderAACQuick(){
 // ═══════════════════════════════════════════
 function openGame(type){
   const map={count:'game-count',speak:'game-speak',match:'game-match',family:'game-family',aac:'game-aac'};
-  if(type==='voice'){window.open('idris-voice-module.html','_blank');return;}
+  if(type==='voice'){window.location.href='idris-voice-module.html';return;}
   const scrId=map[type];if(!scrId)return;
   if(type==='count')startCount();
   else if(type==='speak')startSpeak();
@@ -1317,8 +1309,6 @@ function triggerReward(taskType){
   const title=l.celebrate[Math.floor(Math.random()*l.celebrate.length)];
   const act=l.activities[Math.floor(Math.random()*l.activities.length)];
   const song=PROFILE_DATA.songs[Math.floor(Math.random()*PROFILE_DATA.songs.length)];
-  const cartoon=PROFILE_DATA.cartoons[Math.floor(Math.random()*PROFILE_DATA.cartoons.length)];
-  S.currentCartoon=cartoon;
   document.getElementById('rEmoji').textContent=TASK_EMOJIS[taskType]||'🎉';
   document.getElementById('rTitle').textContent=title;
   document.getElementById('rContinueBtn').textContent=l.continue_btn;
@@ -1326,8 +1316,6 @@ function triggerReward(taskType){
   document.getElementById('rActTxt').textContent=act.t;
   document.getElementById('rSongLbl').textContent=l.song_lbl;
   document.getElementById('rSongNm').textContent=song;
-  document.getElementById('rCartLbl').textContent=l.cart_lbl;
-  document.getElementById('rCartNm').textContent=cartoon.emoji+' '+cartoon.name;
   document.getElementById('rStars').innerHTML=Array(sc).fill('<span class="earn-star">⭐</span>').join('');
   S.actDone=0;S.actDots=Array(act.c).fill(false);
   document.getElementById('rActDots').innerHTML=S.actDots.map((_,i)=>`<div class="act-dot" onclick="tapDot(${i})"></div>`).join('');
@@ -1357,7 +1345,7 @@ function startTimer(sec){
   S.timerInt=setInterval(()=>{rem-=.1;bar.style.width=(rem/sec*100)+'%';if(rem<=0){clearInterval(S.timerInt);closeReward();}},100);
 }
 function closeReward(){clearInterval(S.timerInt);document.getElementById('rewardOverlay').classList.remove('active');}
-function openCartoon(){if(!document.getElementById('rewardOverlay').classList.contains('active'))return;window.location.href='video-reward.html?tasks='+S.totalStars+'&stars='+S.totalStars;}
+function openVideoReward(){window.location.href='video-reward.html?tasks='+S.totalStars+'&stars='+S.totalStars;}
 
 // ═══════════════════════════════════════════
 // STARS
