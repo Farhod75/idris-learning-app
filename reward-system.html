@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FF6B35">
+<title>Reward System — Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF6B35; --coral: #FF8C61; --sun: #FFD700;
+    --green: #66BB6A; --sky: #4FC3F7; --lavender: #9575CD;
+    --pink: #F06292; --bg: #FFF8F0; --text: #2D2D2D;
+    --touch: 72px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ============ DEMO TRIGGER SCREEN ============ */
+  .demo-screen {
+    padding: 24px; text-align: center;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 16px; min-height: 100vh; justify-content: center;
+  }
+  .demo-title { font-family: 'Baloo 2', cursive; font-size: 26px; font-weight: 800; color: var(--orange); }
+  .demo-sub { font-size: 15px; color: #888; margin-bottom: 8px; }
+  .demo-btn {
+    width: 100%; max-width: 360px; padding: 20px; border: none;
+    border-radius: 20px; font-size: 18px; font-weight: 800;
+    font-family: 'Nunito', sans-serif; cursor: pointer;
+    min-height: var(--touch); transition: all 0.2s;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  }
+  .demo-btn:active { transform: scale(0.96); }
+  .btn-count  { background: linear-gradient(135deg, #66BB6A, #43A047); color: white; }
+  .btn-speak  { background: linear-gradient(135deg, #FF6B35, #FF8C61); color: white; }
+  .btn-match  { background: linear-gradient(135deg, #9575CD, #7B1FA2); color: white; }
+  .btn-family { background: linear-gradient(135deg, #FFD700, #FFA000); color: white; }
+  .btn-aac    { background: linear-gradient(135deg, #4FC3F7, #0288D1); color: white; }
+
+  /* ============ REWARD OVERLAY ============ */
+  .reward-overlay {
+    display: none; position: fixed; inset: 0; z-index: 999;
+    align-items: center; justify-content: center;
+    flex-direction: column; padding: 24px;
+    background: radial-gradient(circle at center, #FF6B35 0%, #FF4500 100%);
+    overflow: hidden;
+  }
+  .reward-overlay.active { display: flex; }
+
+  /* CONFETTI */
+  .confetti-wrap {
+    position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+  }
+  .confetti-piece {
+    position: absolute; width: 12px; height: 12px; border-radius: 2px;
+    animation: confettiFall linear infinite;
+  }
+  @keyframes confettiFall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* STARS BURST */
+  .stars-burst {
+    position: absolute; inset: 0; pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .burst-star {
+    position: absolute; font-size: 28px;
+    animation: burstOut 0.8s ease-out forwards;
+  }
+  @keyframes burstOut {
+    0%   { transform: translate(0,0) scale(0); opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(1); opacity: 0; }
+  }
+
+  /* REWARD CARD */
+  .reward-card {
+    background: white; border-radius: 32px; padding: 28px 24px;
+    width: 100%; max-width: 380px; text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: cardPop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    position: relative; z-index: 2;
+  }
+  @keyframes cardPop {
+    from { transform: scale(0.5) rotate(-5deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  /* REWARD TYPE BADGE */
+  .reward-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--sun); color: #333; border-radius: 20px;
+    padding: 6px 16px; font-size: 13px; font-weight: 800;
+    margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  .reward-emoji { font-size: 80px; display: block; margin-bottom: 12px; animation: bounce 0.6s ease infinite alternate; }
+  @keyframes bounce { from { transform: scale(1); } to { transform: scale(1.12); } }
+
+  .reward-title {
+    font-family: 'Baloo 2', cursive; font-size: 32px; font-weight: 800;
+    color: var(--orange); margin-bottom: 6px;
+  }
+  .reward-subtitle { font-size: 16px; color: #666; margin-bottom: 20px; line-height: 1.4; }
+
+  /* STARS ROW */
+  .stars-row {
+    display: flex; justify-content: center; gap: 8px; margin-bottom: 20px;
+  }
+  .reward-star {
+    font-size: 32px;
+    animation: starPop 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  .reward-star:nth-child(1) { animation-delay: 0.1s; }
+  .reward-star:nth-child(2) { animation-delay: 0.2s; }
+  .reward-star:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes starPop { from{transform:scale(0) rotate(-30deg)} to{transform:scale(1) rotate(0)} }
+
+  /* PHYSICAL ACTIVITY */
+  .activity-box {
+    background: linear-gradient(135deg, #E8F5E9, #F1F8E9);
+    border-radius: 18px; padding: 16px; margin-bottom: 16px;
+    border: 2px solid #C8E6C9;
+  }
+  .activity-title { font-size: 13px; font-weight: 700; color: #558B2F; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .activity-text { font-family: 'Baloo 2', cursive; font-size: 22px; font-weight: 700; color: #2E7D32; }
+  .activity-count { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+  .count-dot { width: 18px; height: 18px; border-radius: 50%; background: #C8E6C9; border: 2px solid #81C784; transition: all 0.3s; }
+  .count-dot.done { background: var(--green); border-color: #388E3C; transform: scale(1.2); }
+
+  /* SONG BOX */
+  .song-box {
+    background: linear-gradient(135deg, #FFF8E1, #FFF3E0);
+    border-radius: 18px; padding: 14px 16px; margin-bottom: 16px;
+    border: 2px solid #FFE082; display: flex; align-items: center; gap: 12px;
+  }
+  .song-icon { font-size: 32px; animation: spin 3s linear infinite; }
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  .song-text { text-align: left; }
+  .song-label { font-size: 11px; font-weight: 700; color: #F57F17; text-transform: uppercase; }
+  .song-name { font-family: 'Baloo 2', cursive; font-size: 17px; font-weight: 700; color: #E65100; }
+
+  /* CARTOON BOX */
+  .cartoon-box {
+    background: linear-gradient(135deg, #E3F2FD, #EDE7F6);
+    border-radius: 18px; padding: 14px 16px; margin-bottom: 20px;
+    border: 2px solid #B3E5FC; display: flex; align-items: center; gap: 12px;
+    cursor: pointer; transition: transform 0.2s;
+  }
+  .cartoon-box:active { transform: scale(0.97); }
+  .cartoon-icon { font-size: 36px; }
+  .cartoon-text { text-align: left; flex: 1; }
+  .cartoon-label { font-size: 11px; font-weight: 700; color: #1565C0; text-transform: uppercase; }
+  .cartoon-name { font-family: 'Baloo 2', cursive; font-size: 16px; font-weight: 700; color: #0D47A1; }
+  .cartoon-arrow { font-size: 20px; color: #90CAF9; }
+
+  /* CONTINUE BUTTON */
+  .continue-btn {
+    width: 100%; background: linear-gradient(135deg, var(--orange), var(--coral));
+    color: white; border: none; border-radius: 20px; padding: 18px;
+    font-size: 20px; font-weight: 800; font-family: 'Nunito', sans-serif;
+    cursor: pointer; min-height: var(--touch);
+    box-shadow: 0 6px 20px rgba(255,107,53,0.4);
+    transition: all 0.2s;
+  }
+  .continue-btn:active { transform: scale(0.97); }
+
+  /* TIMER BAR */
+  .timer-bar-wrap { width: 100%; background: #EEE; border-radius: 10px; height: 6px; margin-bottom: 16px; overflow: hidden; }
+  .timer-bar { height: 100%; background: linear-gradient(90deg, var(--orange), var(--sun)); border-radius: 10px; transition: width 0.1s linear; }
+
+  /* LANG SWITCHER (demo only) */
+  .lang-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 16px; }
+  .lang-pill-demo {
+    background: white; border: 2px solid #EEE; border-radius: 20px;
+    padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .lang-pill-demo.active { border-color: var(--orange); background: #FFF3EE; color: var(--orange); }
+  .lang-pill-demo:active { transform: scale(0.95); }
+</style>
+</head>
+<body>
+
+<!-- ============ DEMO TRIGGER SCREEN ============ -->
+<div class="demo-screen">
+  <div class="demo-title">🎯 Reward System Demo</div>
+  <div class="demo-sub">Simulate completing different tasks to see rewards</div>
+
+  <!-- Language switcher -->
+  <div class="lang-row" id="langRow"></div>
+
+  <button class="demo-btn btn-count" onclick="triggerReward('counting')">🔢 Complete Counting Task</button>
+  <button class="demo-btn btn-speak" onclick="triggerReward('speaking')">🎤 Speak a Word</button>
+  <button class="demo-btn btn-match" onclick="triggerReward('matching')">🃏 Complete Matching Game</button>
+  <button class="demo-btn btn-family" onclick="triggerReward('family')">👨‍👩‍👧‍👦 Family Challenge Done</button>
+  <button class="demo-btn btn-aac" onclick="triggerReward('aac')">💬 AAC Communication</button>
+</div>
+
+<!-- ============ REWARD OVERLAY ============ -->
+<div class="reward-overlay" id="rewardOverlay">
+
+  <!-- Confetti -->
+  <div class="confetti-wrap" id="confettiWrap"></div>
+
+  <!-- Stars burst -->
+  <div class="stars-burst" id="starsBurst"></div>
+
+  <!-- Reward Card -->
+  <div class="reward-card" id="rewardCard">
+    <div class="reward-badge" id="rewardBadge">⭐ Great job!</div>
+
+    <span class="reward-emoji" id="rewardEmoji">🎉</span>
+    <div class="reward-title" id="rewardTitle">Amazing!</div>
+    <div class="reward-subtitle" id="rewardSubtitle">You did it!</div>
+
+    <!-- Stars earned -->
+    <div class="stars-row" id="starsRow"></div>
+
+    <!-- Timer bar -->
+    <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar" style="width:100%"></div></div>
+
+    <!-- Physical activity -->
+    <div class="activity-box" id="activityBox">
+      <div class="activity-title" id="activityTitle">🤸 Do this!</div>
+      <div class="activity-text" id="activityText">Clap 3 times! 👏</div>
+      <div class="activity-count" id="activityCount"></div>
+    </div>
+
+    <!-- Song reward -->
+    <div class="song-box" id="songBox">
+      <div class="song-icon">🎵</div>
+      <div class="song-text">
+        <div class="song-label" id="songLabel">🎵 Sing along!</div>
+        <div class="song-name" id="songName">The Wheels on the Bus</div>
+      </div>
+    </div>
+
+    <!-- Cartoon reward -->
+    <div class="cartoon-box" id="cartoonBox" onclick="openCartoon()">
+      <div class="cartoon-icon">📺</div>
+      <div class="cartoon-text">
+        <div class="cartoon-label" id="cartoonLabel">🎬 Watch reward!</div>
+        <div class="cartoon-name" id="cartoonName">Ms. Rachel</div>
+      </div>
+      <div class="cartoon-arrow">▶</div>
+    </div>
+
+    <button class="continue-btn" id="continueBtn" onclick="closeReward()">
+      Keep going! 🚀
+    </button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// IDRIS PROFILE DATA (loaded from idris-profile.md in production)
+// ============================================================
+const PROFILE = {
+  name: "Idris",
+  favoriteColors: ["yellow", "red", "blue"],
+  songs: ["The Wheels on the Bus", "One Little Finger", "If You're Happy and You Know It"],
+  cartoons: [
+    { name: "Ms. Rachel", emoji: "👩‍🏫", url: "https://www.youtube.com/@msrachelfortoddlers" },
+    { name: "Super Simple Songs", emoji: "🎵", url: "https://www.youtube.com/@supersimplesongs" },
+    { name: "Lucas and Friends", emoji: "🚌", url: "https://www.youtube.com/@LucasandFriendsByRV" },
+    { name: "Tom and Jerry", emoji: "🐭", url: "https://www.youtube.com/@TomAndJerryOfficial" },
+  ],
+  neverShow: ["Cocomelon"],
+  calmingStrategy: "hugging",
+  happinessTrigger: "sweet",
+};
+
+// ============================================================
+// MULTILINGUAL REWARD CONTENT
+// ============================================================
+const REWARD_LANGS = {
+  en: {
+    titles: ["Amazing! 🌟", "Brilliant! 💫", "Superstar! ⭐", "You did it! 🎉", "Wonderful! 🚀"],
+    subtitles: {
+      counting: "You counted so well!",
+      speaking: "Great speaking! Keep going!",
+      matching: "All pairs found! Perfect!",
+      family:   "Amazing family moment! ❤️",
+      aac:      "You communicated! So proud! 💬",
+    },
+    badge: "⭐ Great job!",
+    activityTitle: "🤸 Now do this!",
+    songLabel: "🎵 Sing along!",
+    cartoonLabel: "🎬 Watch your reward!",
+    continueBtn: "Keep going! 🚀",
+    activities: [
+      { text: "Clap 3 times! 👏", count: 3, emoji: "👏" },
+      { text: "Jump up! ⬆️", count: 3, emoji: "⬆️" },
+      { text: "Touch your nose! 👃", count: 1, emoji: "👃" },
+      { text: "Give mama a hug! 🤗", count: 1, emoji: "🤗" },
+      { text: "Sit up straight! 🧘", count: 1, emoji: "🧘" },
+      { text: "Touch your toes! 🦶", count: 3, emoji: "🦶" },
+      { text: "Big smile! 😁", count: 1, emoji: "😁" },
+      { text: "Arms up high! 🙌", count: 3, emoji: "🙌" },
+    ]
+  },
+  ru: {
+    titles: ["Молодец! 🌟", "Умница! 💫", "Суперзвезда! ⭐", "Получилось! 🎉", "Замечательно! 🚀"],
+    subtitles: {
+      counting: "Ты так хорошо считал!",
+      speaking: "Отлично говоришь! Продолжай!",
+      matching: "Все пары найдены! Идеально!",
+      family:   "Какой семейный момент! ❤️",
+      aac:      "Ты общался! Так горжусь! 💬",
+    },
+    badge: "⭐ Молодец!",
+    activityTitle: "🤸 А теперь сделай это!",
+    songLabel: "🎵 Пой вместе!",
+    cartoonLabel: "🎬 Смотри награду!",
+    continueBtn: "Продолжаем! 🚀",
+    activities: [
+      { text: "Хлопни 3 раза! 👏", count: 3, emoji: "👏" },
+      { text: "Прыгни! ⬆️", count: 3, emoji: "⬆️" },
+      { text: "Потрогай нос! 👃", count: 1, emoji: "👃" },
+      { text: "Обними маму! 🤗", count: 1, emoji: "🤗" },
+      { text: "Сядь прямо! 🧘", count: 1, emoji: "🧘" },
+      { text: "Потрогай пальцы ног! 🦶", count: 3, emoji: "🦶" },
+      { text: "Улыбнись широко! 😁", count: 1, emoji: "😁" },
+      { text: "Руки вверх! 🙌", count: 3, emoji: "🙌" },
+    ]
+  },
+  uz: {
+    titles: ["Barakalla! 🌟", "Zo'r! 💫", "Supersuperstar! ⭐", "Qildi! 🎉", "Ajoyib! 🚀"],
+    subtitles: {
+      counting: "Siz juda yaxshi sanading!",
+      speaking: "Zo'r gapiryapsiz! Davom eting!",
+      matching: "Barcha juftlar topildi!",
+      family:   "Ajoyib oilaviy lahza! ❤️",
+      aac:      "Siz muloqot qildingiz! 💬",
+    },
+    badge: "⭐ Barakalla!",
+    activityTitle: "🤸 Endi buni qiling!",
+    songLabel: "🎵 Birga kuylaymiz!",
+    cartoonLabel: "🎬 Mukofotingizni tomosha qiling!",
+    continueBtn: "Davom etamiz! 🚀",
+    activities: [
+      { text: "3 marta qarsak! 👏", count: 3, emoji: "👏" },
+      { text: "Sakra! ⬆️", count: 3, emoji: "⬆️" },
+      { text: "Burnini ushla! 👃", count: 1, emoji: "👃" },
+      { text: "Onangni quchoqla! 🤗", count: 1, emoji: "🤗" },
+      { text: "Tik o'tir! 🧘", count: 1, emoji: "🧘" },
+      { text: "Oyoq barmoqlaringga tet! 🦶", count: 3, emoji: "🦶" },
+      { text: "Katta tabassum! 😁", count: 1, emoji: "😁" },
+      { text: "Qo'llarni ko'tar! 🙌", count: 3, emoji: "🙌" },
+    ]
+  },
+  tg: {
+    titles: ["Офарин! 🌟", "Зӯр! 💫", "Суперситора! ⭐", "Шуд! 🎉", "Аҷоиб! 🚀"],
+    subtitles: {
+      counting: "Ту хеле хуб ҳисоб кардӣ!",
+      speaking: "Аҷоиб гуфтӣ! Идома деҳ!",
+      matching: "Ҳама ҷуфтҳо ёфта шуданд!",
+      family:   "Лаҳзаи оилавии аҷоиб! ❤️",
+      aac:      "Ту муошират кардӣ! 💬",
+    },
+    badge: "⭐ Офарин!",
+    activityTitle: "🤸 Ҳоло инро кун!",
+    songLabel: "🎵 Бо ҳам бихон!",
+    cartoonLabel: "🎬 Мукофотатро тамошо кун!",
+    continueBtn: "Идома медиҳем! 🚀",
+    activities: [
+      { text: "3 маротиба кафкӯбӣ кун! 👏", count: 3, emoji: "👏" },
+      { text: "Ҷаҳида бар! ⬆️", count: 3, emoji: "⬆️" },
+      { text: "Бинии худро даст зан! 👃", count: 1, emoji: "👃" },
+      { text: "Модарат ро бо оғӯш гир! 🤗", count: 1, emoji: "🤗" },
+      { text: "Рост нишин! 🧘", count: 1, emoji: "🧘" },
+      { text: "Ангуштони пойро даст зан! 🦶", count: 3, emoji: "🦶" },
+      { text: "Табассуми калон! 😁", count: 1, emoji: "😁" },
+      { text: "Дастҳоро боло бардор! 🙌", count: 3, emoji: "🙌" },
+    ]
+  },
+  ar: {
+    titles: ["رائع! 🌟", "ممتاز! 💫", "نجم! ⭐", "أحسنت! 🎉", "رائع جداً! 🚀"],
+    subtitles: {
+      counting: "أحسنت في العد!",
+      speaking: "كلامك رائع! استمر!",
+      matching: "وجدت كل الأزواج! مثالي!",
+      family:   "لحظة عائلية رائعة! ❤️",
+      aac:      "تواصلت بشكل رائع! 💬",
+    },
+    badge: "⭐ أحسنت!",
+    activityTitle: "🤸 افعل هذا الآن!",
+    songLabel: "🎵 اغنِ معاً!",
+    cartoonLabel: "🎬 شاهد مكافأتك!",
+    continueBtn: "استمر! 🚀",
+    activities: [
+      { text: "صفق 3 مرات! 👏", count: 3, emoji: "👏" },
+      { text: "اقفز! ⬆️", count: 3, emoji: "⬆️" },
+      { text: "المس أنفك! 👃", count: 1, emoji: "👃" },
+      { text: "احضن ماما! 🤗", count: 1, emoji: "🤗" },
+      { text: "اجلس بشكل صحيح! 🧘", count: 1, emoji: "🧘" },
+      { text: "المس أصابع قدميك! 🦶", count: 3, emoji: "🦶" },
+      { text: "ابتسم بشكل كبير! 😁", count: 1, emoji: "😁" },
+      { text: "ارفع يديك! 🙌", count: 3, emoji: "🙌" },
+    ]
+  },
+  es: {
+    titles: ["¡Increíble! 🌟", "¡Brillante! 💫", "¡Superestrella! ⭐", "¡Lo lograste! 🎉", "¡Maravilloso! 🚀"],
+    subtitles: {
+      counting: "¡Contaste muy bien!",
+      speaking: "¡Hablas genial! ¡Sigue!",
+      matching: "¡Todos los pares encontrados!",
+      family:   "¡Momento familiar increíble! ❤️",
+      aac:      "¡Te comunicaste! ¡Muy orgulloso! 💬",
+    },
+    badge: "⭐ ¡Muy bien!",
+    activityTitle: "🤸 ¡Ahora haz esto!",
+    songLabel: "🎵 ¡Canta junto!",
+    cartoonLabel: "🎬 ¡Ve tu recompensa!",
+    continueBtn: "¡Seguimos! 🚀",
+    activities: [
+      { text: "¡Aplaude 3 veces! 👏", count: 3, emoji: "👏" },
+      { text: "¡Salta! ⬆️", count: 3, emoji: "⬆️" },
+      { text: "¡Toca tu nariz! 👃", count: 1, emoji: "👃" },
+      { text: "¡Abraza a mamá! 🤗", count: 1, emoji: "🤗" },
+      { text: "¡Siéntate derecho! 🧘", count: 1, emoji: "🧘" },
+      { text: "¡Toca tus pies! 🦶", count: 3, emoji: "🦶" },
+      { text: "¡Gran sonrisa! 😁", count: 1, emoji: "😁" },
+      { text: "¡Brazos arriba! 🙌", count: 3, emoji: "🙌" },
+    ]
+  },
+  fr: {
+    titles: ["Incroyable! 🌟", "Brillant! 💫", "Superstar! ⭐", "Tu l'as fait! 🎉", "Merveilleux! 🚀"],
+    subtitles: {
+      counting: "Tu as très bien compté!",
+      speaking: "Tu parles super bien!",
+      matching: "Toutes les paires trouvées!",
+      family:   "Quel moment familial! ❤️",
+      aac:      "Tu as communiqué! Bravo! 💬",
+    },
+    badge: "⭐ Bravo!",
+    activityTitle: "🤸 Fais ça maintenant!",
+    songLabel: "🎵 Chante avec moi!",
+    cartoonLabel: "🎬 Regarde ta récompense!",
+    continueBtn: "On continue! 🚀",
+    activities: [
+      { text: "Applaudis 3 fois! 👏", count: 3, emoji: "👏" },
+      { text: "Saute! ⬆️", count: 3, emoji: "⬆️" },
+      { text: "Touche ton nez! 👃", count: 1, emoji: "👃" },
+      { text: "Fais un câlin à maman! 🤗", count: 1, emoji: "🤗" },
+      { text: "Assieds-toi droit! 🧘", count: 1, emoji: "🧘" },
+      { text: "Touche tes pieds! 🦶", count: 3, emoji: "🦶" },
+      { text: "Grand sourire! 😁", count: 1, emoji: "😁" },
+      { text: "Lève les bras! 🙌", count: 3, emoji: "🙌" },
+    ]
+  },
+};
+
+const TASK_EMOJIS = {
+  counting: "🔢", speaking: "🎤", matching: "🃏", family: "🤗", aac: "💬"
+};
+
+const STAR_COUNTS = { counting: 3, speaking: 2, matching: 3, family: 2, aac: 1 };
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  lang: "en",
+  totalStars: 0,
+  timerInterval: null,
+  currentCartoon: null,
+  activityDots: [],
+  activityDoneCount: 0,
+};
+
+// ============================================================
+// REWARD TRIGGER
+// ============================================================
+function triggerReward(taskType) {
+  const l = REWARD_LANGS[state.lang];
+  const starCount = STAR_COUNTS[taskType] || 2;
+  state.totalStars += starCount;
+
+  // Pick random content
+  const title = l.titles[Math.floor(Math.random() * l.titles.length)];
+  const subtitle = l.subtitles[taskType];
+  const activity = l.activities[Math.floor(Math.random() * l.activities.length)];
+  const song = PROFILE.songs[Math.floor(Math.random() * PROFILE.songs.length)];
+  const cartoon = PROFILE.cartoons[Math.floor(Math.random() * PROFILE.cartoons.length)];
+  state.currentCartoon = cartoon;
+
+  // Fill card
+  document.getElementById('rewardBadge').textContent = l.badge;
+  document.getElementById('rewardEmoji').textContent = TASK_EMOJIS[taskType];
+  document.getElementById('rewardTitle').textContent = title;
+  document.getElementById('rewardSubtitle').textContent = subtitle;
+  document.getElementById('activityTitle').textContent = l.activityTitle;
+  document.getElementById('activityText').textContent = activity.text;
+  document.getElementById('songLabel').textContent = l.songLabel;
+  document.getElementById('songName').textContent = song;
+  document.getElementById('cartoonLabel').textContent = l.cartoonLabel;
+  document.getElementById('cartoonName').textContent = cartoon.emoji + ' ' + cartoon.name;
+  document.getElementById('continueBtn').textContent = l.continueBtn;
+
+  // Stars
+  const starsRow = document.getElementById('starsRow');
+  starsRow.innerHTML = Array(starCount).fill('<span class="reward-star">⭐</span>').join('');
+
+  // Activity dots
+  state.activityDoneCount = 0;
+  const dotsEl = document.getElementById('activityCount');
+  dotsEl.innerHTML = Array(activity.count).fill('<div class="count-dot"></div>').join('');
+  state.activityDots = Array(activity.count).fill(false);
+
+  // Make dots tappable
+  dotsEl.querySelectorAll('.count-dot').forEach((dot, i) => {
+    dot.addEventListener('click', () => tapActivityDot(i));
+  });
+
+  // Show overlay
+  document.getElementById('rewardOverlay').classList.add('active');
+
+  // Confetti
+  spawnConfetti();
+  spawnStarsBurst();
+
+  // TTS
+  speakReward(title + '! ' + subtitle);
+
+  // Timer (30 seconds)
+  startTimer(30);
+}
+
+// ============================================================
+// ACTIVITY DOTS
+// ============================================================
+function tapActivityDot(i) {
+  if (state.activityDots[i]) return;
+  state.activityDots[i] = true;
+  const dots = document.querySelectorAll('.count-dot');
+  dots[i].classList.add('done');
+  state.activityDoneCount++;
+  if (state.activityDoneCount >= state.activityDots.length) {
+    // All done — flash the activity box
+    document.getElementById('activityBox').style.background = 'linear-gradient(135deg, #C8E6C9, #A5D6A7)';
+    setTimeout(() => {
+      document.getElementById('activityBox').style.background = '';
+    }, 800);
+  }
+}
+
+// ============================================================
+// CONFETTI
+// ============================================================
+const CONFETTI_COLORS = ['#FFD700','#FF6B35','#4FC3F7','#66BB6A','#F06292','#9575CD'];
+
+function spawnConfetti() {
+  const wrap = document.getElementById('confettiWrap');
+  wrap.innerHTML = '';
+  for (let i = 0; i < 40; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `
+      left: ${Math.random()*100}%;
+      top: ${-Math.random()*20}px;
+      background: ${CONFETTI_COLORS[Math.floor(Math.random()*CONFETTI_COLORS.length)]};
+      animation-duration: ${1.5 + Math.random()*2}s;
+      animation-delay: ${Math.random()*1}s;
+      transform: rotate(${Math.random()*360}deg);
+      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      width: ${8 + Math.random()*12}px;
+      height: ${8 + Math.random()*12}px;
+    `;
+    wrap.appendChild(el);
+  }
+}
+
+function spawnStarsBurst() {
+  const burst = document.getElementById('starsBurst');
+  burst.innerHTML = '';
+  const angles = [0,45,90,135,180,225,270,315];
+  angles.forEach((angle, i) => {
+    const rad = (angle * Math.PI) / 180;
+    const dist = 120 + Math.random() * 60;
+    const tx = Math.cos(rad) * dist + 'px';
+    const ty = Math.sin(rad) * dist + 'px';
+    const el = document.createElement('div');
+    el.className = 'burst-star';
+    el.textContent = '⭐';
+    el.style.cssText = `--tx:${tx};--ty:${ty};animation-delay:${i*0.05}s`;
+    burst.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+  });
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+function startTimer(seconds) {
+  clearInterval(state.timerInterval);
+  const bar = document.getElementById('timerBar');
+  let remaining = seconds;
+  bar.style.width = '100%';
+
+  state.timerInterval = setInterval(() => {
+    remaining -= 0.1;
+    bar.style.width = (remaining / seconds * 100) + '%';
+    if (remaining <= 0) {
+      clearInterval(state.timerInterval);
+      closeReward();
+    }
+  }, 100);
+}
+
+// ============================================================
+// CLOSE REWARD
+// ============================================================
+function closeReward() {
+  clearInterval(state.timerInterval);
+  document.getElementById('rewardOverlay').classList.remove('active');
+  document.getElementById('confettiWrap').innerHTML = '';
+}
+
+// ============================================================
+// OPEN CARTOON
+// ============================================================
+function openCartoon() {
+  if (state.currentCartoon?.url) {
+    // In production: open in-app video player
+    window.open(state.currentCartoon.url, '_blank');
+  }
+}
+
+// ============================================================
+// TTS
+// ============================================================
+function speakReward(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const langMap = { en:'en-US', ru:'ru-RU', uz:'uz-UZ', tg:'ru-RU', ar:'ar-SA', es:'es-ES', fr:'fr-FR' };
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = langMap[state.lang] || 'en-US';
+  utt.rate = 0.9; utt.pitch = 1.2; utt.volume = 1.0;
+  const voices = speechSynthesis.getVoices();
+  const match = voices.find(v => v.lang.startsWith(utt.lang.split('-')[0]));
+  if (match) utt.voice = match;
+  window.speechSynthesis.speak(utt);
+}
+
+// ============================================================
+// LANG SWITCHER
+// ============================================================
+function renderLangRow() {
+  const el = document.getElementById('langRow');
+  el.innerHTML = Object.keys(REWARD_LANGS).map(k => `
+    <div class="lang-pill-demo ${state.lang === k ? 'active' : ''}" onclick="setLang('${k}')">
+      ${getLangFlag(k)} ${k.toUpperCase()}
+    </div>
+  `).join('');
+}
+
+function getLangFlag(k) {
+  const flags = { en:'🇬🇧', ru:'🇷🇺', uz:'🇺🇿', tg:'🇹🇯', ar:'🇸🇦', es:'🇪🇸', fr:'🇫🇷' };
+  return flags[k] || '🌍';
+}
+
+function setLang(lang) {
+  state.lang = lang;
+  renderLangRow();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.speechSynthesis?.getVoices();
+speechSynthesis?.addEventListener?.('voiceschanged', () => speechSynthesis.getVoices());
+renderLangRow();
+</script>
+</body>
+</html>
