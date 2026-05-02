@@ -1,0 +1,40 @@
+{
+  "lang": "en",
+  "dir": "ltr",
+  "app": {
+    "title": "Idris Learns",
+    "loading": "Loading...",
+    "stars": "Stars"
+  },
+  "nav": {
+    "home": "Home",
+    "games": "Games",
+    "family": "Family"
+  },
+  "games": {
+    "counting": "Counting",
+    "pictureMatch": "Picture Match",
+    "speakRepeat": "Speak & Repeat",
+    "familyChallenge": "Family Challenge"
+  },
+  "family": {
+    "papa": "Papa",
+    "mama": "Mama",
+    "grandpa": "Grandpa",
+    "grandma": "Grandma",
+    "sister": "Sister",
+    "brother": "Brother"
+  },
+  "feedback": {
+    "correct": "Great job!",
+    "attempt": "Good try!",
+    "encouragement": "You can do it!",
+    "reward": "You earned a star!"
+  },
+  "instructions": {
+    "tap": "Tap the picture",
+    "match": "Find the match",
+    "count": "Count with me",
+    "speak": "Say the word"
+  }
+}

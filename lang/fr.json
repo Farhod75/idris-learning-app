@@ -1,0 +1,40 @@
+{
+  "lang": "fr",
+  "dir": "ltr",
+  "app": {
+    "title": "Idris Apprend",
+    "loading": "Chargement...",
+    "stars": "Étoiles"
+  },
+  "nav": {
+    "home": "Accueil",
+    "games": "Jeux",
+    "family": "Famille"
+  },
+  "games": {
+    "counting": "Comptons",
+    "pictureMatch": "Trouve la paire",
+    "speakRepeat": "Dis et répète",
+    "familyChallenge": "Défi en famille"
+  },
+  "family": {
+    "papa": "Papa",
+    "mama": "Maman",
+    "grandpa": "Papi",
+    "grandma": "Mamie",
+    "sister": "Sœur",
+    "brother": "Frère"
+  },
+  "feedback": {
+    "correct": "Bravo !",
+    "attempt": "Bon essai !",
+    "encouragement": "Tu peux le faire !",
+    "reward": "Tu as gagné une étoile !"
+  },
+  "instructions": {
+    "tap": "Appuie sur l'image",
+    "match": "Trouve la paire",
+    "count": "Compte avec moi",
+    "speak": "Dis le mot"
+  }
+}

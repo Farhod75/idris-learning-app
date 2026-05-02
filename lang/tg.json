@@ -1,0 +1,40 @@
+{
+  "lang": "tg",
+  "dir": "ltr",
+  "app": {
+    "title": "Идрис Меомузад",
+    "loading": "Бор кардан...",
+    "stars": "Ситорахо"
+  },
+  "nav": {
+    "home": "Хона",
+    "games": "Бозихо",
+    "family": "Оила"
+  },
+  "games": {
+    "counting": "Хисоб кардан",
+    "pictureMatch": "Ҷуфтро ёб",
+    "speakRepeat": "Гуфтан ва такрор",
+    "familyChallenge": "Вазифаи оилави"
+  },
+  "family": {
+    "papa": "Падар",
+    "mama": "Модар",
+    "grandpa": "Бобо",
+    "grandma": "Бибӣ",
+    "sister": "Хоҳар",
+    "brother": "Бародар"
+  },
+  "feedback": {
+    "correct": "Офарин!",
+    "attempt": "Кӯшиши хуб!",
+    "encouragement": "Ту метавони!",
+    "reward": "Ту ситора гирифти!"
+  },
+  "instructions": {
+    "tap": "Ба акс пахш кун",
+    "match": "Ҷуфтро ёб",
+    "count": "Бо ман бишмор",
+    "speak": "Калимаро гӯй"
+  }
+}

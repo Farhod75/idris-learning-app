@@ -1,0 +1,40 @@
+{
+  "lang": "es",
+  "dir": "ltr",
+  "app": {
+    "title": "Idris Aprende",
+    "loading": "Cargando...",
+    "stars": "Estrellas"
+  },
+  "nav": {
+    "home": "Inicio",
+    "games": "Juegos",
+    "family": "Familia"
+  },
+  "games": {
+    "counting": "Contamos",
+    "pictureMatch": "Une las imágenes",
+    "speakRepeat": "Di y repite",
+    "familyChallenge": "Desafío familiar"
+  },
+  "family": {
+    "papa": "Papá",
+    "mama": "Mamá",
+    "grandpa": "Abuelo",
+    "grandma": "Abuela",
+    "sister": "Hermana",
+    "brother": "Hermano"
+  },
+  "feedback": {
+    "correct": "¡Muy bien!",
+    "attempt": "¡Buen intento!",
+    "encouragement": "¡Tú puedes!",
+    "reward": "¡Ganaste una estrella!"
+  },
+  "instructions": {
+    "tap": "Toca la imagen",
+    "match": "Encuentra la pareja",
+    "count": "Cuenta conmigo",
+    "speak": "Di la palabra"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "lang": "ru",
+  "dir": "ltr",
+  "app": {
+    "title": "Идрис Учится",
+    "loading": "Загрузка...",
+    "stars": "Звёзды"
+  },
+  "nav": {
+    "home": "Главная",
+    "games": "Игры",
+    "family": "Семья"
+  },
+  "games": {
+    "counting": "Считаем",
+    "pictureMatch": "Найди пару",
+    "speakRepeat": "Говори и повторяй",
+    "familyChallenge": "Задание для семьи"
+  },
+  "family": {
+    "papa": "Папа",
+    "mama": "Мама",
+    "grandpa": "Дедушка",
+    "grandma": "Бабушка",
+    "sister": "Сестра",
+    "brother": "Брат"
+  },
+  "feedback": {
+    "correct": "Молодец!",
+    "attempt": "Хорошая попытка!",
+    "encouragement": "У тебя получится!",
+    "reward": "Ты заработал звезду!"
+  },
+  "instructions": {
+    "tap": "Нажми на картинку",
+    "match": "Найди пару",
+    "count": "Считай со мной",
+    "speak": "Скажи слово"
+  }
+}

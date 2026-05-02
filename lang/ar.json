@@ -1,0 +1,40 @@
+{
+  "lang": "ar",
+  "dir": "rtl",
+  "app": {
+    "title": "إدريس يتعلم",
+    "loading": "جارٍ التحميل...",
+    "stars": "النجوم"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "games": "الألعاب",
+    "family": "العائلة"
+  },
+  "games": {
+    "counting": "العد",
+    "pictureMatch": "طابق الصورة",
+    "speakRepeat": "قل وكرر",
+    "familyChallenge": "تحدي العائلة"
+  },
+  "family": {
+    "papa": "بابا",
+    "mama": "ماما",
+    "grandpa": "جدو",
+    "grandma": "ستو",
+    "sister": "أخت",
+    "brother": "أخ"
+  },
+  "feedback": {
+    "correct": "أحسنت!",
+    "attempt": "محاولة جيدة!",
+    "encouragement": "أنت تستطيع!",
+    "reward": "لقد ربحت نجمة!"
+  },
+  "instructions": {
+    "tap": "اضغط على الصورة",
+    "match": "ابحث عن المطابق",
+    "count": "عد معي",
+    "speak": "قل الكلمة"
+  }
+}

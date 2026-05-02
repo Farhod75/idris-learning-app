@@ -1,0 +1,40 @@
+{
+  "lang": "uz",
+  "dir": "ltr",
+  "app": {
+    "title": "Idris O'rganadi",
+    "loading": "Yuklanmoqda...",
+    "stars": "Yulduzlar"
+  },
+  "nav": {
+    "home": "Bosh sahifa",
+    "games": "O'yinlar",
+    "family": "Oila"
+  },
+  "games": {
+    "counting": "Hisoblash",
+    "pictureMatch": "Juftlikni top",
+    "speakRepeat": "Ayt va takrorla",
+    "familyChallenge": "Oilaviy topshiriq"
+  },
+  "family": {
+    "papa": "Dada",
+    "mama": "Oyi",
+    "grandpa": "Bobo",
+    "grandma": "Buvi",
+    "sister": "Singil",
+    "brother": "Aka"
+  },
+  "feedback": {
+    "correct": "Barakalla!",
+    "attempt": "Yaxshi urinish!",
+    "encouragement": "Sen uddalaysan!",
+    "reward": "Sen yulduz qozonding!"
+  },
+  "instructions": {
+    "tap": "Rasmga bos",
+    "match": "Juftlikni top",
+    "count": "Men bilan hisob",
+    "speak": "So'zni ayt"
+  }
+}
