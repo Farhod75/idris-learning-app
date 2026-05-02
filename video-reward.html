@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Video Reward 🎉</title>
+<style>
+  :root {
+    --green: #4CAF50;
+    --orange: #FF6B35;
+    --yellow: #FFD700;
+    --blue: #2196F3;
+    --pink: #E91E63;
+    --bg: #FFF8F0;
+    --touch: 72px;
+    --radius: 20px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow: hidden;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; width: 100%; max-width: 600px; text-align: center; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+
+  /* ── DEMO SCREEN ── */
+  #screen-demo h1 { font-size: 28px; color: var(--orange); }
+  #screen-demo p { font-size: 18px; color: #555; }
+
+  .tier-cards { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+  .tier-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: border-color .2s, transform .1s;
+    min-height: var(--touch);
+  }
+  .tier-card:active { transform: scale(.97); }
+  .tier-card.tier-big  { border-color: var(--yellow); }
+  .tier-card.tier-med  { border-color: var(--green); }
+  .tier-card.tier-small{ border-color: var(--blue); }
+  .tier-icon { font-size: 36px; flex-shrink: 0; }
+  .tier-info { text-align: left; }
+  .tier-info strong { font-size: 18px; display: block; }
+  .tier-info span { font-size: 14px; color: #777; }
+
+  /* ── CELEBRATION SCREEN ── */
+  #screen-celebrate {
+    position: relative;
+  }
+  .stars-display {
+    font-size: 48px;
+    letter-spacing: 4px;
+    min-height: 60px;
+  }
+  .celebrate-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--orange);
+  }
+  .celebrate-sub {
+    font-size: 22px;
+    color: #555;
+  }
+  .reward-badge {
+    background: var(--yellow);
+    border-radius: 50px;
+    padding: 12px 28px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  }
+  .countdown-ring {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    margin: 10px auto;
+  }
+  .countdown-ring svg {
+    transform: rotate(-90deg);
+  }
+  .countdown-ring .ring-bg {
+    fill: none;
+    stroke: #eee;
+    stroke-width: 8;
+  }
+  .countdown-ring .ring-fill {
+    fill: none;
+    stroke: var(--orange);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 264;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset .9s linear;
+  }
+  .countdown-number {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--orange);
+  }
+
+  /* ── CONFETTI ── */
+  .confetti-container {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 10;
+  }
+  .confetti-piece {
+    position: absolute;
+    top: -20px;
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ── VIDEO SCREEN ── */
+  #screen-video {
+    max-width: 700px;
+  }
+  .video-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .video-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    flex: 1;
+    text-align: left;
+  }
+  .stars-small {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    width: 100%;
+    background: #eee;
+    border-radius: 99px;
+    height: 14px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    border-radius: 99px;
+    width: 100%;
+    background: var(--green);
+    transition: width 1s linear, background .5s;
+  }
+  .time-label {
+    font-size: 16px;
+    color: #555;
+    text-align: right;
+    width: 100%;
+  }
+
+  /* YouTube container */
+  .yt-container {
+    width: 100%;
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,.15);
+    background: #000;
+  }
+  .yt-container iframe {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16/9;
+    border: none;
+  }
+  /* iOS tap-to-play overlay (shown until first user gesture) */
+  .tap-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.45);
+    cursor: pointer;
+    z-index: 5;
+  }
+  .tap-overlay span {
+    font-size: 72px;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,.5));
+  }
+  .tap-overlay.hidden { display: none; }
+
+  /* Back button */
+  .btn-back {
+    min-height: var(--touch);
+    min-width: 200px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0 32px;
+    box-shadow: 0 4px 14px rgba(76,175,80,.4);
+    transition: opacity .2s, transform .1s;
+    display: none;
+  }
+  .btn-back.visible { display: inline-flex; align-items: center; gap: 8px; }
+  .btn-back:active { transform: scale(.97); }
+
+  /* Demo button */
+  .btn-demo {
+    min-height: var(--touch);
+    min-width: 220px;
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0 32px;
+    box-shadow: 0 4px 14px rgba(255,107,53,.4);
+    transition: opacity .2s, transform .1s;
+  }
+  .btn-demo:active { transform: scale(.97); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .confetti-piece { animation: none; }
+    .countdown-ring .ring-fill { transition: none; }
+    .progress-bar { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="confetti-container" id="confetti-container"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 1: DEMO / MANUAL TRIGGER
+     Shows when ?tasks param is missing (for testing)
+     ══════════════════════════════════════════════════════ -->
+<div class="screen active" id="screen-demo">
+  <h1>🎬 Video Reward</h1>
+  <p>Choose a reward tier to preview:</p>
+
+  <div class="tier-cards">
+    <div class="tier-card tier-big" onclick="startReward(5, 15)">
+      <div class="tier-icon">🏆</div>
+      <div class="tier-info">
+        <strong>All done! 30 min video</strong>
+        <span>5+ tasks completed ⭐⭐⭐⭐⭐</span>
+      </div>
+    </div>
+    <div class="tier-card tier-med" onclick="startReward(3, 9)">
+      <div class="tier-icon">🌟</div>
+      <div class="tier-info">
+        <strong>Great job! 5 min video</strong>
+        <span>3–4 tasks completed ⭐⭐⭐</span>
+      </div>
+    </div>
+    <div class="tier-card tier-small" onclick="startReward(1, 3)">
+      <div class="tier-icon">👍</div>
+      <div class="tier-info">
+        <strong>Good start! 2 min video</strong>
+        <span>1–2 tasks completed ⭐</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-demo" onclick="goBack()">← Back to learning</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 2: CELEBRATION
+     Confetti + stars + 3-second countdown
+     ══════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-celebrate">
+  <div class="stars-display" id="stars-display">⭐</div>
+  <div class="celebrate-title" id="celebrate-title">Amazing! 🎉</div>
+  <div class="celebrate-sub" id="celebrate-sub">You earned a video!</div>
+  <div class="reward-badge" id="reward-badge">🎬 30 min video</div>
+
+  <div class="countdown-ring">
+    <svg width="100" height="100" viewBox="0 0 100 100">
+      <circle class="ring-bg" cx="50" cy="50" r="42"/>
+      <circle class="ring-fill" id="ring-fill" cx="50" cy="50" r="42"/>
+    </svg>
+    <div class="countdown-number" id="countdown-number">3</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 3: VIDEO PLAYER
+     YouTube IFrame API + countdown timer + progress bar
+     ══════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-video">
+  <div class="video-header">
+    <div class="video-title" id="video-title">🚌 Wheels on the Bus</div>
+    <div class="stars-small" id="stars-small">⭐⭐⭐</div>
+  </div>
+
+  <div class="yt-container">
+    <div id="yt-player"></div>
+    <div class="tap-overlay" id="tap-overlay" onclick="userTappedPlay()">
+      <span>▶️</span>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+  <div class="time-label" id="time-label">2:00 left</div>
+
+  <button class="btn-back" id="btn-back" onclick="goBack()">🎓 Back to learning!</button>
+</div>
+
+<script>
+// ─── CONFIG ────────────────────────────────────────────────────────────────
+const VIDEOS = [
+  { id: 'yWirdnSDsV4', title: 'Wheels on the Bus',     emoji: '🚌' },
+  { id: '8ebuo-FU7yc', title: "If You're Happy",        emoji: '😄' },
+  { id: 'eBVqcTEC3zQ', title: 'One Little Finger',      emoji: '☝️' },
+];
+
+// Reward tiers: tasks threshold → allowed seconds
+function getTier(tasks) {
+  if (tasks >= 5) return { seconds: 30 * 60, label: '30 min video', emoji: '🏆', title: 'Amazing! All done! 🎉' };
+  if (tasks >= 3) return { seconds:  5 * 60, label:  '5 min video', emoji: '🌟', title: 'Great job! 🌟'         };
+  return              { seconds:  2 * 60, label:  '2 min video', emoji: '👍', title: 'Good start! 👍'        };
+}
+
+function starsString(stars) {
+  const n = Math.max(0, Math.min(stars || 0, 10));
+  return '⭐'.repeat(n) || '⭐';
+}
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let ytPlayer       = null;
+let timerInterval  = null;
+let secsRemaining  = 0;
+let totalSecs      = 0;
+let playerReady    = false;
+
+// ─── URL PARAMS ────────────────────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+const urlTasks = parseInt(params.get('tasks'), 10);
+const urlStars = parseInt(params.get('stars'),  10);
+
+// Auto-start if params provided
+if (!isNaN(urlTasks)) {
+  startReward(urlTasks, isNaN(urlStars) ? urlTasks * 3 : urlStars);
+}
+
+// ─── SCREENS ───────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ─── START FLOW ────────────────────────────────────────────────────────────
+function startReward(tasks, stars) {
+  const tier   = getTier(tasks);
+  const video  = VIDEOS[Math.floor(Math.random() * VIDEOS.length)];
+
+  // Store for later screens
+  window._rewardState = { tier, video, stars };
+
+  // Celebration screen
+  document.getElementById('stars-display').textContent  = starsString(stars);
+  document.getElementById('celebrate-title').textContent = tier.title;
+  document.getElementById('celebrate-sub').textContent   = 'You earned a video!';
+  document.getElementById('reward-badge').textContent    = tier.emoji + ' ' + tier.label;
+
+  showScreen('screen-celebrate');
+  launchConfetti();
+  startCelebrationCountdown(3, () => openVideoScreen(tier, video, stars));
+}
+
+// ─── CELEBRATION COUNTDOWN ─────────────────────────────────────────────────
+function startCelebrationCountdown(seconds, onDone) {
+  const numEl  = document.getElementById('countdown-number');
+  const ringEl = document.getElementById('ring-fill');
+  const circumference = 2 * Math.PI * 42; // r=42
+
+  let remaining = seconds;
+  numEl.textContent = remaining;
+  ringEl.style.strokeDashoffset = 0;
+
+  const tick = setInterval(() => {
+    remaining--;
+    numEl.textContent = remaining;
+    const pct = remaining / seconds;
+    ringEl.style.strokeDashoffset = circumference * (1 - pct);
+    if (remaining <= 0) {
+      clearInterval(tick);
+      onDone();
+    }
+  }, 1000);
+}
+
+// ─── VIDEO SCREEN ──────────────────────────────────────────────────────────
+function openVideoScreen(tier, video, stars) {
+  const { seconds, label } = tier;
+  secsRemaining = seconds;
+  totalSecs     = seconds;
+
+  document.getElementById('video-title').textContent = video.emoji + ' ' + video.title;
+  document.getElementById('stars-small').textContent = starsString(stars);
+  document.getElementById('time-label').textContent  = formatTime(secsRemaining) + ' left';
+  document.getElementById('progress-bar').style.width = '100%';
+  document.getElementById('progress-bar').style.background = 'var(--green)';
+  document.getElementById('btn-back').classList.remove('visible');
+  document.getElementById('tap-overlay').classList.remove('hidden');
+
+  showScreen('screen-video');
+  loadYouTubeAPI(video.id);
+}
+
+// ─── YOUTUBE API ───────────────────────────────────────────────────────────
+function loadYouTubeAPI(videoId) {
+  window._pendingVideoId = videoId;
+
+  if (window.YT && window.YT.Player) {
+    initPlayer(videoId);
+    return;
+  }
+
+  // Load API script once
+  if (!document.getElementById('yt-script')) {
+    const tag = document.createElement('script');
+    tag.id  = 'yt-script';
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+  }
+}
+
+window.onYouTubeIframeAPIReady = function() {
+  initPlayer(window._pendingVideoId);
+};
+
+function initPlayer(videoId) {
+  // Destroy previous player if any
+  if (ytPlayer) {
+    ytPlayer.destroy();
+    ytPlayer = null;
+  }
+  playerReady = false;
+
+  // Reset container
+  document.getElementById('yt-player').innerHTML = '';
+
+  ytPlayer = new YT.Player('yt-player', {
+    videoId,
+    playerVars: {
+      autoplay:        1,
+      controls:        1,
+      rel:             0,
+      modestbranding:  1,
+      fs:              0,
+      playsinline:     1,
+    },
+    events: {
+      onReady:       onPlayerReady,
+      onStateChange: onPlayerStateChange,
+    },
+  });
+}
+
+function onPlayerReady(event) {
+  playerReady = true;
+  // Hide tap overlay — autoplay worked
+  document.getElementById('tap-overlay').classList.add('hidden');
+  event.target.playVideo();
+  startTimer();
+}
+
+function onPlayerStateChange(event) {
+  // YT.PlayerState.PLAYING = 1
+  if (event.data === 1) {
+    document.getElementById('tap-overlay').classList.add('hidden');
+  }
+}
+
+function userTappedPlay() {
+  document.getElementById('tap-overlay').classList.add('hidden');
+  if (ytPlayer && playerReady) {
+    ytPlayer.playVideo();
+  }
+  if (!timerInterval) startTimer();
+}
+
+// ─── TIMER ─────────────────────────────────────────────────────────────────
+function startTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+
+  timerInterval = setInterval(() => {
+    secsRemaining--;
+
+    // Update label
+    document.getElementById('time-label').textContent = formatTime(secsRemaining) + ' left';
+
+    // Update progress bar
+    const pct = secsRemaining / totalSecs;
+    document.getElementById('progress-bar').style.width = (pct * 100) + '%';
+
+    // Color shift: green → yellow → orange as time runs out
+    let color;
+    if (pct > 0.5)      color = 'var(--green)';
+    else if (pct > 0.2) color = 'var(--yellow)';
+    else                color = 'var(--orange)';
+    document.getElementById('progress-bar').style.background = color;
+
+    if (secsRemaining <= 0) onTimeUp();
+  }, 1000);
+}
+
+function onTimeUp() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+
+  if (ytPlayer && playerReady) ytPlayer.stopVideo();
+
+  document.getElementById('time-label').textContent    = "Time's up! Great watching! 🎉";
+  document.getElementById('progress-bar').style.width  = '0%';
+  document.getElementById('btn-back').classList.add('visible');
+}
+
+// ─── CONFETTI ──────────────────────────────────────────────────────────────
+function launchConfetti() {
+  const container = document.getElementById('confetti-container');
+  container.innerHTML = '';
+
+  const colors = ['#FF6B35','#FFD700','#4CAF50','#2196F3','#E91E63','#9C27B0'];
+  const count  = 60;
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `
+      left: ${Math.random() * 100}%;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      width: ${6 + Math.random() * 10}px;
+      height: ${6 + Math.random() * 10}px;
+      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      animation-duration: ${1.5 + Math.random() * 2}s;
+      animation-delay: ${Math.random() * 0.8}s;
+    `;
+    container.appendChild(el);
+  }
+
+  // Clean up after animation
+  setTimeout(() => { container.innerHTML = ''; }, 4000);
+}
+
+// ─── NAVIGATION ────────────────────────────────────────────────────────────
+function goBack() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  if (ytPlayer && playerReady) {
+    ytPlayer.stopVideo();
+  }
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = 'index.html';
+  }
+}
+
+// ─── UTILS ─────────────────────────────────────────────────────────────────
+function formatTime(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
+</script>
+</body>
+</html>
