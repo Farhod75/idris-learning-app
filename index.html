@@ -1,987 +1,1330 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Идрис Учится">
+<meta name="apple-mobile-web-app-title" content="Idris Learns">
 <meta name="theme-color" content="#FF6B35">
-<title>Идрис Учится 🌟</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Baloo+2:wght@400;700;800&display=swap" rel="stylesheet">
-
+<link rel="manifest" href="/manifest.json">
+<title>Idris Learns 🌟</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Baloo+2:wght@700;800&family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --sun: #FFD700;
-    --orange: #FF6B35;
-    --coral: #FF8C61;
-    --sky: #4FC3F7;
-    --mint: #4DB6AC;
-    --lavender: #9575CD;
-    --green: #66BB6A;
-    --pink: #F06292;
-    --bg: #FFF8F0;
-    --card: #FFFFFF;
-    --text: #2D2D2D;
-    --soft: #F5F0FF;
-    --radius: 28px;
-    --touch: 72px;
-  }
+:root {
+  --orange:#FF6B35; --coral:#FF8C61; --sun:#FFD700;
+  --sky:#4FC3F7; --mint:#4DB6AC; --green:#66BB6A;
+  --lavender:#9575CD; --pink:#F06292; --red:#EF5350;
+  --blue:#42A5F5; --bg:#FFF8F0; --card:#FFFFFF; --text:#2D2D2D;
+  --touch:72px; --radius:24px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+[dir="rtl"]{font-family:'Noto Sans Arabic','Nunito',sans-serif}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+/* ═══════════════════════════════════════════
+   SCREEN ROUTER
+═══════════════════════════════════════════ */
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
-  body {
-    font-family: 'Nunito', sans-serif;
-    background: var(--bg);
-    min-height: 100vh;
-    overflow-x: hidden;
-    color: var(--text);
-  }
+/* ═══════════════════════════════════════════
+   ONBOARDING
+═══════════════════════════════════════════ */
+.ob-hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 24px}
+.ob-logo{font-size:80px;animation:bounce 2s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.ob-name{font-family:'Baloo 2',cursive;font-size:34px;font-weight:800;color:var(--orange);margin:12px 0 6px}
+.ob-tag{font-size:15px;color:#888;max-width:260px;line-height:1.5}
+.lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:420px;padding:0 20px;margin:20px 0}
+.lang-card{background:white;border-radius:18px;padding:16px 12px;text-align:center;cursor:pointer;border:3px solid transparent;box-shadow:0 4px 16px rgba(0,0,0,.07);min-height:var(--touch);transition:all .2s}
+.lang-card:active{transform:scale(.95)}
+.lang-card.sel{border-color:var(--orange);background:#FFF3EE}
+.lang-flag{font-size:28px;display:block;margin-bottom:4px}
+.lang-name{font-weight:700;font-size:14px}
 
-  /* === FLOATING BACKGROUND === */
-  .bg-blobs {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
-  }
-  .blob {
-    position: absolute; border-radius: 50%; opacity: 0.12;
-    animation: blobFloat 8s ease-in-out infinite;
-  }
-  .blob-1 { width: 300px; height: 300px; background: var(--orange); top: -80px; left: -80px; animation-delay: 0s; }
-  .blob-2 { width: 200px; height: 200px; background: var(--sky); top: 30%; right: -60px; animation-delay: 2s; }
-  .blob-3 { width: 250px; height: 250px; background: var(--lavender); bottom: -80px; left: 30%; animation-delay: 4s; }
-  @keyframes blobFloat {
-    0%, 100% { transform: translate(0,0) scale(1); }
-    50% { transform: translate(20px, -20px) scale(1.05); }
-  }
+/* ═══════════════════════════════════════════
+   STEP FORM
+═══════════════════════════════════════════ */
+.step-wrap{padding:20px;display:flex;flex-direction:column;align-items:center;flex:1}
+.step-dots{display:flex;gap:8px;justify-content:center;margin-bottom:20px}
+.dot{width:10px;height:10px;border-radius:50%;background:#DDD;transition:all .3s}
+.dot.active{background:var(--orange);width:24px;border-radius:5px}
+.dot.done{background:var(--green)}
+.step-hdr{display:flex;align-items:center;gap:12px;width:100%;max-width:420px;margin-bottom:6px}
+.back-btn{width:48px;height:48px;border-radius:50%;background:white;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-title{font-family:'Baloo 2',cursive;font-size:22px;font-weight:800;color:var(--orange)}
+.step-sub{font-size:14px;color:#888;margin-bottom:20px;text-align:center;max-width:380px}
+.form-group{width:100%;max-width:420px;margin-bottom:14px}
+.form-label{font-weight:700;font-size:14px;color:#555;margin-bottom:8px;display:block}
+.form-input{width:100%;background:white;border:2px solid #EEE;border-radius:16px;padding:16px 18px;font-size:17px;font-family:'Nunito',sans-serif;color:var(--text);outline:none;min-height:56px;transition:border-color .2s}
+.form-input:focus{border-color:var(--orange)}
+.age-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:420px;margin-bottom:14px}
+.age-btn{background:white;border:3px solid #EEE;border-radius:14px;padding:14px 8px;font-size:18px;font-weight:900;cursor:pointer;text-align:center;min-height:var(--touch);transition:all .2s}
+.age-btn.sel{border-color:var(--orange);background:#FFF3EE;color:var(--orange)}
+.lang-tags{display:flex;flex-wrap:wrap;gap:10px;width:100%;max-width:420px;margin-bottom:14px}
+.lang-tag{background:white;border:3px solid #EEE;border-radius:14px;padding:12px 16px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;min-height:48px;transition:all .2s}
+.lang-tag.sel{border-color:var(--sky);background:#E1F5FE}
+.int-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:420px;margin-bottom:14px}
+.int-btn{background:white;border:3px solid #EEE;border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:all .2s}
+.int-btn.sel{border-color:var(--lavender);background:#F3E5F5}
+.int-emoji{font-size:28px}
+.int-label{font-size:11px;font-weight:700;color:#666}
+.fam-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;width:100%;max-width:420px;scrollbar-width:none;margin-bottom:14px}
+.fam-scroll::-webkit-scrollbar{display:none}
+.fam-card{min-width:80px;background:white;border-radius:16px;padding:12px 8px;text-align:center;cursor:pointer;border:3px solid transparent;transition:all .2s;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.fam-card.sel{border-color:var(--green);background:#E8F5E9}
+.fam-emoji{font-size:32px;display:block;margin-bottom:4px}
+.fam-label{font-size:12px;font-weight:700}
+.btn-primary{width:100%;max-width:420px;background:linear-gradient(135deg,var(--orange),var(--coral));color:white;border:none;border-radius:20px;padding:20px;font-size:19px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;min-height:var(--touch);box-shadow:0 6px 20px rgba(255,107,53,.35);margin-top:8px;transition:all .2s}
+.btn-primary:active{transform:scale(.97)}
+.btn-primary:disabled{background:#DDD;box-shadow:none;color:#AAA}
 
-  /* === HEADER === */
-  .header {
-    position: relative; z-index: 10;
-    background: linear-gradient(135deg, var(--orange) 0%, #FF8C00 100%);
-    padding: 20px 20px 30px;
-    border-radius: 0 0 40px 40px;
-    box-shadow: 0 8px 32px rgba(255,107,53,0.3);
-  }
-  .header-top {
-    display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
-  }
-  .child-avatar {
-    width: 64px; height: 64px; border-radius: 50%;
-    background: white; display: flex; align-items: center; justify-content: center;
-    font-size: 36px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-    border: 3px solid rgba(255,255,255,0.5);
-    cursor: pointer; transition: transform 0.2s;
-    min-width: var(--touch); min-height: var(--touch);
-  }
-  .child-avatar:active { transform: scale(0.93); }
-  .header-title { text-align: center; }
-  .child-name {
-    font-family: 'Baloo 2', cursive; font-size: 28px; font-weight: 800;
-    color: white; line-height: 1;
-  }
-  .child-subtitle { font-size: 13px; color: rgba(255,255,255,0.85); margin-top: 2px; }
-  .lang-btn {
-    background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.5);
-    border-radius: 20px; padding: 8px 14px; color: white; font-weight: 700;
-    font-size: 15px; cursor: pointer; transition: all 0.2s;
-    min-height: var(--touch); display: flex; align-items: center; gap: 6px;
-  }
-  .lang-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.4); }
+/* ═══════════════════════════════════════════
+   PROFILE SELECT (returning user)
+═══════════════════════════════════════════ */
+.profiles-list{width:100%;max-width:420px;padding:0 20px}
+.profile-item{background:white;border-radius:18px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:12px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.07);border:3px solid transparent;min-height:var(--touch);transition:all .2s}
+.profile-item:active{transform:scale(.97)}
+.profile-avatar{font-size:40px}
+.profile-info{flex:1}
+.profile-name{font-weight:800;font-size:18px}
+.profile-detail{font-size:13px;color:#888;margin-top:2px}
+.add-child-btn{width:100%;max-width:420px;background:white;border:3px dashed #DDD;border-radius:18px;padding:20px;font-size:16px;font-weight:700;color:#AAA;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;min-height:var(--touch);margin:0 20px;transition:all .2s}
+.add-child-btn:active{border-color:var(--orange);color:var(--orange)}
 
-  /* Stars bar */
-  .stars-bar {
-    display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 10px;
-  }
-  .star-icon { font-size: 22px; animation: starPop 0.4s ease; }
-  @keyframes starPop { 0% { transform: scale(0); } 80% { transform: scale(1.3); } 100% { transform: scale(1); } }
-  .stars-count {
-    font-weight: 900; font-size: 20px; color: white;
-    background: rgba(0,0,0,0.15); border-radius: 20px; padding: 4px 14px;
-  }
+/* ═══════════════════════════════════════════
+   MAIN APP HEADER
+═══════════════════════════════════════════ */
+.app-header{background:linear-gradient(135deg,var(--orange),#FF8C00);padding:18px 20px 28px;border-radius:0 0 36px 36px;box-shadow:0 8px 28px rgba(255,107,53,.3);position:relative;z-index:10}
+.app-header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.child-avatar{width:64px;height:64px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;font-size:36px;box-shadow:0 4px 16px rgba(0,0,0,.15);border:3px solid rgba(255,255,255,.5);cursor:pointer;min-width:var(--touch);min-height:var(--touch)}
+.app-child-name{font-family:'Baloo 2',cursive;font-size:26px;font-weight:800;color:white;line-height:1;text-align:center}
+.app-subtitle{font-size:13px;color:rgba(255,255,255,.85);text-align:center;margin-top:2px}
+.lang-btn{background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.5);border-radius:20px;padding:8px 14px;color:white;font-weight:700;font-size:15px;cursor:pointer;min-height:var(--touch);display:flex;align-items:center;gap:6px;transition:all .2s}
+.stars-bar{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px}
+.star-pop{font-size:22px;animation:starPop .4s ease}
+@keyframes starPop{0%{transform:scale(0)}80%{transform:scale(1.3)}100%{transform:scale(1)}}
+.stars-count{font-weight:900;font-size:20px;color:white;background:rgba(0,0,0,.15);border-radius:20px;padding:4px 14px}
 
-  /* === FAMILY SECTION === */
-  .section { position: relative; z-index: 5; padding: 20px; }
-  .section-title {
-    font-family: 'Baloo 2', cursive; font-size: 20px; font-weight: 700;
-    color: var(--orange); margin-bottom: 14px;
-    display: flex; align-items: center; gap: 8px;
-  }
+/* ═══════════════════════════════════════════
+   MAIN APP CONTENT
+═══════════════════════════════════════════ */
+.main-content{padding:16px 16px 100px;flex:1;overflow-y:auto}
+.section-title{font-family:'Baloo 2',cursive;font-size:19px;font-weight:700;color:var(--orange);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.fam-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;margin-bottom:20px;scrollbar-width:none}
+.fam-row::-webkit-scrollbar{display:none}
+.fam-pill{min-width:80px;background:white;border-radius:16px;padding:12px 10px;text-align:center;cursor:pointer;border:3px solid transparent;flex-shrink:0;box-shadow:0 3px 14px rgba(0,0,0,.07);transition:all .2s}
+.fam-pill.active{border-color:var(--orange);background:#FFF3EE}
+.fam-pill:active{transform:scale(.94)}
 
-  .family-scroll {
-    display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px;
-    scrollbar-width: none;
-  }
-  .family-scroll::-webkit-scrollbar { display: none; }
+/* GAME MODES */
+.modes-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.mode-card{background:white;border-radius:var(--radius);padding:18px 14px;box-shadow:0 6px 20px rgba(0,0,0,.07);cursor:pointer;text-align:center;border:3px solid transparent;position:relative;overflow:hidden;min-height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.mode-card::before{content:'';position:absolute;inset:0;opacity:.08;border-radius:calc(var(--radius) - 3px)}
+.mode-card.count::before{background:var(--green)}
+.mode-card.speak::before{background:var(--coral)}
+.mode-card.match::before{background:var(--lavender)}
+.mode-card.family::before{background:var(--sun)}
+.mode-card.aac::before{background:var(--sky)}
+.mode-card.voice::before{background:var(--pink)}
+.mode-card:active{transform:scale(.96)}
+.mode-icon{font-size:44px;line-height:1}
+.mode-name{font-family:'Baloo 2',cursive;font-size:16px;font-weight:700}
+.mode-desc{font-size:11px;color:#888}
 
-  .family-card {
-    min-width: 90px; background: white; border-radius: 20px;
-    padding: 14px 10px; text-align: center;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    cursor: pointer; transition: all 0.2s; flex-shrink: 0;
-    border: 3px solid transparent;
-  }
-  .family-card:active { transform: scale(0.94); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-  .family-card.active { border-color: var(--orange); background: #FFF3EE; }
-  .family-emoji { font-size: 38px; display: block; margin-bottom: 6px; }
-  .family-name { font-size: 13px; font-weight: 700; color: var(--text); }
-  .family-role { font-size: 11px; color: #888; margin-top: 2px; }
+/* ═══════════════════════════════════════════
+   GAME SCREENS
+═══════════════════════════════════════════ */
+.game-screen{display:none;position:fixed;inset:0;z-index:100;background:var(--bg);overflow-y:auto;padding:20px;animation:slideIn .3s ease}
+.game-screen.active{display:block}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:none;opacity:1}}
+.game-hdr{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.gbk-btn{width:var(--touch);height:var(--touch);border-radius:50%;background:white;border:none;font-size:24px;box-shadow:0 4px 16px rgba(0,0,0,.1);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.gbk-btn:active{transform:scale(.9)}
+.game-title{font-family:'Baloo 2',cursive;font-size:24px;font-weight:800}
+.progress-wrap{background:#EEE;border-radius:20px;height:10px;margin-bottom:20px;overflow:hidden}
+.progress-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--orange),var(--sun));transition:width .5s ease}
 
-  /* === GAME MODES === */
-  .modes-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
-  }
-  .mode-card {
-    background: white; border-radius: var(--radius); padding: 20px 16px;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.08);
-    cursor: pointer; transition: all 0.2s; text-align: center;
-    border: 3px solid transparent; position: relative; overflow: hidden;
-    min-height: 140px; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 10px;
-  }
-  .mode-card::before {
-    content: ''; position: absolute; inset: 0; opacity: 0.08; border-radius: calc(var(--radius) - 3px);
-  }
-  .mode-card.count::before { background: var(--green); }
-  .mode-card.read::before { background: var(--sky); }
-  .mode-card.speak::before { background: var(--coral); }
-  .mode-card.match::before { background: var(--lavender); }
-  .mode-card.write::before { background: var(--pink); }
-  .mode-card.family::before { background: var(--sun); }
+/* COUNTING GAME */
+.count-display{background:white;border-radius:28px;padding:28px;box-shadow:0 8px 28px rgba(0,0,0,.09);text-align:center;margin-bottom:20px}
+.count-objects{font-size:52px;line-height:1.4;letter-spacing:4px;min-height:70px}
+.count-q{font-size:19px;font-weight:700;color:var(--orange);margin-top:12px}
+.count-opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.count-opt{background:white;border:4px solid #EEE;border-radius:20px;padding:18px;font-size:34px;font-weight:900;cursor:pointer;text-align:center;min-height:var(--touch);box-shadow:0 4px 14px rgba(0,0,0,.06);transition:all .15s}
+.count-opt.correct{border-color:var(--green);background:#E8F5E9;animation:bounce2 .5s}
+.count-opt.wrong{border-color:var(--pink);background:#FCE4EC;animation:shake .4s}
+@keyframes bounce2{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 
-  .mode-card:active { transform: scale(0.96); }
-  .mode-icon { font-size: 48px; line-height: 1; }
-  .mode-name { font-family: 'Baloo 2', cursive; font-size: 17px; font-weight: 700; }
-  .mode-desc { font-size: 12px; color: #888; }
-  .mode-badge {
-    position: absolute; top: 10px; right: 10px;
-    background: var(--green); color: white; border-radius: 20px;
-    font-size: 11px; font-weight: 700; padding: 3px 8px;
-  }
+/* MATCH GAME */
+.match-target{text-align:center;font-size:17px;font-weight:700;margin-bottom:14px;color:var(--orange)}
+.match-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.match-card{aspect-ratio:1;background:white;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:40px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.07);border:4px solid transparent;transition:all .2s}
+.match-card.selected{border-color:var(--orange);background:#FFF3EE}
+.match-card.matched{border-color:var(--green);background:#E8F5E9;pointer-events:none}
+.match-card.wrong{border-color:var(--pink);animation:shake .4s}
 
-  /* === GAME SCREEN === */
-  .game-screen {
-    display: none; position: fixed; inset: 0; z-index: 100;
-    background: var(--bg); overflow-y: auto; padding: 20px;
-    animation: slideIn 0.3s ease;
-  }
-  .game-screen.active { display: block; }
-  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: none; opacity: 1; } }
+/* SPEAK GAME */
+.speak-card{background:white;border-radius:28px;padding:28px;box-shadow:0 8px 28px rgba(0,0,0,.09);text-align:center}
+.speak-emoji-big{font-size:80px;margin-bottom:10px}
+.speak-word{font-family:'Baloo 2',cursive;font-size:48px;font-weight:800;color:var(--orange);margin:10px 0;letter-spacing:2px}
+.speak-hint{font-size:14px;color:#888;margin-bottom:24px}
+.mic-btn{width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,var(--coral),var(--orange));border:none;font-size:48px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto;box-shadow:0 8px 28px rgba(255,107,53,.4);transition:all .2s}
+.mic-btn.listening{animation:micPulse 1s infinite;background:linear-gradient(135deg,#E53935,#FF6B6B)}
+@keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,107,53,.5)}50%{box-shadow:0 0 0 22px rgba(255,107,53,0)}}
+.speak-result{margin-top:16px;font-size:16px;font-weight:700;color:var(--green);min-height:26px}
 
-  .game-header {
-    display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
-  }
-  .back-btn {
-    width: var(--touch); height: var(--touch); border-radius: 50%;
-    background: white; border: none; font-size: 24px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; justify-content: center;
-  }
-  .back-btn:active { transform: scale(0.9); }
-  .game-title { font-family: 'Baloo 2', cursive; font-size: 26px; font-weight: 800; }
+/* FAMILY CHALLENGE */
+.challenge-card{background:white;border-radius:28px;padding:26px;box-shadow:0 8px 28px rgba(0,0,0,.09);text-align:center}
+.challenge-emoji{font-size:72px;margin-bottom:14px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.challenge-text{font-size:20px;font-weight:700;margin-bottom:8px;line-height:1.4}
+.challenge-helper{font-size:14px;color:#888;margin-bottom:22px}
 
-  /* COUNTING GAME */
-  .count-display {
-    background: white; border-radius: 32px; padding: 30px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.1); text-align: center; margin-bottom: 24px;
-  }
-  .count-objects { font-size: 56px; line-height: 1.4; letter-spacing: 4px; min-height: 80px; }
-  .count-question { font-size: 20px; font-weight: 700; color: var(--orange); margin-top: 14px; }
-  .count-options { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .count-opt {
-    background: white; border: 4px solid #EEE; border-radius: 22px;
-    padding: 20px; font-size: 36px; font-weight: 900;
-    cursor: pointer; transition: all 0.15s; text-align: center;
-    min-height: var(--touch); box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-  }
-  .count-opt:active { transform: scale(0.92); }
-  .count-opt.correct { border-color: var(--green); background: #E8F5E9; animation: bounce 0.5s; }
-  .count-opt.wrong { border-color: var(--pink); background: #FCE4EC; animation: shake 0.4s; }
-  @keyframes bounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+/* AAC IN-APP */
+.aac-wrap{padding-bottom:20px}
+.aac-cats{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:14px;scrollbar-width:none}
+.aac-cats::-webkit-scrollbar{display:none}
+.aac-cat{flex-shrink:0;background:white;border-radius:20px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;border:3px solid transparent;box-shadow:0 2px 10px rgba(0,0,0,.07);min-height:44px;display:flex;align-items:center;gap:6px;transition:all .2s}
+.aac-cat.active{border-color:var(--lavender);background:#F3E5F5;color:var(--lavender)}
+.aac-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.aac-tile{background:white;border-radius:18px;padding:14px 8px;text-align:center;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.07);border:3px solid transparent;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+.aac-tile:active{transform:scale(.92)}
+.aac-tile.speaking{border-color:var(--orange);background:#FFF3EE}
+.aac-tile-emoji{font-size:40px;line-height:1}
+.aac-tile-label{font-family:'Baloo 2',cursive;font-size:13px;font-weight:700}
 
-  /* FAMILY CHALLENGE */
-  .family-challenge {
-    background: white; border-radius: 32px; padding: 28px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.1); text-align: center;
-  }
-  .challenge-emoji { font-size: 80px; margin-bottom: 16px; animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
-  .challenge-text { font-size: 20px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
-  .challenge-helper { font-size: 14px; color: #888; margin-bottom: 24px; }
-  .action-btn {
-    display: block; width: 100%; background: linear-gradient(135deg, var(--orange), var(--coral));
-    color: white; border: none; border-radius: 22px; padding: 18px;
-    font-size: 20px; font-weight: 800; font-family: 'Nunito', sans-serif;
-    cursor: pointer; transition: all 0.2s; min-height: var(--touch);
-    box-shadow: 0 6px 20px rgba(255,107,53,0.35); margin-bottom: 12px;
-  }
-  .action-btn:active { transform: scale(0.97); box-shadow: 0 2px 10px rgba(255,107,53,0.3); }
-  .action-btn.secondary {
-    background: white; color: var(--orange); border: 3px solid var(--orange);
-    box-shadow: none;
-  }
+/* ═══════════════════════════════════════════
+   REWARD OVERLAY
+═══════════════════════════════════════════ */
+.reward-overlay{display:none;position:fixed;inset:0;z-index:500;align-items:center;justify-content:center;flex-direction:column;padding:24px;background:radial-gradient(circle at center,#FF6B35,#FF4500);overflow:hidden}
+.reward-overlay.active{display:flex}
+.confetti-layer{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.confetti-piece{position:absolute;border-radius:2px;animation:cFall linear infinite}
+@keyframes cFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+.reward-card{background:white;border-radius:28px;padding:24px 20px;width:100%;max-width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:cardPop .4s cubic-bezier(.34,1.56,.64,1);position:relative;z-index:2;max-height:90vh;overflow-y:auto}
+@keyframes cardPop{from{transform:scale(.5) rotate(-5deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.reward-emoji-big{font-size:72px;display:block;margin-bottom:8px;animation:bounce 0.6s ease infinite alternate}
+.reward-title-big{font-family:'Baloo 2',cursive;font-size:30px;font-weight:800;color:var(--orange);margin-bottom:4px}
+.reward-sub-big{font-size:15px;color:#666;margin-bottom:16px;line-height:1.4}
+.stars-earned{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
+.earn-star{font-size:30px;animation:starPop .4s cubic-bezier(.34,1.56,.64,1) both}
+.earn-star:nth-child(1){animation-delay:.1s}
+.earn-star:nth-child(2){animation-delay:.2s}
+.earn-star:nth-child(3){animation-delay:.3s}
+.timer-strip{background:#EEE;border-radius:10px;height:6px;margin-bottom:14px;overflow:hidden}
+.timer-fill{height:100%;background:linear-gradient(90deg,var(--orange),var(--sun));border-radius:10px;transition:width .1s linear}
+.activity-box{background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border-radius:16px;padding:14px;margin-bottom:12px;border:2px solid #C8E6C9}
+.activity-lbl{font-size:12px;font-weight:700;color:#558B2F;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.activity-txt{font-family:'Baloo 2',cursive;font-size:20px;font-weight:700;color:#2E7D32}
+.act-dots{display:flex;justify-content:center;gap:8px;margin-top:8px}
+.act-dot{width:18px;height:18px;border-radius:50%;background:#C8E6C9;border:2px solid #81C784;cursor:pointer;transition:all .3s}
+.act-dot.done{background:var(--green);border-color:#388E3C;transform:scale(1.2)}
+.song-strip{background:linear-gradient(135deg,#FFF8E1,#FFF3E0);border-radius:14px;padding:12px 14px;margin-bottom:12px;border:2px solid #FFE082;display:flex;align-items:center;gap:10px}
+.song-spin{font-size:28px;animation:spin 3s linear infinite}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.song-info{text-align:left}
+.song-lbl{font-size:11px;font-weight:700;color:#F57F17;text-transform:uppercase}
+.song-nm{font-family:'Baloo 2',cursive;font-size:16px;font-weight:700;color:#E65100}
+.cartoon-strip{background:linear-gradient(135deg,#E3F2FD,#EDE7F6);border-radius:14px;padding:12px 14px;margin-bottom:16px;border:2px solid #B3E5FC;display:flex;align-items:center;gap:10px;cursor:pointer}
+.cartoon-strip:active{transform:scale(.97)}
+.continue-btn{width:100%;background:linear-gradient(135deg,var(--orange),var(--coral));color:white;border:none;border-radius:18px;padding:16px;font-size:18px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;min-height:var(--touch);box-shadow:0 6px 20px rgba(255,107,53,.4);transition:all .2s}
+.continue-btn:active{transform:scale(.97)}
 
-  /* PICTURE MATCH */
-  .match-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-  .match-card {
-    aspect-ratio: 1; background: white; border-radius: 20px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 44px; cursor: pointer; transition: all 0.2s;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08); border: 4px solid transparent;
-  }
-  .match-card:active { transform: scale(0.9); }
-  .match-card.selected { border-color: var(--orange); background: #FFF3EE; }
-  .match-card.matched { border-color: var(--green); background: #E8F5E9; pointer-events: none; }
-  .match-card.wrong { border-color: var(--pink); animation: shake 0.4s; }
+/* ═══════════════════════════════════════════
+   LANG PICKER SHEET
+═══════════════════════════════════════════ */
+.sheet-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);align-items:flex-end;justify-content:center;padding:20px}
+.sheet-overlay.active{display:flex}
+.sheet{background:white;border-radius:32px 32px 24px 24px;padding:26px;width:100%;max-width:420px;animation:sheetUp .3s ease}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+.sheet-title{font-family:'Baloo 2',cursive;font-size:20px;font-weight:700;text-align:center;color:var(--orange);margin-bottom:16px}
+.sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sheet-opt{background:#F5F0FF;border:3px solid transparent;border-radius:16px;padding:14px 10px;text-align:center;cursor:pointer;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:all .2s}
+.sheet-opt.active{border-color:var(--orange);background:#FFF3EE}
+.sheet-opt:active{transform:scale(.95)}
+.sheet-close{width:100%;margin-top:12px;padding:14px;border:none;border-radius:16px;background:#F0F0F0;font-size:15px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
 
-  /* LANGUAGE PICKER */
-  .lang-picker {
-    display: none; position: fixed; inset: 0; z-index: 200;
-    background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
-    align-items: flex-end; justify-content: center; padding: 20px;
-  }
-  .lang-picker.active { display: flex; }
-  .lang-sheet {
-    background: white; border-radius: 32px 32px 24px 24px; padding: 28px;
-    width: 100%; max-width: 420px; animation: sheetUp 0.3s ease;
-  }
-  @keyframes sheetUp { from { transform: translateY(100%); } to { transform: none; } }
-  .lang-sheet-title {
-    font-family: 'Baloo 2', cursive; font-size: 22px; font-weight: 700;
-    text-align: center; margin-bottom: 20px; color: var(--orange);
-  }
-  .lang-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .lang-opt {
-    background: var(--soft); border: 3px solid transparent; border-radius: 18px;
-    padding: 16px 12px; text-align: center; cursor: pointer; transition: all 0.2s;
-    min-height: var(--touch); display: flex; flex-direction: column; align-items: center; justify-content: center;
-  }
-  .lang-opt:active { transform: scale(0.95); }
-  .lang-opt.active { border-color: var(--orange); background: #FFF3EE; }
-  .lang-flag { font-size: 32px; margin-bottom: 4px; }
-  .lang-label { font-weight: 700; font-size: 15px; }
+/* ═══════════════════════════════════════════
+   BOTTOM NAV
+═══════════════════════════════════════════ */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:white;border-radius:28px 28px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,.1);display:flex;align-items:center;justify-content:space-around;padding:10px 8px 18px}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:60px;min-height:var(--touch);border:none;background:none;cursor:pointer;border-radius:16px;padding:8px 10px;transition:all .2s}
+.nav-btn:active{background:#FFF3EE}
+.nav-btn.active .nav-ico{background:var(--orange)}
+.nav-btn.active .nav-lbl{color:var(--orange)}
+.nav-ico{width:42px;height:42px;border-radius:13px;background:#F0F0F0;display:flex;align-items:center;justify-content:center;font-size:21px;transition:all .2s}
+.nav-lbl{font-size:10px;font-weight:700;color:#888}
 
-  /* CELEBRATION */
-  .celebration {
-    display: none; position: fixed; inset: 0; z-index: 300;
-    background: rgba(255,107,53,0.92); align-items: center; justify-content: center;
-    flex-direction: column; text-align: center; padding: 40px;
-  }
-  .celebration.active { display: flex; animation: popIn 0.3s ease; }
-  @keyframes popIn { from{transform:scale(0.8);opacity:0} to{transform:scale(1);opacity:1} }
-  .celebration-emoji { font-size: 100px; animation: celebSpin 1s ease; margin-bottom: 16px; }
-  @keyframes celebSpin { 0%{transform:rotate(-20deg)scale(0)} 100%{transform:none scale(1)} }
-  .celebration-text { font-family:'Baloo 2',cursive; font-size:36px; font-weight:800; color:white; margin-bottom:8px; }
-  .celebration-sub { font-size:18px; color:rgba(255,255,255,0.9); margin-bottom:32px; }
-
-  /* PROGRESS BAR */
-  .progress-wrap { background: #EEE; border-radius: 20px; height: 12px; margin-bottom: 24px; overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 20px; background: linear-gradient(90deg, var(--orange), var(--sun)); transition: width 0.5s ease; }
-
-  /* SPEAK GAME */
-  .speak-word {
-    font-family: 'Baloo 2', cursive; font-size: 52px; font-weight: 800;
-    text-align: center; color: var(--orange); margin: 20px 0;
-    letter-spacing: 2px;
-  }
-  .mic-btn {
-    width: 120px; height: 120px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--coral), var(--orange));
-    border: none; font-size: 52px; cursor: pointer; transition: all 0.2s;
-    box-shadow: 0 8px 32px rgba(255,107,53,0.4); display: flex; align-items: center; justify-content: center;
-    margin: 0 auto;
-  }
-  .mic-btn:active, .mic-btn.listening { transform: scale(0.93); box-shadow: 0 4px 16px rgba(255,107,53,0.3); }
-  .mic-btn.listening { animation: micPulse 0.8s infinite; }
-  @keyframes micPulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,107,53,0.4)} 50%{box-shadow:0 0 0 20px rgba(255,107,53,0)} }
-
-  /* PROFILE SECTION */
-  .profile-card {
-    background: white; border-radius: var(--radius); padding: 24px;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.08); margin-bottom: 16px;
-  }
-  .profile-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
-  .profile-icon { font-size: 32px; }
-  .profile-label { font-size: 13px; color: #888; }
-  .profile-value { font-weight: 700; font-size: 16px; }
-  .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-  .tag {
-    background: var(--soft); border-radius: 20px; padding: 6px 14px;
-    font-size: 13px; font-weight: 600; color: var(--lavender);
-  }
-  .tag.like { background: #E8F5E9; color: var(--green); }
-  .tag.dislike { background: #FCE4EC; color: var(--pink); }
-
-  /* BOTTOM NAV */
-  .bottom-nav {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-    background: white; border-radius: 28px 28px 0 0;
-    box-shadow: 0 -4px 24px rgba(0,0,0,0.1);
-    display: flex; align-items: center; justify-content: space-around;
-    padding: 12px 8px 20px;
-  }
-  .nav-btn {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    min-width: 64px; min-height: var(--touch); border: none; background: none;
-    cursor: pointer; transition: all 0.2s; border-radius: 16px; padding: 8px 12px;
-  }
-  .nav-btn:active { transform: scale(0.93); background: #FFF3EE; }
-  .nav-btn.active .nav-icon { background: var(--orange); }
-  .nav-btn.active .nav-label { color: var(--orange); }
-  .nav-icon {
-    width: 44px; height: 44px; border-radius: 14px;
-    background: #F0F0F0; display: flex; align-items: center; justify-content: center;
-    font-size: 22px; transition: all 0.2s;
-  }
-  .nav-label { font-size: 11px; font-weight: 700; color: #888; }
-
-  .main-content { padding-bottom: 100px; }
+/* AAC BANNER */
+.aac-banner{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:var(--lavender);color:white;border-radius:20px;padding:10px 24px;font-size:17px;font-weight:700;box-shadow:0 4px 20px rgba(149,117,205,.4);opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;z-index:300}
+.aac-banner.show{opacity:1}
 </style>
 </head>
 <body>
 
-<!-- Background -->
-<div class="bg-blobs">
-  <div class="blob blob-1"></div>
-  <div class="blob blob-2"></div>
-  <div class="blob blob-3"></div>
+<!-- ═══════════════════════════════════════
+  AAC BANNER (spoken word display)
+═══════════════════════════════════════ -->
+<div class="aac-banner" id="aacBanner"></div>
+
+<!-- ═══════════════════════════════════════
+  SCREEN: LANGUAGE SELECT
+═══════════════════════════════════════ -->
+<div class="screen active" id="scr-lang">
+  <div class="ob-hero">
+    <div class="ob-logo">🌟</div>
+    <div class="ob-name" id="ob-name">Learning App</div>
+    <div class="ob-tag" id="ob-tag">A learning companion for every child</div>
+  </div>
+  <div class="lang-grid" id="ob-lang-grid"></div>
+  <div style="padding:0 20px 32px;width:100%;max-width:460px;margin:0 auto">
+    <button class="btn-primary" id="ob-lang-next" disabled onclick="goStep(1)">
+      <span id="ob-lang-next-lbl">Continue →</span>
+    </button>
+  </div>
 </div>
 
-<!-- MAIN SCREEN -->
-<div id="mainScreen">
+<!-- ═══════════════════════════════════════
+  SCREEN: STEP 1 — NAME & AGE
+═══════════════════════════════════════ -->
+<div class="screen" id="scr-step1">
+  <div class="step-wrap">
+    <div class="step-dots">
+      <div class="dot active" id="sd1"></div><div class="dot" id="sd2"></div>
+      <div class="dot" id="sd3"></div><div class="dot" id="sd4"></div>
+    </div>
+    <div class="step-hdr">
+      <button class="back-btn" onclick="goStep(0)">←</button>
+      <div class="step-title" id="s1-title">About your child</div>
+    </div>
+    <div class="step-sub" id="s1-sub">Tell us a little about them</div>
+    <div class="form-group">
+      <label class="form-label" id="s1-name-lbl">Child's name</label>
+      <input class="form-input" id="childName" placeholder="e.g. Idris" oninput="checkS1()">
+    </div>
+    <div class="form-group">
+      <label class="form-label" id="s1-age-lbl">Age</label>
+      <div class="age-grid" id="ageGrid"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" id="s1-diag-lbl">Diagnosis (optional)</label>
+      <select class="form-input" id="diagSel"></select>
+    </div>
+    <button class="btn-primary" id="s1-btn" disabled onclick="goStep(2)">
+      <span id="s1-btn-lbl">Next →</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+  SCREEN: STEP 2 — LANGUAGES
+═══════════════════════════════════════ -->
+<div class="screen" id="scr-step2">
+  <div class="step-wrap">
+    <div class="step-dots">
+      <div class="dot done"></div><div class="dot active"></div>
+      <div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="step-hdr">
+      <button class="back-btn" onclick="goStep(1)">←</button>
+      <div class="step-title" id="s2-title">Languages</div>
+    </div>
+    <div class="step-sub" id="s2-sub">Which languages does your family speak?</div>
+    <div class="lang-tags" id="langTagsGrid"></div>
+    <button class="btn-primary" onclick="goStep(3)"><span id="s2-btn-lbl">Next →</span></button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+  SCREEN: STEP 3 — INTERESTS
+═══════════════════════════════════════ -->
+<div class="screen" id="scr-step3">
+  <div class="step-wrap">
+    <div class="step-dots">
+      <div class="dot done"></div><div class="dot done"></div>
+      <div class="dot active"></div><div class="dot"></div>
+    </div>
+    <div class="step-hdr">
+      <button class="back-btn" onclick="goStep(2)">←</button>
+      <div class="step-title" id="s3-title">Interests</div>
+    </div>
+    <div class="step-sub" id="s3-sub">What does your child love?</div>
+    <div class="int-grid" id="intGrid"></div>
+    <button class="btn-primary" onclick="goStep(4)"><span id="s3-btn-lbl">Next →</span></button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+  SCREEN: STEP 4 — FAMILY
+═══════════════════════════════════════ -->
+<div class="screen" id="scr-step4">
+  <div class="step-wrap">
+    <div class="step-dots">
+      <div class="dot done"></div><div class="dot done"></div>
+      <div class="dot done"></div><div class="dot active"></div>
+    </div>
+    <div class="step-hdr">
+      <button class="back-btn" onclick="goStep(3)">←</button>
+      <div class="step-title" id="s4-title">Family</div>
+    </div>
+    <div class="step-sub" id="s4-sub">Who plays with your child?</div>
+    <div class="fam-scroll" id="famSetupGrid"></div>
+    <div class="form-group">
+      <label class="form-label" id="s4-doc-lbl">Doctor's name (optional)</label>
+      <input class="form-input" id="doctorName" placeholder="Dr. ...">
+    </div>
+    <button class="btn-primary" onclick="saveProfile()"><span id="s4-btn-lbl">Create profile 🎉</span></button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+  SCREEN: PROFILE SELECT
+═══════════════════════════════════════ -->
+<div class="screen" id="scr-profiles">
+  <div style="padding:32px 0 16px;text-align:center">
+    <div style="font-size:52px;margin-bottom:8px">🌟</div>
+    <div style="font-family:'Baloo 2',cursive;font-size:26px;font-weight:800;color:var(--orange)" id="profiles-title">Who is learning today?</div>
+  </div>
+  <div class="profiles-list" id="profilesList"></div>
+  <button class="add-child-btn" onclick="goStep(0)" id="add-child-btn">
+    <span style="font-size:24px">+</span><span id="add-child-lbl">Add another child</span>
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════════
+  SCREEN: MAIN APP
+═══════════════════════════════════════ -->
+<div class="screen" id="scr-main">
   <!-- Header -->
-  <div class="header">
-    <div class="header-top">
-      <div class="child-avatar" onclick="showProfile()">🦁</div>
-      <div class="header-title">
-        <div class="child-name" id="childNameDisplay">Идрисжон</div>
-        <div class="child-subtitle" id="headerSubtitle">Давай учиться вместе! 🌟</div>
+  <div class="app-header">
+    <div class="app-header-top">
+      <div class="child-avatar" id="mainAvatar" onclick="showProfiles()">🦁</div>
+      <div style="text-align:center">
+        <div class="app-child-name" id="mainChildName">Idris</div>
+        <div class="app-subtitle" id="mainSubtitle">Let's learn together! 🌟</div>
       </div>
-      <button class="lang-btn" onclick="showLangPicker()">
-        <span id="currentFlag">🇷🇺</span>
-        <span id="currentLangShort">RU</span>
+      <button class="lang-btn" onclick="showLangSheet()">
+        <span id="mainFlag">🇬🇧</span><span id="mainLangShort">EN</span>
       </button>
     </div>
     <div class="stars-bar">
-      <span class="star-icon">⭐</span>
-      <span class="star-icon">⭐</span>
-      <span class="star-icon">⭐</span>
-      <span class="stars-count" id="starsCount">12</span>
+      <span class="star-pop">⭐</span><span class="star-pop">⭐</span><span class="star-pop">⭐</span>
+      <span class="stars-count" id="starsCount">0</span>
     </div>
   </div>
 
+  <!-- Content -->
   <div class="main-content">
-    <!-- Family Section -->
-    <div class="section">
-      <div class="section-title">👨‍👩‍👧‍👦 <span id="familyTitle">Кто со мной сегодня?</span></div>
-      <div class="family-scroll" id="familyScroll">
-        <!-- filled by JS -->
-      </div>
-    </div>
+    <!-- Family row -->
+    <div class="section-title">👨‍👩‍👧‍👦 <span id="fam-section-title">Who is with me?</span></div>
+    <div class="fam-row" id="famRow"></div>
 
-    <!-- Game Modes -->
-    <div class="section">
-      <div class="section-title">🎮 <span id="modesTitle">Что будем делать?</span></div>
-      <div class="modes-grid" id="modesGrid">
-        <!-- filled by JS -->
-      </div>
-    </div>
+    <!-- Game modes -->
+    <div class="section-title">🎮 <span id="modes-title">What shall we do?</span></div>
+    <div class="modes-grid" id="modesGrid"></div>
+
+    <!-- AAC quick row -->
+    <div class="section-title">💬 <span id="aac-quick-title">Quick talk</span></div>
+    <div class="aac-grid" id="aacQuickGrid" style="margin-bottom:16px"></div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav" id="bottomNav">
+    <button class="nav-btn active" id="nav-home" onclick="switchTab('home',this)">
+      <div class="nav-ico">🏠</div><div class="nav-lbl" id="nav-home-lbl">Home</div>
+    </button>
+    <button class="nav-btn" id="nav-aac" onclick="switchTab('aac',this)">
+      <div class="nav-ico">💬</div><div class="nav-lbl" id="nav-aac-lbl">Talk</div>
+    </button>
+    <button class="nav-btn" id="nav-stars" onclick="switchTab('stars',this)">
+      <div class="nav-ico">⭐</div><div class="nav-lbl" id="nav-stars-lbl">Stars</div>
+    </button>
+    <button class="nav-btn" id="nav-profile" onclick="switchTab('profile',this)">
+      <div class="nav-ico">👤</div><div class="nav-lbl" id="nav-profile-lbl">Profile</div>
+    </button>
   </div>
 </div>
 
-<!-- COUNTING GAME SCREEN -->
-<div class="game-screen" id="countScreen">
-  <div class="game-header">
-    <button class="back-btn" onclick="closeGame('countScreen')">←</button>
-    <div class="game-title" id="countTitle">Считаем!</div>
+<!-- ═══════════════════════════════════════
+  GAME: COUNTING
+═══════════════════════════════════════ -->
+<div class="game-screen" id="game-count">
+  <div class="game-hdr">
+    <button class="gbk-btn" onclick="closeGame('game-count')">←</button>
+    <div class="game-title" id="count-title">Count!</div>
   </div>
-  <div class="progress-wrap"><div class="progress-fill" id="countProgress" style="width:0%"></div></div>
+  <div class="progress-wrap"><div class="progress-fill" id="count-prog" style="width:0%"></div></div>
   <div class="count-display">
-    <div class="count-objects" id="countObjects"></div>
-    <div class="count-question" id="countQuestion">Сколько здесь?</div>
+    <div class="count-objects" id="count-objs"></div>
+    <div class="count-q" id="count-q">How many?</div>
   </div>
-  <div class="count-options" id="countOptions"></div>
-  <div style="height:20px"></div>
-  <div style="text-align:center;font-size:14px;color:#888" id="countHelper"></div>
+  <div class="count-opts" id="count-opts"></div>
+  <div style="text-align:center;font-size:13px;color:#888;margin-top:14px" id="count-helper"></div>
 </div>
 
-<!-- FAMILY CHALLENGE SCREEN -->
-<div class="game-screen" id="familyScreen">
-  <div class="game-header">
-    <button class="back-btn" onclick="closeGame('familyScreen')">←</button>
-    <div class="game-title" id="familyGameTitle">Семейное задание!</div>
+<!-- ═══════════════════════════════════════
+  GAME: SPEAK
+═══════════════════════════════════════ -->
+<div class="game-screen" id="game-speak">
+  <div class="game-hdr">
+    <button class="gbk-btn" onclick="closeGame('game-speak')">←</button>
+    <div class="game-title" id="speak-title">Speak!</div>
   </div>
-  <div class="family-challenge">
-    <div class="challenge-emoji" id="challengeEmoji">🤗</div>
-    <div class="challenge-text" id="challengeText">Задание</div>
-    <div class="challenge-helper" id="challengeHelper">Помощник</div>
-    <button class="action-btn" onclick="nextChallenge()" id="challengeBtn">Следующее!</button>
-    <button class="action-btn secondary" onclick="closeGame('familyScreen')" id="challengeDoneBtn">Готово!</button>
+  <div class="speak-card">
+    <div class="speak-emoji-big" id="speak-emoji">🍎</div>
+    <div class="speak-word" id="speak-word">apple</div>
+    <div class="speak-hint" id="speak-hint">Tap and say the word</div>
+    <button class="mic-btn" id="micBtn" onclick="startSpeak()">🎤</button>
+    <div class="speak-result" id="speak-result"></div>
+  </div>
+  <button class="btn-primary" style="margin-top:16px" onclick="nextSpeakWord()">
+    <span id="speak-next-lbl">Next word 👉</span>
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════════
+  GAME: MATCH
+═══════════════════════════════════════ -->
+<div class="game-screen" id="game-match">
+  <div class="game-hdr">
+    <button class="gbk-btn" onclick="closeGame('game-match')">←</button>
+    <div class="game-title" id="match-title">Match!</div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="match-prog" style="width:0%"></div></div>
+  <div class="match-target" id="match-target">🎯 Find the pairs!</div>
+  <div class="match-grid" id="match-grid"></div>
+</div>
+
+<!-- ═══════════════════════════════════════
+  GAME: FAMILY CHALLENGE
+═══════════════════════════════════════ -->
+<div class="game-screen" id="game-family">
+  <div class="game-hdr">
+    <button class="gbk-btn" onclick="closeGame('game-family')">←</button>
+    <div class="game-title" id="family-title">Family!</div>
+  </div>
+  <div class="challenge-card">
+    <div class="challenge-emoji" id="challenge-emoji">🤗</div>
+    <div class="challenge-text" id="challenge-text">Challenge</div>
+    <div class="challenge-helper" id="challenge-helper">Helper</div>
+    <button class="btn-primary" onclick="nextChallenge()"><span id="next-challenge-lbl">Next! →</span></button>
+    <button class="btn-primary" style="background:white;color:var(--orange);border:3px solid var(--orange);box-shadow:none;margin-top:10px" onclick="closeGame('game-family')">
+      <span id="done-challenge-lbl">Done! ✓</span>
+    </button>
   </div>
 </div>
 
-<!-- PICTURE MATCH SCREEN -->
-<div class="game-screen" id="matchScreen">
-  <div class="game-header">
-    <button class="back-btn" onclick="closeGame('matchScreen')">←</button>
-    <div class="game-title" id="matchTitle">Найди пару!</div>
+<!-- ═══════════════════════════════════════
+  GAME: AAC FULL
+═══════════════════════════════════════ -->
+<div class="game-screen" id="game-aac">
+  <div class="game-hdr">
+    <button class="gbk-btn" onclick="closeGame('game-aac')">←</button>
+    <div class="game-title" id="aac-title">Talk Board</div>
   </div>
-  <div class="progress-wrap"><div class="progress-fill" id="matchProgress" style="width:0%"></div></div>
-  <div style="text-align:center;font-size:18px;font-weight:700;margin-bottom:16px;color:var(--orange)" id="matchTarget"></div>
-  <div class="match-grid" id="matchGrid"></div>
+  <div class="aac-wrap">
+    <div class="aac-cats" id="aacCats"></div>
+    <div class="aac-grid" id="aacFullGrid"></div>
+  </div>
 </div>
 
-<!-- SPEAK SCREEN -->
-<div class="game-screen" id="speakScreen">
-  <div class="game-header">
-    <button class="back-btn" onclick="closeGame('speakScreen')">←</button>
-    <div class="game-title" id="speakTitle">Говорим!</div>
-  </div>
-  <div style="background:white;border-radius:32px;padding:30px;box-shadow:0 8px 32px rgba(0,0,0,0.1);text-align:center">
-    <div style="font-size:80px;margin-bottom:12px" id="speakEmoji">🍎</div>
-    <div class="speak-word" id="speakWord">яблоко</div>
-    <div style="font-size:14px;color:#888;margin-bottom:28px" id="speakHint">Нажми на кнопку и скажи слово</div>
-    <button class="mic-btn" id="micBtn" onclick="startSpeaking()">🎤</button>
-    <div style="margin-top:20px;font-size:16px;font-weight:700;color:var(--green);min-height:28px" id="speakResult"></div>
-  </div>
-  <div style="height:20px"></div>
-  <button class="action-btn" onclick="nextSpeakWord()" style="margin-top:12px" id="speakNextBtn">Следующее слово 👉</button>
-</div>
-
-<!-- PROFILE SCREEN -->
-<div class="game-screen" id="profileScreen">
-  <div class="game-header">
-    <button class="back-btn" onclick="closeGame('profileScreen')">←</button>
-    <div class="game-title">👤 Мой профиль</div>
-  </div>
-  <div class="profile-card">
-    <div style="text-align:center;margin-bottom:20px">
-      <div style="font-size:72px">🦁</div>
-      <div style="font-family:'Baloo 2',cursive;font-size:28px;font-weight:800;color:var(--orange)" id="profileName">Идрисжон</div>
-      <div style="font-size:14px;color:#888" id="profileAge">7 лет</div>
+<!-- ═══════════════════════════════════════
+  REWARD OVERLAY
+═══════════════════════════════════════ -->
+<div class="reward-overlay" id="rewardOverlay">
+  <div class="confetti-layer" id="confettiLayer"></div>
+  <div class="reward-card">
+    <span class="reward-emoji-big" id="rEmoji">🎉</span>
+    <div class="reward-title-big" id="rTitle">Amazing!</div>
+    <div class="reward-sub-big" id="rSub">You did it!</div>
+    <div class="stars-earned" id="rStars"></div>
+    <div class="timer-strip"><div class="timer-fill" id="rTimer" style="width:100%"></div></div>
+    <div class="activity-box">
+      <div class="activity-lbl" id="rActLbl">🤸 Do this!</div>
+      <div class="activity-txt" id="rActTxt">Clap 3 times! 👏</div>
+      <div class="act-dots" id="rActDots"></div>
     </div>
-    <div class="profile-row">
-      <span class="profile-icon">🌍</span>
-      <div>
-        <div class="profile-label">Языки</div>
-        <div class="profile-value">Русский, Узбекский, Таджикский</div>
+    <div class="song-strip">
+      <div class="song-spin">🎵</div>
+      <div class="song-info">
+        <div class="song-lbl" id="rSongLbl">Sing along!</div>
+        <div class="song-nm" id="rSongNm">The Wheels on the Bus</div>
       </div>
     </div>
-    <div>
-      <div style="font-weight:700;margin-bottom:8px">❤️ Любит:</div>
-      <div class="tag-list" id="likesTags"></div>
-    </div>
-    <div style="margin-top:16px">
-      <div style="font-weight:700;margin-bottom:8px">🎬 Мультики:</div>
-      <div class="tag-list" id="movieTags"></div>
-    </div>
-  </div>
-  <div class="profile-card">
-    <div style="font-family:'Baloo 2',cursive;font-size:18px;font-weight:700;color:var(--orange);margin-bottom:16px">📊 Мои успехи</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center">
-      <div style="background:var(--soft);border-radius:16px;padding:14px">
-        <div style="font-size:28px;font-weight:900;color:var(--lavender)" id="statStars">12</div>
-        <div style="font-size:11px;color:#888">Звёздочек</div>
+    <div class="cartoon-strip" onclick="openCartoon()">
+      <div style="font-size:32px">📺</div>
+      <div style="flex:1;text-align:left">
+        <div style="font-size:11px;font-weight:700;color:#1565C0;text-transform:uppercase" id="rCartLbl">Watch reward!</div>
+        <div style="font-family:'Baloo 2',cursive;font-size:15px;font-weight:700;color:#0D47A1" id="rCartNm">Ms. Rachel</div>
       </div>
-      <div style="background:#E8F5E9;border-radius:16px;padding:14px">
-        <div style="font-size:28px;font-weight:900;color:var(--green)" id="statGames">5</div>
-        <div style="font-size:11px;color:#888">Игр</div>
-      </div>
-      <div style="background:#FFF3E0;border-radius:16px;padding:14px">
-        <div style="font-size:28px;font-weight:900;color:var(--orange)" id="statDays">3</div>
-        <div style="font-size:11px;color:#888">Дней подряд</div>
-      </div>
+      <div style="font-size:18px;color:#90CAF9">▶</div>
     </div>
+    <button class="continue-btn" id="rContinueBtn" onclick="closeReward()">Keep going! 🚀</button>
   </div>
 </div>
 
-<!-- LANGUAGE PICKER -->
-<div class="lang-picker" id="langPicker" onclick="hideLangPicker()">
-  <div class="lang-sheet" onclick="event.stopPropagation()">
-    <div class="lang-sheet-title">🌍 Выбери язык</div>
-    <div class="lang-options" id="langOptions"></div>
-    <button class="action-btn secondary" style="margin-top:16px" onclick="hideLangPicker()">Закрыть</button>
+<!-- LANG SHEET -->
+<div class="sheet-overlay" id="langSheet" onclick="closeLangSheet()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-title">🌍 Choose language</div>
+    <div class="sheet-grid" id="langSheetGrid"></div>
+    <button class="sheet-close" onclick="closeLangSheet()">Close</button>
   </div>
-</div>
-
-<!-- CELEBRATION -->
-<div class="celebration" id="celebration">
-  <div class="celebration-emoji" id="celebEmoji">🎉</div>
-  <div class="celebration-text" id="celebText">Молодец!</div>
-  <div class="celebration-sub" id="celebSub">+1 звёздочка!</div>
-  <button class="action-btn" style="background:white;color:var(--orange);margin-top:8px" onclick="hideCelebration()">
-    Продолжать! 🚀
-  </button>
-</div>
-
-<!-- BOTTOM NAV -->
-<div class="bottom-nav" id="bottomNav">
-  <button class="nav-btn active" onclick="showTab('home')">
-    <div class="nav-icon">🏠</div>
-    <div class="nav-label" data-key="navHome">Главная</div>
-  </button>
-  <button class="nav-btn" onclick="showTab('family')">
-    <div class="nav-icon">👨‍👩‍👧‍👦</div>
-    <div class="nav-label" data-key="navFamily">Семья</div>
-  </button>
-  <button class="nav-btn" onclick="showTab('stars')">
-    <div class="nav-icon">⭐</div>
-    <div class="nav-label" data-key="navStars">Успехи</div>
-  </button>
-  <button class="nav-btn" onclick="showProfile()">
-    <div class="nav-icon">👤</div>
-    <div class="nav-label" data-key="navProfile">Профиль</div>
-  </button>
 </div>
 
 <script>
-// =====================================================
-// CHILD PROFILE (customizable via MD file concept)
-// =====================================================
-const childProfile = {
-  name: "Идрисжон",
-  nickname: "Идрис",
-  age: 7,
-  avatar: "🦁",
-  languages: ["ru", "uz", "tg", "en"],
-  likes: ["Поезда 🚂", "Динозавры 🦕", "Рисование 🎨", "Музыка 🎵"],
-  dislikes: ["Громкие звуки"],
-  cartoons: ["Цифрятня (Digimon) 🐾", "Маша и Медведь 🐻", "Синий трактор 🚜"],
-  family: [
-    { id: "mama",   emoji: "👩", name: "Мама", color: "#FF8FAB" },
-    { id: "papa",   emoji: "👨", name: "Папа", color: "#64B5F6" },
-    { id: "deda",   emoji: "👴", name: "Дедушка", color: "#A5D6A7" },
-    { id: "babushka", emoji: "👵", name: "Бабушка", color: "#FFD54F" },
-    { id: "sestra", emoji: "👧", name: "Сестра", color: "#F48FB1" },
-    { id: "brat",   emoji: "👦", name: "Брат", color: "#80DEEA" },
-  ]
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+const LANGS_CFG = {
+  en:{flag:"🇬🇧",short:"EN",name:"English",dir:"ltr",
+    ob_name:"Learning App",ob_tag:"A learning companion for every child",ob_next:"Continue →",
+    s1:"About your child",s1sub:"Tell us a little about them",s1name:"Child's name",s1age:"Age",s1diag:"Diagnosis (optional)",s1btn:"Next →",
+    diags:["None / Not diagnosed","ASD — Autism Spectrum","ADHD","Down Syndrome","Speech delay","Other"],
+    s2:"Languages",s2sub:"Which languages does your family speak?",s2btn:"Next →",
+    s3:"Interests",s3sub:"What does your child love?",s3btn:"Next →",
+    s4:"Family",s4sub:"Who plays with your child?",s4doc:"Doctor (optional)",s4btn:"Create profile 🎉",
+    profiles_title:"Who is learning today?",add_child:"Add another child",
+    subtitle:"Let's learn together! 🌟",fam_section:"Who is with me?",modes_title:"What shall we do?",aac_quick:"Quick talk",
+    nav:["Home","Talk","Stars","Profile"],
+    count_title:"Count!",count_q:"How many are there?",
+    speak_title:"Speak!",speak_hint:"Tap and say the word",speak_next:"Next word 👉",
+    match_title:"Match!",match_target:"🎯 Find the pairs!",
+    family_title:"Family Challenge!",next_challenge:"Next! →",done_challenge:"Done! ✓",
+    aac_title:"Talk Board",
+    celebrate:["Amazing! 🌟","Brilliant! 💫","Superstar! ⭐","You did it! 🎉"],
+    act_lbl:"🤸 Do this now!",song_lbl:"🎵 Sing along!",cart_lbl:"🎬 Watch reward!",continue_btn:"Keep going! 🚀",
+    fam_members:["Mama","Papa","Grandpa","Grandma","Sister","Brother"],
+    fam_emojis:["👩","👨","👴","👵","👧","👦"],
+    interests:[{e:"🚗",l:"Cars"},{e:"🦕",l:"Dinos"},{e:"🎨",l:"Drawing"},{e:"🎵",l:"Music"},{e:"🧩",l:"Puzzles"},{e:"📚",l:"Books"},{e:"🐾",l:"Animals"},{e:"⚽",l:"Sports"},{e:"🔢",l:"Numbers"},{e:"🌈",l:"Colors"},{e:"🚂",l:"Trains"},{e:"🌟",l:"Stars"}],
+    aac_cats:["All","Needs","Feelings","Actions","Food","People"],
+    words:[{e:"🍎",w:"apple"},{e:"🚗",w:"car"},{e:"🐱",w:"cat"},{e:"🌙",w:"moon"},{e:"🦕",w:"dinosaur"},{e:"🎨",w:"colors"}],
+    challenges:[
+      {e:"🤗",t:"Hug {fam} and say: I love you!",h:"Family moment ❤️"},
+      {e:"🎵",t:"Sing a song with {fam}!",h:"Music brings us together!"},
+      {e:"🖐️",t:"Give {fam} a high five!",h:"You are amazing!"},
+      {e:"📖",t:"Ask {fam} to read you a book",h:"Reading is wonderful!"},
+      {e:"😄",t:"Make {fam} laugh with a funny face!",h:"Laughter is the best!"},
+    ],
+    activities:[
+      {t:"Clap 3 times! 👏",c:3},{t:"Jump up! ⬆️",c:3},{t:"Touch your nose! 👃",c:1},
+      {t:"Give mama a hug! 🤗",c:1},{t:"Arms up high! 🙌",c:3},{t:"Big smile! 😁",c:1},
+    ],
+  },
+  ru:{flag:"🇷🇺",short:"RU",name:"Русский",dir:"ltr",
+    ob_name:"Учимся вместе",ob_tag:"Приложение для развития каждого ребёнка",ob_next:"Продолжить →",
+    s1:"О вашем ребёнке",s1sub:"Расскажите немного о нём",s1name:"Имя ребёнка",s1age:"Возраст",s1diag:"Диагноз (необязательно)",s1btn:"Далее →",
+    diags:["Нет / Не поставлен","РАС — Аутизм","СДВГ","Синдром Дауна","Задержка речи","Другое"],
+    s2:"Языки",s2sub:"На каких языках говорит ваша семья?",s2btn:"Далее →",
+    s3:"Интересы",s3sub:"Что любит ваш ребёнок?",s3btn:"Далее →",
+    s4:"Семья",s4sub:"Кто играет с вашим ребёнком?",s4doc:"Врач (необязательно)",s4btn:"Создать профиль 🎉",
+    profiles_title:"Кто учится сегодня?",add_child:"Добавить ребёнка",
+    subtitle:"Давай учиться вместе! 🌟",fam_section:"Кто со мной?",modes_title:"Что будем делать?",aac_quick:"Быстро сказать",
+    nav:["Главная","Говорим","Успехи","Профиль"],
+    count_title:"Считаем!",count_q:"Сколько здесь?",
+    speak_title:"Говорим!",speak_hint:"Нажми и скажи слово",speak_next:"Следующее 👉",
+    match_title:"Найди пару!",match_target:"🎯 Найди пары!",
+    family_title:"Семейное задание!",next_challenge:"Следующее! →",done_challenge:"Готово! ✓",
+    aac_title:"Говорилка",
+    celebrate:["Молодец! 🌟","Умница! 💫","Суперзвезда! ⭐","Получилось! 🎉"],
+    act_lbl:"🤸 А теперь сделай это!",song_lbl:"🎵 Пой вместе!",cart_lbl:"🎬 Смотри награду!",continue_btn:"Продолжаем! 🚀",
+    fam_members:["Мама","Папа","Дедушка","Бабушка","Сестра","Брат"],
+    fam_emojis:["👩","👨","👴","👵","👧","👦"],
+    interests:[{e:"🚗",l:"Машины"},{e:"🦕",l:"Дино"},{e:"🎨",l:"Рисование"},{e:"🎵",l:"Музыка"},{e:"🧩",l:"Пазлы"},{e:"📚",l:"Книги"},{e:"🐾",l:"Животные"},{e:"⚽",l:"Спорт"},{e:"🔢",l:"Цифры"},{e:"🌈",l:"Цвета"},{e:"🚂",l:"Поезда"},{e:"🌟",l:"Звёзды"}],
+    aac_cats:["Все","Нужды","Чувства","Действия","Еда","Люди"],
+    words:[{e:"🍎",w:"яблоко"},{e:"🚗",w:"машина"},{e:"🐱",w:"кошка"},{e:"🌙",w:"луна"},{e:"🦕",w:"динозавр"},{e:"🎨",w:"краски"}],
+    challenges:[
+      {e:"🤗",t:"Обними {fam} и скажи: я тебя люблю!",h:"Семейный момент ❤️"},
+      {e:"🎵",t:"Спойте вместе с {fam} песню!",h:"Музыка сближает!"},
+      {e:"🖐️",t:"Дай {fam} пять!",h:"Ты молодец!"},
+      {e:"📖",t:"Попроси {fam} почитать тебе книгу",h:"Чтение — это здорово!"},
+      {e:"😄",t:"Покажи {fam} смешную рожицу!",h:"Смех — лучшее лекарство!"},
+    ],
+    activities:[
+      {t:"Хлопни 3 раза! 👏",c:3},{t:"Прыгни! ⬆️",c:3},{t:"Потрогай нос! 👃",c:1},
+      {t:"Обними маму! 🤗",c:1},{t:"Руки вверх! 🙌",c:3},{t:"Улыбнись широко! 😁",c:1},
+    ],
+  },
+  uz:{flag:"🇺🇿",short:"UZ",name:"O'zbek",dir:"ltr",
+    ob_name:"Birga o'rganamiz",ob_tag:"Har bir bola uchun o'quv do'sti",ob_next:"Davom etish →",
+    s1:"Farzandingiz haqida",s1sub:"Biroz ma'lumot bering",s1name:"Bolaning ismi",s1age:"Yoshi",s1diag:"Tashxis (ixtiyoriy)",s1btn:"Keyingi →",
+    diags:["Yo'q","ASD — Autizm","ADHD","Daun sindromi","Nutq kechikishi","Boshqa"],
+    s2:"Tillar",s2sub:"Oilangizda qaysi tillar?",s2btn:"Keyingi →",
+    s3:"Qiziqishlar",s3sub:"Bolangiz nimani sevadi?",s3btn:"Keyingi →",
+    s4:"Oila",s4sub:"Kim bola bilan o'ynaydi?",s4doc:"Shifokor (ixtiyoriy)",s4btn:"Profil yaratish 🎉",
+    profiles_title:"Bugun kim o'rganadi?",add_child:"Boshqa bola qo'shish",
+    subtitle:"Keling birga o'rganamiz! 🌟",fam_section:"Bugun kim bilan?",modes_title:"Nima qilamiz?",aac_quick:"Tez gapirish",
+    nav:["Bosh","Gapir","Yutuq","Profil"],
+    count_title:"Sanash!",count_q:"Bu yerda nechta?",
+    speak_title:"Gapiring!",speak_hint:"Tugmani bos va so'zni ayting",speak_next:"Keyingisi 👉",
+    match_title:"Juftlik top!",match_target:"🎯 Juftlarni top!",
+    family_title:"Oilaviy vazifa!",next_challenge:"Keyingisi! →",done_challenge:"Bajarildi! ✓",
+    aac_title:"Gapirish taxtasi",
+    celebrate:["Barakalla! 🌟","Zo'r! 💫","Superstar! ⭐","Bajardi! 🎉"],
+    act_lbl:"🤸 Endi buni qiling!",song_lbl:"🎵 Birga kuylaymiz!",cart_lbl:"🎬 Mukofotni ko'ring!",continue_btn:"Davom etamiz! 🚀",
+    fam_members:["Ona","Ota","Bobo","Buvi","Singil","Aka"],
+    fam_emojis:["👩","👨","👴","👵","👧","👦"],
+    interests:[{e:"🚗",l:"Mashinalar"},{e:"🦕",l:"Dinozavr"},{e:"🎨",l:"Chizish"},{e:"🎵",l:"Musiqa"},{e:"🧩",l:"Boshqotirma"},{e:"📚",l:"Kitob"},{e:"🐾",l:"Hayvonlar"},{e:"⚽",l:"Sport"},{e:"🔢",l:"Raqamlar"},{e:"🌈",l:"Ranglar"},{e:"🚂",l:"Poezd"},{e:"🌟",l:"Yulduzlar"}],
+    aac_cats:["Hammasi","Ehtiyoj","His","Harakat","Ovqat","Odamlar"],
+    words:[{e:"🍎",w:"olma"},{e:"🚗",w:"mashina"},{e:"🐱",w:"mushuk"},{e:"🌙",w:"oy"},{e:"🦕",w:"dinozavr"},{e:"🎨",w:"bo'yoq"}],
+    challenges:[
+      {e:"🤗",t:"{fam}ni quchoqla va «Seni yaxshi ko'raman» de!",h:"Oilaviy lahza ❤️"},
+      {e:"🎵",t:"{fam} bilan qo'shiq kuylaymiz!",h:"Musiqa birlashtiradi!"},
+      {e:"🖐️",t:"{fam}ga «beshtik» ber!",h:"Siz ajoyibsiz!"},
+    ],
+    activities:[
+      {t:"3 marta qarsak! 👏",c:3},{t:"Sakra! ⬆️",c:3},{t:"Burnini ushla! 👃",c:1},
+      {t:"Onangni quchoqla! 🤗",c:1},{t:"Qo'llarni ko'tar! 🙌",c:3},{t:"Katta tabassum! 😁",c:1},
+    ],
+  },
+  tg:{flag:"🇹🇯",short:"TG",name:"Тоҷикӣ",dir:"ltr",
+    ob_name:"Якҷоя меомӯзем",ob_tag:"Барномаи таълимӣ барои ҳар кӯдак",ob_next:"Идома →",
+    s1:"Дар бораи фарзандатон",s1sub:"Каме маълумот диҳед",s1name:"Номи кӯдак",s1age:"Синну сол",s1diag:"Ташхис (ихтиёрӣ)",s1btn:"Баъдӣ →",
+    diags:["Не","ASD — Аутизм","ADHD","Синдроми Даун","Таъхири нутқ","Дигар"],
+    s2:"Забонҳо",s2sub:"Оила бо кадом забонҳо гап мезанад?",s2btn:"Баъдӣ →",
+    s3:"Шавқу ҳавас",s3sub:"Фарзандатон чиро дӯст медорад?",s3btn:"Баъдӣ →",
+    s4:"Оила",s4sub:"Бо кӣ бозӣ мекунад?",s4doc:"Духтур (ихтиёрӣ)",s4btn:"Профил сохтан 🎉",
+    profiles_title:"Имрӯз кӣ меомӯзад?",add_child:"Кӯдаки дигар илова кардан",
+    subtitle:"Биёед бо ҳам омӯзем! 🌟",fam_section:"Имрӯз бо кӣ?",modes_title:"Чӣ мекунем?",aac_quick:"Зуд гуфтан",
+    nav:["Асосӣ","Гуем","Натиҷа","Профил"],
+    count_title:"Шуморем!",count_q:"Ин ҷо чанд?",
+    speak_title:"Гӯем!",speak_hint:"Тугмаро пахш кун",speak_next:"Баъдӣ 👉",
+    match_title:"Ҷуфт ёб!",match_target:"🎯 Ҷуфтҳоро ёб!",
+    family_title:"Вазифаи оилавӣ!",next_challenge:"Баъдӣ! →",done_challenge:"Шуд! ✓",
+    aac_title:"Тахтаи гуфтугӯ",
+    celebrate:["Офарин! 🌟","Зӯр! 💫","Суперситора! ⭐","Шуд! 🎉"],
+    act_lbl:"🤸 Ҳоло инро кун!",song_lbl:"🎵 Бо ҳам бихон!",cart_lbl:"🎬 Мукофотатро тамошо кун!",continue_btn:"Идома медиҳем! 🚀",
+    fam_members:["Модар","Падар","Бобо","Момо","Хоҳар","Бародар"],
+    fam_emojis:["👩","👨","👴","👵","👧","👦"],
+    interests:[{e:"🚗",l:"Мошин"},{e:"🦕",l:"Динозавр"},{e:"🎨",l:"Расм"},{e:"🎵",l:"Мусиқа"},{e:"🧩",l:"Паззл"},{e:"📚",l:"Китоб"},{e:"🐾",l:"Ҳайвонот"},{e:"⚽",l:"Варзиш"},{e:"🔢",l:"Рақамҳо"},{e:"🌈",l:"Рангҳо"},{e:"🚂",l:"Қатора"},{e:"🌟",l:"Ситора"}],
+    aac_cats:["Ҳама","Ниёзҳо","Эҳсосот","Амалҳо","Хӯрок","Одамон"],
+    words:[{e:"🍎",w:"себ"},{e:"🚗",w:"мошин"},{e:"🐱",w:"гурба"},{e:"🌙",w:"моҳ"},{e:"🦕",w:"динозавр"},{e:"🎨",w:"рангҳо"}],
+    challenges:[
+      {e:"🤗",t:"{fam}ро бо оғӯш гир ва бигӯй «Дӯстат дорам»!",h:"Лаҳзаи оилавӣ ❤️"},
+      {e:"🎵",t:"Бо {fam} суруд хонед!",h:"Мусиқа меоварад!"},
+      {e:"🖐️",t:"Ба {fam} «панҷ» бидеҳ!",h:"Шумо зӯред!"},
+    ],
+    activities:[
+      {t:"3 маротиба кафкӯбӣ кун! 👏",c:3},{t:"Ҷаҳида бар! ⬆️",c:3},{t:"Бинии худро даст зан! 👃",c:1},
+      {t:"Модарат ро бо оғӯш гир! 🤗",c:1},{t:"Дастҳоро боло бардор! 🙌",c:3},{t:"Табассуми калон! 😁",c:1},
+    ],
+  },
 };
 
-// =====================================================
-// MULTILINGUAL DATA
-// =====================================================
-const LANGS = {
-  ru: { flag: "🇷🇺", short: "RU", name: "Русский",
-    subtitle: "Давай учиться вместе! 🌟",
-    familyTitle: "Кто со мной сегодня?",
-    modesTitle: "Что будем делать?",
-    modes: ["Считаем", "Читаем", "Говорим", "Угадай!", "Семья 💕"],
-    modeDescs: ["Цифры и счёт", "Слова и буквы", "Произношение", "Найди пару", "Играем вместе"],
-    countQ: "Сколько здесь?", countTitle: "Считаем!",
-    matchTitle: "Найди пару!",
-    familyGameTitle: "Семейное задание!",
-    speakTitle: "Говорим!", speakHint: "Нажми и скажи слово",
-    navHome:"Главная", navFamily:"Семья", navStars:"Успехи", navProfile:"Профиль",
-    celebrate: ["Молодец! 🌟", "Отлично! 🎉", "Умница! 💫", "Супер! 🚀"],
-    celebSub: "+1 звёздочка!",
-    words: [
-      {emoji:"🍎",word:"яблоко"},{emoji:"🐱",word:"кошка"},{emoji:"🚂",word:"поезд"},
-      {emoji:"🌙",word:"луна"},{emoji:"🦕",word:"динозавр"},{emoji:"🎨",word:"краски"}
-    ],
-    challenges: [
-      { emoji:"🤗", text:"Обними {family} и скажи: «Я тебя люблю»", helper:"Семейный момент ❤️" },
-      { emoji:"📸", text:"Покажи {family} своё любимое занятие", helper:"Расскажи о себе!" },
-      { emoji:"🎵", text:"Спойте вместе с {family} любимую песню", helper:"Музыка сближает!" },
-      { emoji:"🖐️", text:"Дай {family} пять и покажи большой палец!", helper:"Ты молодец!" },
-      { emoji:"🎭", text:"Покажи {family} смешную рожицу", helper:"Вместе смеяться весело!" },
-      { emoji:"📖", text:"Попроси {family} почитать тебе книгу", helper:"Чтение - это здорово!" },
-    ]
-  },
-  uz: { flag: "🇺🇿", short: "UZ", name: "O'zbek",
-    subtitle: "Keling birga o'rganamiz! 🌟",
-    familyTitle: "Bugun kim bilan?",
-    modesTitle: "Nima qilamiz?",
-    modes: ["Sanash", "O'qish", "Gapirish", "Top!", "Oila 💕"],
-    modeDescs: ["Raqamlar", "So'zlar", "Talaffuz", "Juftlik top", "Birga o'ynash"],
-    countQ: "Bu yerda nechta?", countTitle: "Sanash!",
-    matchTitle: "Juftlik top!",
-    familyGameTitle: "Oilaviy vazifa!",
-    speakTitle: "Gapiring!", speakHint: "Tugmani bos va so'zni ayting",
-    navHome:"Bosh sahifa", navFamily:"Oila", navStars:"Yutuqlar", navProfile:"Profil",
-    celebrate: ["Barakalla! 🌟", "A'lo! 🎉", "Zo'r! 💫", "Super! 🚀"],
-    celebSub: "+1 yulduz!",
-    words: [
-      {emoji:"🍎",word:"olma"},{emoji:"🐱",word:"mushuk"},{emoji:"🚂",word:"poezd"},
-      {emoji:"🌙",word:"oy"},{emoji:"🦕",word:"dinozavr"},{emoji:"🎨",word:"bo'yoq"}
-    ],
-    challenges: [
-      { emoji:"🤗", text:"{family}ni quchoqla va «Seni yaxshi ko'raman» de", helper:"Oilaviy lahza ❤️" },
-      { emoji:"📸", text:"{family}ga sevimli mashg'ulotingni ko'rsat", helper:"O'zing haqida ayt!" },
-      { emoji:"🎵", text:"{family} bilan sevimli qo'shiqni kuylaymiz", helper:"Musiqa birlashtiradi!" },
-      { emoji:"🖐️", text:"{family}ga «beshtik» ber va bosh barmog'ingni ko'rsat!", helper:"Siz ajoyibsiz!" },
-    ]
-  },
-  tg: { flag: "🇹🇯", short: "TG", name: "Тоҷикӣ",
-    subtitle: "Биёед бо ҳам омӯзем! 🌟",
-    familyTitle: "Имрӯз бо кӣ?",
-    modesTitle: "Чӣ мекунем?",
-    modes: ["Шуморем", "Хонем", "Гӯем", "Тахмин кун!", "Оила 💕"],
-    modeDescs: ["Рақамҳо", "Калимаҳо", "Талаффуз", "Ҷуфт ёб", "Якҷоя бозӣ"],
-    countQ: "Ин ҷо чанд?", countTitle: "Шуморем!",
-    matchTitle: "Ҷуфт ёб!",
-    familyGameTitle: "Вазифаи оилавӣ!",
-    speakTitle: "Гӯем!", speakHint: "Тугмаро пахш кун",
-    navHome:"Асосӣ", navFamily:"Оила", navStars:"Натиҷа", navProfile:"Профил",
-    celebrate: ["Зӯр! 🌟", "Офарин! 🎉", "Ақл! 💫", "Супер! 🚀"],
-    celebSub: "+1 ситора!",
-    words: [
-      {emoji:"🍎",word:"себ"},{emoji:"🐱",word:"гурба"},{emoji:"🚂",word:"қатора"},
-      {emoji:"🌙",word:"моҳ"},{emoji:"🦕",word:"динозавр"},{emoji:"🎨",word:"рангҳо"}
-    ],
-    challenges: [
-      { emoji:"🤗", text:"{family}ро бо оғӯш гир ва бигӯй «Ту ро дӯст медорам»", helper:"Лаҳзаи оилавӣ ❤️" },
-      { emoji:"🎵", text:"Бо {family} суруди дӯстдоштаро хонед", helper:"Мусиқа меоварад!" },
-      { emoji:"🖐️", text:"Ба {family} «панҷ» бидеҳ!", helper:"Шумо зӯред!" },
-    ]
-  },
-  en: { flag: "🇬🇧", short: "EN", name: "English",
-    subtitle: "Let's learn together! 🌟",
-    familyTitle: "Who is with me today?",
-    modesTitle: "What shall we do?",
-    modes: ["Count!", "Read!", "Speak!", "Match!", "Family 💕"],
-    modeDescs: ["Numbers & counting", "Words & letters", "Pronunciation", "Find the pair", "Play together"],
-    countQ: "How many are there?", countTitle: "Counting!",
-    matchTitle: "Find the pair!",
-    familyGameTitle: "Family Challenge!",
-    speakTitle: "Let's Speak!", speakHint: "Tap the button and say the word",
-    navHome:"Home", navFamily:"Family", navStars:"Stars", navProfile:"Profile",
-    celebrate: ["Great job! 🌟", "Excellent! 🎉", "Brilliant! 💫", "Super! 🚀"],
-    celebSub: "+1 star!",
-    words: [
-      {emoji:"🍎",word:"apple"},{emoji:"🐱",word:"cat"},{emoji:"🚂",word:"train"},
-      {emoji:"🌙",word:"moon"},{emoji:"🦕",word:"dinosaur"},{emoji:"🎨",word:"colors"}
-    ],
-    challenges: [
-      { emoji:"🤗", text:"Hug {family} and say: «I love you»", helper:"Family moment ❤️" },
-      { emoji:"📸", text:"Show {family} your favorite activity", helper:"Tell them about yourself!" },
-      { emoji:"🎵", text:"Sing a song together with {family}!", helper:"Music brings us together!" },
-      { emoji:"🖐️", text:"Give {family} a high five!", helper:"You're amazing!" },
-    ]
-  }
-};
-
-// =====================================================
-// STATE
-// =====================================================
-let state = {
-  lang: "ru",
-  stars: 12,
-  selectedFamily: null,
-  countStep: 0, countTotal: 5,
-  matchSelected: null, matchMatched: 0, matchTotal: 3,
-  speakWordIdx: 0,
-  challengeIdx: 0,
-  gamesPlayed: 5, daysStreak: 3
-};
-
-// =====================================================
-// INIT
-// =====================================================
-function init() {
-  renderFamily();
-  renderModes();
-  renderLangOptions();
-  updateUI();
-  renderProfile();
-}
-
-function t() { return LANGS[state.lang]; }
-
-function updateUI() {
-  const L = t();
-  document.getElementById('childNameDisplay').textContent = childProfile.name;
-  document.getElementById('headerSubtitle').textContent = L.subtitle;
-  document.getElementById('familyTitle').textContent = L.familyTitle;
-  document.getElementById('modesTitle').textContent = L.modesTitle;
-  document.getElementById('starsCount').textContent = state.stars;
-  document.getElementById('currentFlag').textContent = L.flag;
-  document.getElementById('currentLangShort').textContent = L.short;
-}
-
-function renderFamily() {
-  const el = document.getElementById('familyScroll');
-  el.innerHTML = childProfile.family.map(f => `
-    <div class="family-card ${state.selectedFamily===f.id?'active':''}" onclick="selectFamily('${f.id}')">
-      <span class="family-emoji">${f.emoji}</span>
-      <div class="family-name">${f.name}</div>
-    </div>
-  `).join('');
-}
-
-function selectFamily(id) {
-  state.selectedFamily = id;
-  renderFamily();
-}
-
-function getFamilyName() {
-  if (!state.selectedFamily) return childProfile.family[0].name;
-  return childProfile.family.find(f=>f.id===state.selectedFamily)?.name || "Мама";
-}
-
-function renderModes() {
-  const L = t();
-  const icons = ["🔢","📖","🎤","🃏","👨‍👩‍👧‍👦"];
-  const ids   = ["count","read","speak","match","family"];
-  const colors= ["count","read","speak","match","family"];
-  const el = document.getElementById('modesGrid');
-  el.innerHTML = ids.map((id,i) => `
-    <div class="mode-card ${colors[i]}" onclick="openGame('${id}')">
-      <div class="mode-icon">${icons[i]}</div>
-      <div class="mode-name">${L.modes[i]}</div>
-      <div class="mode-desc">${L.modeDescs[i]}</div>
-    </div>
-  `).join('');
-}
-
-function renderLangOptions() {
-  const el = document.getElementById('langOptions');
-  el.innerHTML = Object.keys(LANGS).map(k => `
-    <div class="lang-opt ${state.lang===k?'active':''}" onclick="setLang('${k}')">
-      <div class="lang-flag">${LANGS[k].flag}</div>
-      <div class="lang-label">${LANGS[k].name}</div>
-    </div>
-  `).join('');
-}
-
-function renderProfile() {
-  document.getElementById('profileName').textContent = childProfile.name;
-  document.getElementById('profileAge').textContent = childProfile.age + " лет";
-  document.getElementById('likesTags').innerHTML = childProfile.likes.map(l=>`<span class="tag like">${l}</span>`).join('');
-  document.getElementById('movieTags').innerHTML = childProfile.cartoons.map(c=>`<span class="tag">${c}</span>`).join('');
-  document.getElementById('statStars').textContent = state.stars;
-  document.getElementById('statGames').textContent = state.gamesPlayed;
-  document.getElementById('statDays').textContent = state.daysStreak;
-}
-
-// =====================================================
-// GAMES
-// =====================================================
-function openGame(type) {
-  const screens = {
-    count: 'countScreen', read: 'speakScreen',
-    speak: 'speakScreen', match: 'matchScreen', family: 'familyScreen'
-  };
-  const screen = screens[type] || 'countScreen';
-
-  if (type === 'count') startCountGame();
-  else if (type === 'match') startMatchGame();
-  else if (type === 'speak' || type === 'read') startSpeakGame();
-  else if (type === 'family') startFamilyGame();
-
-  document.getElementById(screen).classList.add('active');
-  document.getElementById('bottomNav').style.display = 'none';
-}
-
-function closeGame(screenId) {
-  document.getElementById(screenId).classList.remove('active');
-  document.getElementById('bottomNav').style.display = '';
-}
-
-// --- COUNTING GAME ---
-const emojis = ['🍎','🌟','🚂','🦕','🎨','🐱','🌙','🎵'];
-function startCountGame() {
-  state.countStep = 0;
-  document.getElementById('countTitle').textContent = t().countTitle;
-  document.getElementById('countQuestion').textContent = t().countQ;
-  nextCountQuestion();
-}
-function nextCountQuestion() {
-  const maxCount = Math.min(3 + state.countStep, 9);
-  const answer = Math.floor(Math.random() * maxCount) + 1;
-  const emoji = emojis[Math.floor(Math.random() * emojis.length)];
-  const objects = Array(answer).fill(emoji).join(' ');
-  document.getElementById('countObjects').textContent = objects;
-  document.getElementById('countProgress').style.width = (state.countStep/state.countTotal*100) + '%';
-
-  // Wrong options
-  const opts = [answer];
-  while(opts.length < 4) {
-    const r = Math.floor(Math.random()*(maxCount+2))+1;
-    if(!opts.includes(r)) opts.push(r);
-  }
-  opts.sort(() => Math.random()-0.5);
-
-  const el = document.getElementById('countOptions');
-  el.innerHTML = opts.map(n => `
-    <div class="count-opt" onclick="checkCount(this,${n},${answer})">${n}</div>
-  `).join('');
-  document.getElementById('countHelper').textContent = getFamilyName() + ' 👀';
-}
-function checkCount(el, chosen, answer) {
-  const opts = document.querySelectorAll('.count-opt');
-  opts.forEach(o => o.style.pointerEvents = 'none');
-  if(chosen === answer) {
-    el.classList.add('correct');
-    addStar();
-    state.countStep++;
-    if(state.countStep >= state.countTotal) {
-      setTimeout(()=>{ closeGame('countScreen'); celebrate('🔢'); }, 1200);
-    } else {
-      setTimeout(nextCountQuestion, 1200);
-    }
-  } else {
-    el.classList.add('wrong');
-    setTimeout(()=>{ opts.forEach(o=>{ o.classList.remove('wrong','correct'); o.style.pointerEvents=''; }); }, 800);
-  }
-}
-
-// --- MATCH GAME ---
-const matchPairs = [
-  {emoji:"🍎",label:"яблоко"},{emoji:"🐱",label:"кот"},{emoji:"🚂",label:"поезд"},
-  {emoji:"🌙",label:"луна"},{emoji:"🦕",label:"динозавр"},{emoji:"🎵",label:"музыка"}
+const LANG_LIST = [
+  {code:"en",flag:"🇬🇧",label:"English"},
+  {code:"ru",flag:"🇷🇺",label:"Русский"},
+  {code:"uz",flag:"🇺🇿",label:"O'zbek"},
+  {code:"tg",flag:"🇹🇯",label:"Тоҷикӣ"},
+  {code:"ar",flag:"🇸🇦",label:"العربية"},
+  {code:"es",flag:"🇪🇸",label:"Español"},
+  {code:"fr",flag:"🇫🇷",label:"Français"},
 ];
-let matchState = [];
-function startMatchGame() {
-  state.matchMatched = 0; state.matchSelected = null;
-  document.getElementById('matchTitle').textContent = t().matchTitle;
-  const pairs = matchPairs.slice(0,3);
-  const cards = [...pairs.map(p=>({...p,type:'emoji'})), ...pairs.map(p=>({...p,type:'label'}))];
-  cards.sort(()=>Math.random()-0.5);
-  matchState = cards.map((c,i)=>({...c, idx:i, matched:false, selected:false}));
-  renderMatchGrid();
+
+const AAC_DATA = [
+  {id:"eat",e:"🍎",cat:"needs",en:"EAT",ru:"ЕСТЬ",uz:"YE",tg:"ХӮР"},
+  {id:"drink",e:"💧",cat:"needs",en:"DRINK",ru:"ПИТЬ",uz:"ICH",tg:"НӮШ"},
+  {id:"bathroom",e:"🚽",cat:"needs",en:"BATHROOM",ru:"ТУАЛЕТ",uz:"HOJAT",tg:"ҲОҶАТХОНА"},
+  {id:"sleep",e:"😴",cat:"needs",en:"SLEEP",ru:"СПАТЬ",uz:"UXLA",tg:"ХОБ"},
+  {id:"hurt",e:"🤒",cat:"needs",en:"HURT",ru:"БОЛЬНО",uz:"OG'RIQ",tg:"ДАД"},
+  {id:"help",e:"🙋",cat:"needs",en:"HELP",ru:"ПОМОГИТЕ",uz:"YORDAM",tg:"КӮМАК"},
+  {id:"happy",e:"😊",cat:"feelings",en:"HAPPY",ru:"РАДОСТЬ",uz:"XURSAND",tg:"ХУРСАНД"},
+  {id:"sad",e:"😢",cat:"feelings",en:"SAD",ru:"ГРУСТНО",uz:"XAFA",tg:"ҒАМГИН"},
+  {id:"hug",e:"🤗",cat:"feelings",en:"HUG",ru:"ОБНЯТЬ",uz:"QUCHOQ",tg:"БӮСА"},
+  {id:"play",e:"🎮",cat:"actions",en:"PLAY",ru:"ИГРАТЬ",uz:"O'YNA",tg:"БОЗӢ"},
+  {id:"more",e:"➕",cat:"actions",en:"MORE",ru:"ЕЩЁ",uz:"YANA",tg:"БОЗ"},
+  {id:"stop",e:"✋",cat:"actions",en:"STOP",ru:"СТОП",uz:"TO'XTAT",tg:"ИСТ"},
+  {id:"apple",e:"🍎",cat:"food",en:"APPLE",ru:"ЯБЛОКО",uz:"OLMA",tg:"СЕБ"},
+  {id:"water",e:"💧",cat:"food",en:"WATER",ru:"ВОДА",uz:"SUV",tg:"ОБ"},
+  {id:"sweet",e:"🍬",cat:"food",en:"SWEET",ru:"СЛАДКОЕ",uz:"SHIRINLIK",tg:"ШИРИНӢ"},
+  {id:"mama",e:"👩",cat:"people",en:"MAMA",ru:"МАМА",uz:"ONA",tg:"МОДАР"},
+  {id:"papa",e:"👨",cat:"people",en:"PAPA",ru:"ПАПА",uz:"OTA",tg:"ПАДАР"},
+  {id:"grandma",e:"👵",cat:"people",en:"GRANDMA",ru:"БАБУШКА",uz:"BUVI",tg:"МОМО"},
+];
+
+const PROFILE_DATA = {
+  songs:["The Wheels on the Bus","One Little Finger","If You're Happy and You Know It"],
+  cartoons:[
+    {name:"Ms. Rachel",emoji:"👩‍🏫",url:"https://www.youtube.com/@msrachelfortoddlers"},
+    {name:"Super Simple Songs",emoji:"🎵",url:"https://www.youtube.com/@supersimplesongs"},
+    {name:"Lucas and Friends",emoji:"🚌",url:"https://www.youtube.com/@LucasandFriendsByRV"},
+    {name:"Tom and Jerry",emoji:"🐭",url:"https://www.youtube.com/@TomAndJerryOfficial"},
+  ],
+};
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let S = {
+  lang:"en", uiLang:"en",
+  childAge:null, homeLangs:[], interests:[], family:[],
+  selectedFam:null, totalStars:0,
+  countStep:0, countTotal:5,
+  matchSel:null, matchMatched:0,
+  speakIdx:0, challengeIdx:0,
+  aacCat:"all", timerInt:null,
+  actDots:[], actDone:0,
+  currentCartoon:null, currentProfile:null,
+  profiles:[],
+};
+
+function L(){return LANGS_CFG[S.lang]||LANGS_CFG.en}
+
+// ═══════════════════════════════════════════
+// SCREEN ROUTER
+// ═══════════════════════════════════════════
+const SCR_MAP={0:"scr-lang",1:"scr-step1",2:"scr-step2",3:"scr-step3",4:"scr-step4"};
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
 }
-function renderMatchGrid() {
-  const el = document.getElementById('matchGrid');
-  el.innerHTML = matchState.map((c,i)=>`
-    <div class="match-card ${c.matched?'matched':''} ${c.selected?'selected':''}"
-      onclick="selectMatch(${i})" style="font-size:${c.type==='emoji'?'44px':'16px'};font-weight:${c.type==='label'?'700':'400'}">
-      ${c.matched?'✅':(c.type==='emoji'?c.emoji:c.label)}
+function goStep(n){
+  if(n===0){renderLangScreen();}
+  else if(n===1){renderStep1();}
+  else if(n===2){renderStep2();}
+  else if(n===3){renderStep3();}
+  else if(n===4){renderStep4();}
+  showScreen(SCR_MAP[n]||'scr-lang');
+}
+
+// ═══════════════════════════════════════════
+// ONBOARDING — LANGUAGE
+// ═══════════════════════════════════════════
+function renderLangScreen(){
+  const g=document.getElementById('ob-lang-grid');
+  g.innerHTML=LANG_LIST.map(l=>`
+    <div class="lang-card ${S.uiLang===l.code?'sel':''}" onclick="pickUILang('${l.code}')">
+      <span class="lang-flag">${l.flag}</span>
+      <div class="lang-name">${l.label}</div>
     </div>
   `).join('');
-  document.getElementById('matchTarget').textContent = '🎯 ' + t().matchTitle;
-  document.getElementById('matchProgress').style.width = (state.matchMatched/3*100)+'%';
 }
-function selectMatch(idx) {
-  if(matchState[idx].matched) return;
-  if(state.matchSelected === null) {
-    matchState.forEach(c=>c.selected=false);
-    matchState[idx].selected = true;
-    state.matchSelected = idx;
-    renderMatchGrid();
-  } else {
-    const a = matchState[state.matchSelected], b = matchState[idx];
-    if(a.label === b.label && a.type !== b.type) {
-      a.matched = b.matched = true; a.selected = b.selected = false;
-      state.matchMatched++; state.matchSelected = null;
-      addStar(); renderMatchGrid();
-      if(state.matchMatched >= 3) setTimeout(()=>{ closeGame('matchScreen'); celebrate('🃏'); }, 800);
-    } else {
-      b.selected = true; renderMatchGrid();
-      setTimeout(()=>{ matchState.forEach(c=>c.selected=false); state.matchSelected=null; renderMatchGrid(); }, 700);
-    }
+function pickUILang(code){
+  S.uiLang=code; S.lang=code;
+  const cfg=LANGS_CFG[code]||LANGS_CFG.en;
+  document.documentElement.dir=cfg.dir||'ltr';
+  document.documentElement.lang=code;
+  document.getElementById('ob-name').textContent=cfg.ob_name;
+  document.getElementById('ob-tag').textContent=cfg.ob_tag;
+  document.getElementById('ob-lang-next-lbl').textContent=cfg.ob_next;
+  document.getElementById('ob-lang-next').disabled=false;
+  renderLangScreen();
+}
+
+// ═══════════════════════════════════════════
+// STEP 1
+// ═══════════════════════════════════════════
+function renderStep1(){
+  const l=L();
+  setText('s1-title',l.s1);setText('s1-sub',l.s1sub);
+  setText('s1-name-lbl',l.s1name);setText('s1-age-lbl',l.s1age);setText('s1-diag-lbl',l.s1diag);
+  setText('s1-btn-lbl',l.s1btn);
+  document.getElementById('childName').placeholder=l.s1name;
+  const ag=document.getElementById('ageGrid');
+  ag.innerHTML=Array.from({length:12},(_,i)=>i+1).map(a=>`
+    <div class="age-btn ${S.childAge===a?'sel':''}" onclick="pickAge(${a})">${a}</div>
+  `).join('');
+  const dg=document.getElementById('diagSel');
+  dg.innerHTML=l.diags.map((d,i)=>`<option value="${i}">${d}</option>`).join('');
+}
+function pickAge(a){
+  S.childAge=a;
+  document.querySelectorAll('.age-btn').forEach(b=>b.classList.remove('sel'));
+  event.target.classList.add('sel');
+  checkS1();
+}
+function checkS1(){
+  const n=document.getElementById('childName').value.trim();
+  document.getElementById('s1-btn').disabled=!(n&&S.childAge);
+}
+
+// ═══════════════════════════════════════════
+// STEP 2
+// ═══════════════════════════════════════════
+function renderStep2(){
+  const l=L();setText('s2-title',l.s2);setText('s2-sub',l.s2sub);setText('s2-btn-lbl',l.s2btn);
+  const g=document.getElementById('langTagsGrid');
+  g.innerHTML=LANG_LIST.map(lk=>`
+    <div class="lang-tag ${S.homeLangs.includes(lk.code)?'sel':''}" onclick="toggleLang('${lk.code}')">
+      <span>${lk.flag}</span><span>${lk.label}</span>
+    </div>
+  `).join('');
+}
+function toggleLang(code){
+  S.homeLangs=S.homeLangs.includes(code)?S.homeLangs.filter(x=>x!==code):[...S.homeLangs,code];
+  renderStep2();
+}
+
+// ═══════════════════════════════════════════
+// STEP 3
+// ═══════════════════════════════════════════
+function renderStep3(){
+  const l=L();setText('s3-title',l.s3);setText('s3-sub',l.s3sub);setText('s3-btn-lbl',l.s3btn);
+  const g=document.getElementById('intGrid');
+  g.innerHTML=l.interests.map((it,i)=>`
+    <div class="int-btn ${S.interests.includes(i)?'sel':''}" onclick="toggleInt(${i})">
+      <div class="int-emoji">${it.e}</div><div class="int-label">${it.l}</div>
+    </div>
+  `).join('');
+}
+function toggleInt(i){
+  S.interests=S.interests.includes(i)?S.interests.filter(x=>x!==i):[...S.interests,i];
+  renderStep3();
+}
+
+// ═══════════════════════════════════════════
+// STEP 4
+// ═══════════════════════════════════════════
+function renderStep4(){
+  const l=L();setText('s4-title',l.s4);setText('s4-sub',l.s4sub);
+  setText('s4-doc-lbl',l.s4doc);setText('s4-btn-lbl',l.s4btn);
+  const g=document.getElementById('famSetupGrid');
+  g.innerHTML=l.fam_members.map((n,i)=>`
+    <div class="fam-card ${S.family.includes(i)?'sel':''}" onclick="toggleFam(${i})">
+      <span class="fam-emoji">${l.fam_emojis[i]}</span>
+      <div class="fam-label">${n}</div>
+    </div>
+  `).join('');
+}
+function toggleFam(i){
+  S.family=S.family.includes(i)?S.family.filter(x=>x!==i):[...S.family,i];
+  renderStep4();
+}
+
+// ═══════════════════════════════════════════
+// SAVE PROFILE
+// ═══════════════════════════════════════════
+function saveProfile(){
+  const name=document.getElementById('childName').value.trim();
+  const doctor=document.getElementById('doctorName').value.trim();
+  const l=L();
+  const profile={
+    id:Date.now(), name, age:S.childAge,
+    uiLang:S.uiLang, homeLangs:S.homeLangs.length?S.homeLangs:[S.uiLang],
+    interests:S.interests, family:S.family, doctor,
+    avatar:getAvatar(S.interests), stars:0,
+    createdAt:new Date().toISOString()
+  };
+  S.profiles.push(profile);
+  saveProfiles();
+  loadProfile(profile);
+}
+function getAvatar(ints){
+  const map={0:'🚗',1:'🦕',6:'🐾',10:'🚂'};
+  for(const k in map){if(ints.includes(parseInt(k)))return map[k];}
+  return ['🦁','🐯','🐻','🐼','🦊','🐨'][Math.floor(Math.random()*6)];
+}
+
+// ═══════════════════════════════════════════
+// PROFILE STORAGE
+// ═══════════════════════════════════════════
+function saveProfiles(){
+  try{localStorage.setItem('app-profiles',JSON.stringify(S.profiles));}catch{}
+}
+function loadProfiles(){
+  try{S.profiles=JSON.parse(localStorage.getItem('app-profiles')||'[]');}catch{S.profiles=[];}
+}
+
+// ═══════════════════════════════════════════
+// LOAD PROFILE → MAIN APP
+// ═══════════════════════════════════════════
+function loadProfile(p){
+  S.currentProfile=p; S.lang=p.uiLang; S.totalStars=p.stars||0;
+  document.documentElement.dir=(LANGS_CFG[p.uiLang]||LANGS_CFG.en).dir||'ltr';
+  renderMainApp();
+  showScreen('scr-main');
+}
+function renderMainApp(){
+  const l=L(); const p=S.currentProfile;
+  setText('mainChildName',p.name);
+  setText('mainSubtitle',l.subtitle);
+  setText('mainFlag',l.flag);
+  setText('mainLangShort',l.short);
+  setText('starsCount',S.totalStars);
+  document.getElementById('mainAvatar').textContent=p.avatar;
+  setText('fam-section-title',l.fam_section);
+  setText('modes-title',l.modes_title);
+  setText('aac-quick-title',l.aac_quick);
+  setText('nav-home-lbl',l.nav[0]);setText('nav-aac-lbl',l.nav[1]);
+  setText('nav-stars-lbl',l.nav[2]);setText('nav-profile-lbl',l.nav[3]);
+  renderFamRow();
+  renderModes();
+  renderAACQuick();
+}
+function renderFamRow(){
+  const l=L();
+  const el=document.getElementById('famRow');
+  el.innerHTML=l.fam_members.map((n,i)=>`
+    <div class="fam-pill ${S.selectedFam===i?'active':''}" onclick="selectFam(${i})">
+      <span style="font-size:28px;display:block;margin-bottom:4px">${l.fam_emojis[i]}</span>
+      <div style="font-size:11px;font-weight:700">${n}</div>
+    </div>
+  `).join('');
+}
+function selectFam(i){S.selectedFam=i;renderFamRow();}
+function getFamName(){
+  const l=L();
+  if(S.selectedFam===null)return l.fam_members[0];
+  return l.fam_members[S.selectedFam]||l.fam_members[0];
+}
+function renderModes(){
+  const l=L();
+  const modes=[
+    {id:'count',icon:'🔢',cls:'count',name:l.count_title,desc:'numbers'},
+    {id:'speak',icon:'🎤',cls:'speak',name:l.speak_title,desc:'words'},
+    {id:'match',icon:'🃏',cls:'match',name:l.match_title,desc:'pairs'},
+    {id:'family',icon:'🤗',cls:'family',name:l.family_title,desc:'together'},
+    {id:'aac',icon:'💬',cls:'aac',name:l.aac_title,desc:'communication'},
+    {id:'voice',icon:'🎙️',cls:'voice',name:'Voice',desc:'speak & listen'},
+  ];
+  document.getElementById('modesGrid').innerHTML=modes.map(m=>`
+    <div class="mode-card ${m.cls}" onclick="openGame('${m.id}')">
+      <div class="mode-icon">${m.icon}</div>
+      <div class="mode-name">${m.name}</div>
+      <div class="mode-desc">${m.desc}</div>
+    </div>
+  `).join('');
+}
+function renderAACQuick(){
+  const lang=S.lang;
+  const quick=AAC_DATA.slice(0,6);
+  document.getElementById('aacQuickGrid').innerHTML=quick.map(b=>`
+    <div class="aac-tile needs" onclick="aacSpeak('${b.id}','${b[lang]||b.en}','${b.e}')">
+      <div class="aac-tile-emoji">${b.e}</div>
+      <div class="aac-tile-label">${b[lang]||b.en}</div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════
+// GAME LAUNCHER
+// ═══════════════════════════════════════════
+function openGame(type){
+  const map={count:'game-count',speak:'game-speak',match:'game-match',family:'game-family',aac:'game-aac'};
+  if(type==='voice'){window.location.href='idris-voice-module.html';return;}
+  const scrId=map[type];if(!scrId)return;
+  if(type==='count')startCount();
+  else if(type==='speak')startSpeak();
+  else if(type==='match')startMatch();
+  else if(type==='family')startFamily();
+  else if(type==='aac')renderAACFull();
+  document.getElementById(scrId).classList.add('active');
+  document.getElementById('bottomNav').style.display='none';
+}
+function closeGame(id){
+  document.getElementById(id).classList.remove('active');
+  document.getElementById('bottomNav').style.display='';
+}
+
+// ═══════════════════════════════════════════
+// COUNTING GAME
+// ═══════════════════════════════════════════
+const EMOJIS=['🚗','🍎','⭐','🐱','🦕','🎨','🌙','🎵'];
+function startCount(){
+  S.countStep=0;
+  const l=L();
+  setText('count-title',l.count_title);
+  setText('count-q',l.count_q);
+  setText('count-helper',getFamName()+' 👀');
+  nextCount();
+}
+function nextCount(){
+  const max=Math.min(3+S.countStep,9);
+  const ans=Math.floor(Math.random()*max)+1;
+  const em=EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+  document.getElementById('count-objs').textContent=Array(ans).fill(em).join(' ');
+  document.getElementById('count-prog').style.width=(S.countStep/S.countTotal*100)+'%';
+  const opts=[ans];
+  while(opts.length<4){const r=Math.floor(Math.random()*(max+2))+1;if(!opts.includes(r))opts.push(r);}
+  opts.sort(()=>Math.random()-.5);
+  document.getElementById('count-opts').innerHTML=opts.map(n=>`
+    <div class="count-opt" onclick="checkCount(this,${n},${ans})">${n}</div>
+  `).join('');
+}
+function checkCount(el,chosen,ans){
+  document.querySelectorAll('.count-opt').forEach(o=>o.style.pointerEvents='none');
+  if(chosen===ans){
+    el.classList.add('correct');addStar();S.countStep++;
+    if(S.countStep>=S.countTotal){setTimeout(()=>{closeGame('game-count');triggerReward('counting');},1200);}
+    else setTimeout(nextCount,1200);
+  }else{
+    el.classList.add('wrong');
+    setTimeout(()=>{document.querySelectorAll('.count-opt').forEach(o=>{o.classList.remove('wrong','correct');o.style.pointerEvents='';});},800);
   }
 }
 
-// --- SPEAK GAME ---
-function startSpeakGame() {
-  state.speakWordIdx = 0;
-  document.getElementById('speakTitle').textContent = t().speakTitle;
-  document.getElementById('speakHint').textContent = t().speakHint;
+// ═══════════════════════════════════════════
+// SPEAK GAME
+// ═══════════════════════════════════════════
+function startSpeak(){
+  S.speakIdx=0;const l=L();
+  setText('speak-title',l.speak_title);setText('speak-hint',l.speak_hint);setText('speak-next-lbl',l.speak_next);
   loadSpeakWord();
 }
-function loadSpeakWord() {
-  const words = t().words;
-  const w = words[state.speakWordIdx % words.length];
-  document.getElementById('speakEmoji').textContent = w.emoji;
-  document.getElementById('speakWord').textContent = w.word;
-  document.getElementById('speakResult').textContent = '';
+function loadSpeakWord(){
+  const w=L().words[S.speakIdx%L().words.length];
+  document.getElementById('speak-emoji').textContent=w.e;
+  document.getElementById('speak-word').textContent=w.w;
+  document.getElementById('speak-result').textContent='';
   document.getElementById('micBtn').classList.remove('listening');
 }
-function nextSpeakWord() {
-  state.speakWordIdx++;
-  if(state.speakWordIdx >= t().words.length) {
-    closeGame('speakScreen'); celebrate('🎤'); return;
-  }
+function nextSpeakWord(){
+  S.speakIdx++;
+  if(S.speakIdx>=L().words.length){closeGame('game-speak');triggerReward('speaking');return;}
   loadSpeakWord();
 }
-function startSpeaking() {
-  const btn = document.getElementById('micBtn');
+let _recog=null;
+function startSpeak2(){
+  const btn=document.getElementById('micBtn');
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){document.getElementById('speak-result').textContent='✅ '+L().celebrate[0];addStar();return;}
   btn.classList.add('listening');
-  document.getElementById('speakResult').textContent = '🎙️ Слушаю...';
-  // Simulated result (real Web Speech API would go here)
-  setTimeout(()=>{
+  document.getElementById('speak-result').textContent='🎙️ ...';
+  _recog=new SR();
+  const lm={'en':'en-US','ru':'ru-RU','uz':'uz-UZ','tg':'ru-RU','ar':'ar-SA','es':'es-ES','fr':'fr-FR'};
+  _recog.lang=lm[S.lang]||'en-US';
+  _recog.onresult=()=>{
     btn.classList.remove('listening');
-    document.getElementById('speakResult').textContent = '✅ ' + t().celebrate[0];
-    addStar();
-  }, 2000);
+    const msg=L().celebrate[Math.floor(Math.random()*L().celebrate.length)];
+    document.getElementById('speak-result').textContent='✅ '+msg;
+    addStar();speak(msg);
+  };
+  _recog.onerror=()=>{btn.classList.remove('listening');document.getElementById('speak-result').textContent='Try again! 🎤';};
+  _recog.start();
+}
+// alias
+function startSpeak(){S.speakIdx=0;const l=L();setText('speak-title',l.speak_title);setText('speak-hint',l.speak_hint);setText('speak-next-lbl',l.speak_next);loadSpeakWord();}
+
+// ═══════════════════════════════════════════
+// MATCH GAME
+// ═══════════════════════════════════════════
+const MATCH_PAIRS=[{e:"🍎",l:"apple"},{e:"🚗",l:"car"},{e:"🐱",l:"cat"},{e:"🌙",l:"moon"},{e:"🦕",l:"dino"},{e:"🎵",l:"music"}];
+let mState=[];
+function startMatch(){
+  S.matchMatched=0;S.matchSel=null;
+  const l=L();setText('match-title',l.match_title);setText('match-target',l.match_target);
+  const pairs=MATCH_PAIRS.slice(0,3);
+  const cards=[...pairs.map(p=>({...p,type:'emoji'})),...pairs.map(p=>({...p,type:'label'}))];
+  cards.sort(()=>Math.random()-.5);
+  mState=cards.map((c,i)=>({...c,i,matched:false,sel:false}));
+  renderMatchGrid();
+}
+function renderMatchGrid(){
+  document.getElementById('match-prog').style.width=(S.matchMatched/3*100)+'%';
+  document.getElementById('match-grid').innerHTML=mState.map((c,i)=>`
+    <div class="match-card ${c.matched?'matched':''} ${c.sel?'selected':''}"
+      onclick="selectMatch(${i})"
+      style="font-size:${c.type==='emoji'?'40px':'14px'};font-weight:${c.type==='label'?'700':'400'}">
+      ${c.matched?'✅':(c.type==='emoji'?c.e:c.l)}
+    </div>
+  `).join('');
+}
+function selectMatch(idx){
+  if(mState[idx].matched)return;
+  if(S.matchSel===null){
+    mState.forEach(c=>c.sel=false);mState[idx].sel=true;S.matchSel=idx;renderMatchGrid();
+  }else{
+    const a=mState[S.matchSel],b=mState[idx];
+    if(a.l===b.l&&a.type!==b.type){
+      a.matched=b.matched=true;a.sel=b.sel=false;S.matchMatched++;S.matchSel=null;addStar();renderMatchGrid();
+      if(S.matchMatched>=3)setTimeout(()=>{closeGame('game-match');triggerReward('matching');},800);
+    }else{
+      b.sel=true;renderMatchGrid();
+      setTimeout(()=>{mState.forEach(c=>c.sel=false);S.matchSel=null;renderMatchGrid();},700);
+    }
+  }
 }
 
-// --- FAMILY CHALLENGES ---
-function startFamilyGame() {
-  state.challengeIdx = 0;
-  document.getElementById('familyGameTitle').textContent = t().familyGameTitle;
+// ═══════════════════════════════════════════
+// FAMILY CHALLENGE
+// ═══════════════════════════════════════════
+function startFamily(){
+  S.challengeIdx=0;const l=L();
+  setText('family-title',l.family_title);setText('next-challenge-lbl',l.next_challenge);
+  setText('done-challenge-lbl',l.done_challenge);
   loadChallenge();
 }
-function loadChallenge() {
-  const challenges = t().challenges;
-  const c = challenges[state.challengeIdx % challenges.length];
-  const famName = getFamilyName();
-  document.getElementById('challengeEmoji').textContent = c.emoji;
-  document.getElementById('challengeText').textContent = c.text.replace('{family}', famName);
-  document.getElementById('challengeHelper').textContent = c.helper;
+function loadChallenge(){
+  const l=L();const ch=l.challenges[S.challengeIdx%l.challenges.length];
+  document.getElementById('challenge-emoji').textContent=ch.e;
+  document.getElementById('challenge-text').textContent=ch.t.replace('{fam}',getFamName());
+  document.getElementById('challenge-helper').textContent=ch.h;
 }
-function nextChallenge() {
-  state.challengeIdx++;
-  addStar();
-  loadChallenge();
+function nextChallenge(){S.challengeIdx++;addStar();loadChallenge();}
+
+// ═══════════════════════════════════════════
+// AAC FULL
+// ═══════════════════════════════════════════
+function renderAACFull(){
+  const l=L();setText('aac-title',l.aac_title);
+  const cats=['all','needs','feelings','actions','food','people'];
+  document.getElementById('aacCats').innerHTML=cats.map((c,i)=>`
+    <div class="aac-cat ${S.aacCat===c?'active':''}" onclick="setAACCat('${c}')">
+      ${getCatEmoji(c)} ${l.aac_cats[i]||c}
+    </div>
+  `).join('');
+  const lang=S.lang;
+  const btns=S.aacCat==='all'?AAC_DATA:AAC_DATA.filter(b=>b.cat===S.aacCat);
+  document.getElementById('aacFullGrid').innerHTML=btns.map(b=>`
+    <div class="aac-tile ${b.cat}" onclick="aacSpeak('${b.id}','${b[lang]||b.en}','${b.e}')">
+      <div class="aac-tile-emoji">${b.e}</div>
+      <div class="aac-tile-label">${b[lang]||b.en}</div>
+    </div>
+  `).join('');
+}
+function setAACCat(c){S.aacCat=c;renderAACFull();}
+function getCatEmoji(c){return{all:'🔤',needs:'⭐',feelings:'❤️',actions:'🤸',food:'🍎',people:'👨‍👩‍👧'}[c]||'🔤';}
+function aacSpeak(id,word,emoji){
+  speak(word);
+  const banner=document.getElementById('aacBanner');
+  banner.textContent=emoji+' '+word;
+  banner.classList.add('show');
+  setTimeout(()=>banner.classList.remove('show'),2000);
 }
 
-// =====================================================
-// STARS & CELEBRATION
-// =====================================================
-function addStar() {
-  state.stars++;
-  document.getElementById('starsCount').textContent = state.stars;
-  const star = document.createElement('span');
-  star.className = 'star-icon'; star.textContent = '⭐';
-  document.querySelector('.stars-bar').appendChild(star);
-  setTimeout(()=>star.remove(), 2000);
+// ═══════════════════════════════════════════
+// REWARD SYSTEM
+// ═══════════════════════════════════════════
+const TASK_EMOJIS={counting:'🔢',speaking:'🎤',matching:'🃏',family:'🤗',aac:'💬'};
+const STAR_COUNTS={counting:3,speaking:2,matching:3,family:2,aac:1};
+function triggerReward(taskType){
+  const l=L();const sc=STAR_COUNTS[taskType]||2;
+  S.totalStars+=sc;setText('starsCount',S.totalStars);
+  if(S.currentProfile){S.currentProfile.stars=S.totalStars;saveProfiles();}
+  const title=l.celebrate[Math.floor(Math.random()*l.celebrate.length)];
+  const act=l.activities[Math.floor(Math.random()*l.activities.length)];
+  const song=PROFILE_DATA.songs[Math.floor(Math.random()*PROFILE_DATA.songs.length)];
+  const cartoon=PROFILE_DATA.cartoons[Math.floor(Math.random()*PROFILE_DATA.cartoons.length)];
+  S.currentCartoon=cartoon;
+  document.getElementById('rEmoji').textContent=TASK_EMOJIS[taskType]||'🎉';
+  document.getElementById('rTitle').textContent=title;
+  document.getElementById('rContinueBtn').textContent=l.continue_btn;
+  document.getElementById('rActLbl').textContent=l.act_lbl;
+  document.getElementById('rActTxt').textContent=act.t;
+  document.getElementById('rSongLbl').textContent=l.song_lbl;
+  document.getElementById('rSongNm').textContent=song;
+  document.getElementById('rCartLbl').textContent=l.cart_lbl;
+  document.getElementById('rCartNm').textContent=cartoon.emoji+' '+cartoon.name;
+  document.getElementById('rStars').innerHTML=Array(sc).fill('<span class="earn-star">⭐</span>').join('');
+  S.actDone=0;S.actDots=Array(act.c).fill(false);
+  document.getElementById('rActDots').innerHTML=S.actDots.map((_,i)=>`<div class="act-dot" onclick="tapDot(${i})"></div>`).join('');
+  spawnConfetti();
+  document.getElementById('rewardOverlay').classList.add('active');
+  speak(title);
+  startTimer(30);
+}
+function tapDot(i){
+  if(S.actDots[i])return;
+  S.actDots[i]=true;
+  document.querySelectorAll('.act-dot')[i].classList.add('done');
+  S.actDone++;
+}
+function spawnConfetti(){
+  const w=document.getElementById('confettiLayer');w.innerHTML='';
+  const cols=['#FFD700','#FF6B35','#4FC3F7','#66BB6A','#F06292','#9575CD'];
+  for(let i=0;i<36;i++){
+    const el=document.createElement('div');el.className='confetti-piece';
+    el.style.cssText=`left:${Math.random()*100}%;top:${-Math.random()*20}px;background:${cols[Math.floor(Math.random()*cols.length)]};animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()}s;width:${8+Math.random()*12}px;height:${8+Math.random()*12}px;border-radius:${Math.random()>.5?'50%':'2px'}`;
+    w.appendChild(el);
+  }
+}
+function startTimer(sec){
+  clearInterval(S.timerInt);let rem=sec;
+  const bar=document.getElementById('rTimer');bar.style.width='100%';
+  S.timerInt=setInterval(()=>{rem-=.1;bar.style.width=(rem/sec*100)+'%';if(rem<=0){clearInterval(S.timerInt);closeReward();}},100);
+}
+function closeReward(){clearInterval(S.timerInt);document.getElementById('rewardOverlay').classList.remove('active');}
+function openCartoon(){if(S.currentCartoon?.url)window.open(S.currentCartoon.url,'_blank');}
+
+// ═══════════════════════════════════════════
+// STARS
+// ═══════════════════════════════════════════
+function addStar(){
+  S.totalStars++;setText('starsCount',S.totalStars);
+  if(S.currentProfile){S.currentProfile.stars=S.totalStars;saveProfiles();}
+  speak(L().celebrate[Math.floor(Math.random()*L().celebrate.length)]);
 }
 
-function celebrate(icon) {
-  const L = t();
-  const msg = L.celebrate[Math.floor(Math.random()*L.celebrate.length)];
-  document.getElementById('celebEmoji').textContent = icon || '🎉';
-  document.getElementById('celebText').textContent = msg;
-  document.getElementById('celebSub').textContent = L.celebSub;
-  document.getElementById('celebration').classList.add('active');
-  state.gamesPlayed++;
-  document.getElementById('bottomNav').style.display = '';
-}
-function hideCelebration() {
-  document.getElementById('celebration').classList.remove('active');
-}
-
-// =====================================================
-// LANGUAGE
-// =====================================================
-function showLangPicker() { document.getElementById('langPicker').classList.add('active'); }
-function hideLangPicker() { document.getElementById('langPicker').classList.remove('active'); }
-function setLang(lang) {
-  state.lang = lang;
-  renderLangOptions();
-  renderModes();
-  updateUI();
-  hideLangPicker();
+// ═══════════════════════════════════════════
+// TTS
+// ═══════════════════════════════════════════
+function speak(text){
+  if(!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+  const lm={'en':'en-US','ru':'ru-RU','uz':'uz-UZ','tg':'ru-RU','ar':'ar-SA','es':'es-ES','fr':'fr-FR'};
+  const utt=new SpeechSynthesisUtterance(text);
+  utt.lang=lm[S.lang]||'en-US';utt.rate=0.85;utt.pitch=1.1;utt.volume=0.9;
+  const vs=speechSynthesis.getVoices();
+  const m=vs.find(v=>v.lang.startsWith(utt.lang.split('-')[0]));
+  if(m)utt.voice=m;
+  window.speechSynthesis.speak(utt);
 }
 
-// =====================================================
-// PROFILE & TABS
-// =====================================================
-function showProfile() {
-  renderProfile();
-  document.getElementById('profileScreen').classList.add('active');
-  document.getElementById('bottomNav').style.display = 'none';
+// ═══════════════════════════════════════════
+// LANG SHEET
+// ═══════════════════════════════════════════
+function showLangSheet(){
+  document.getElementById('langSheetGrid').innerHTML=LANG_LIST.map(l=>`
+    <div class="sheet-opt ${S.lang===l.code?'active':''}" onclick="setLang('${l.code}')">
+      <div style="font-size:24px">${l.flag}</div>
+      <div style="font-size:13px;font-weight:700;margin-top:4px">${l.label}</div>
+    </div>
+  `).join('');
+  document.getElementById('langSheet').classList.add('active');
 }
-function showTab(tab) {
+function closeLangSheet(){document.getElementById('langSheet').classList.remove('active');}
+function setLang(code){S.lang=code;closeLangSheet();renderMainApp();}
+
+// ═══════════════════════════════════════════
+// PROFILES
+// ═══════════════════════════════════════════
+function showProfiles(){
+  loadProfiles();
+  if(S.profiles.length===0){goStep(0);return;}
+  const pl=document.getElementById('profilesList');
+  pl.innerHTML=S.profiles.map(p=>`
+    <div class="profile-item" onclick="loadProfile(${JSON.stringify(p).replace(/"/g,'&quot;')})">
+      <div class="profile-avatar">${p.avatar}</div>
+      <div class="profile-info">
+        <div class="profile-name">${p.name}</div>
+        <div class="profile-detail">Age ${p.age} · ⭐ ${p.stars||0}</div>
+      </div>
+      <div style="font-size:20px;color:#CCC">›</div>
+    </div>
+  `).join('');
+  showScreen('scr-profiles');
+}
+
+// ═══════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════
+function switchTab(tab,btn){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-  if(tab==='stars') { showProfile(); }
+  btn.classList.add('active');
+  if(tab==='aac')openGame('aac');
+  else if(tab==='profile')showProfiles();
 }
 
-// START
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function setText(id,txt){const el=document.getElementById(id);if(el)el.textContent=txt;}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+function init(){
+  window.speechSynthesis?.getVoices();
+  speechSynthesis?.addEventListener?.('voiceschanged',()=>speechSynthesis.getVoices());
+  loadProfiles();
+  if(S.profiles.length>0)showProfiles();
+  else renderLangScreen();
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js');
+}
 init();
 </script>
 </body>
