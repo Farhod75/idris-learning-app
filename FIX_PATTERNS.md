@@ -462,6 +462,14 @@ async function save(key: string, val: unknown) {
 Symptom: Youngest children (age 1) cannot be registered
 Fix: Array.from({length:12}, (_,i) => i+1) not i+2
 
+
+##FP-019 | YouTube | Channel @handle URLs return 404
+Symptom: YouTube page says "This page isn't available"
+Fix: Use search URLs instead:
+  youtube.com/results?search_query=ms+rachel+for+toddlers
+Applies to: Any app linking to YouTube channels
+
+
 ## STATS
 | Source | Count | Most critical |
 |--------|-------|--------------|

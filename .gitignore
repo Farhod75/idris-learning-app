@@ -87,3 +87,5 @@ assets/sounds/*.m4a
 *.tmp
 *.bak
 *.swp
+
+.vercel
