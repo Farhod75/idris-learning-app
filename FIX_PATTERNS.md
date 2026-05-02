@@ -470,12 +470,190 @@ Fix: Use search URLs instead:
 Applies to: Any app linking to YouTube channels
 
 
+## FP-020 through FP-026 — Reserved (applied inline, not yet documented)
+
+---
+
+## FP-027 — Video reward plays same clip on every visit
+**Source:** Idris App — video-reward.html
+**Symptom:** Same YouTube video plays every time reward screen opens.
+**Root cause:** `Math.random()` happened to return similar values, and there was no exclusion logic.
+
+**Fix:**
+```javascript
+let _lastVideoIdx = -1;
+function pickNextVideo() {
+  let idx;
+  do { idx = Math.floor(Math.random() * VIDEOS.length); }
+  while (VIDEOS.length > 1 && idx === _lastVideoIdx);
+  _lastVideoIdx = idx;
+  return VIDEOS[idx];
+}
+```
+**Applies to:** Any rotating reward/playlist system. `do-while` prevents same-index repeat.
+
+---
+
+## FP-028 — Reward timer tiers wrong (5/30 min flat → 5 proper tiers)
+**Source:** Idris App — video-reward.html
+**Symptom:** Old tiers (5 tasks=2min, 30 tasks=30min) didn't match educational session pacing.
+**Root cause:** Initial implementation used 2-tier logic; requirement was 5 tiers + daily_complete flag.
+
+**Fix:**
+```javascript
+function getTier(tasks, dailyComplete) {
+  if (dailyComplete)  return { seconds: 30 * 60, label: '30 min video', emoji: '🏆' };
+  if (tasks >= 20)    return { seconds:  5 * 60, label:  '5 min video', emoji: '🥇' };
+  if (tasks >= 15)    return { seconds:  2 * 60, label:  '2 min video', emoji: '🌟' };
+  if (tasks >= 10)    return { seconds:      60, label:  '1 min video', emoji: '👍' };
+  return                     { seconds:      30, label: '30 sec video', emoji: '✅' };
+}
+// URL: video-reward.html?tasks=10 or ?daily=1
+```
+**Applies to:** Idris App reward system. 5 tasks=30s, 10=1min, 15=2min, 20=5min, daily_complete=30min.
+
+---
+
+## FP-029 — "Back" button on reward page navigates wrong (history.back() fails)
+**Source:** Idris App — video-reward.html
+**Symptom:** Back button sometimes navigates to Google/external page, or does nothing when no history.
+**Root cause:** `history.back()` goes to whatever was before in browser history — not guaranteed to be index.html.
+
+**Fix:**
+```javascript
+function goBack() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  if (ytPlayer && playerReady) ytPlayer.stopVideo();
+  window.location.href = '/index.html';
+}
+```
+**Rule:** NEVER use `history.back()` for structured app navigation. Always use explicit `window.location.href`.
+
+---
+
+## FP-030 — TTS speaks emoji characters aloud ("grinning face", "star" etc.)
+**Source:** Idris App — index.html, idris-voice-module.html
+**Symptom:** `speak("Amazing! 🌟")` → TTS says "Amazing! star" or "Amazing! grinning face".
+**Root cause:** SpeechSynthesisUtterance receives emoji Unicode — some TTS engines verbalize the name.
+
+**Fix:**
+```javascript
+// index.html — add before speak()
+function stripForTTS(t) {
+  return t.replace(/\p{Emoji}/gu, '')
+          .replace(/\b(star|dizzy|sparkle|fire|heart|check|cross|arrow)\b/gi, '')
+          .replace(/\s+/g, ' ').trim();
+}
+// Then: new SpeechSynthesisUtterance(stripForTTS(text))
+
+// idris-voice-module.html — inside speakText()
+const cleaned = text.replace(/\p{Emoji}/gu, '').replace(/\s+/g, ' ').trim();
+const utt = new SpeechSynthesisUtterance(cleaned);
+```
+**Note:** Requires Unicode property escapes (`/\p{Emoji}/gu`) — supported in Safari 12+ and Chrome 64+.
+
+---
+
+## FP-031 — Cartoon button opens YouTube in new tab (external navigation)
+**Source:** Idris App — index.html
+**Symptom:** Tapping cartoon button leaves the PWA and opens youtube.com. Child gets lost.
+**Root cause:** `window.open(url, '_blank')` with a youtube.com URL — external site, not in-app.
+
+**Fix:**
+```javascript
+// WRONG:
+function openCartoon() { if (S.currentCartoon?.url) window.open(S.currentCartoon.url, '_blank'); }
+
+// CORRECT — route to in-app video reward screen:
+function openCartoon() {
+  window.location.href = 'video-reward.html?tasks=' + S.totalStars + '&stars=' + S.totalStars;
+}
+```
+**Rule:** NEVER `window.open()` to external domains in a child-facing PWA. Use in-app embed only.
+
+---
+
+## FP-032 — Language selector shows 7 languages but only 4 have translations
+**Source:** Idris App — index.html
+**Symptom:** Switching to Arabic/Spanish/French crashes app with `Cannot read property of undefined`.
+**Root cause:** `LANG_LIST` had 7 entries but `LANGS_CFG` only had 4 (en, ru, uz, tg). `L()` returns undefined.
+
+**Fix:** Add complete entries for `ar`, `es`, `fr` to `LANGS_CFG` with all required keys:
+`flag, short, name, dir, ob_name, ob_tag, ob_next, s1..s4 strings, diags[], nav[], words[], challenges[], activities[], interests[], aac_cats[], celebrate[], fam_members[], fam_emojis[]`
+
+For Arabic: `dir:"rtl"` — also triggers CSS `[dir=rtl]` rules for right-to-left layout.
+**Rule:** Every code in `LANG_LIST` MUST have a matching entry in `LANGS_CFG`. Add both atomically.
+
+---
+
+## FP-033 — Uzbek TTS speaks in English (no uz-UZ voice on iOS)
+**Source:** Idris App — index.html
+**Symptom:** Uzbek mode TTS falls back to default (usually English) voice. Words sound wrong.
+**Root cause:** iOS does not ship a `uz-UZ` TTS voice. `speechSynthesis.getVoices()` returns no Uzbek match.
+
+**Fix:**
+```javascript
+let m = vs.find(v => v.lang.startsWith(utt.lang.split('-')[0]));
+if (!m && utt.lang === 'uz-UZ') m = vs.find(v => v.lang.startsWith('tr')); // Turkish ≈ closest
+if (m) utt.voice = m;
+```
+**Why Turkish:** Uzbek and Turkish are both Turkic languages with similar phonology. `tr-TR` is available on all iOS devices. Better than English for Uzbek families.
+
+---
+
+## FP-034 — iPhone Safari mic denied silently in PWA after first launch
+**Source:** Idris App — index.html (`startSpeak2`), idris-voice-module.html (`startListening`) — also see FP-011
+**Symptom:** `SpeechRecognition.start()` fires, `onstart` never fires, no error shown.
+**Root cause:** PWA context on iPhone has separate mic permission from Safari browser. Must call `getUserMedia` explicitly each time to trigger the permission dialog.
+
+**Fix:**
+```javascript
+// Wrap recognition.start() in getUserMedia — triggers permission dialog if needed
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(stream => {
+      stream.getTracks().forEach(t => t.stop()); // release immediately — ASR manages its own stream
+      recognition.start();
+    })
+    .catch(() => {
+      // Show user-facing instruction — cannot programmatically open Settings
+      resultEl.textContent = '🎤 Allow microphone in Settings → Safari → Microphone';
+    });
+} else {
+  recognition.start();
+}
+```
+**Rule:** Always call `getUserMedia` before `SpeechRecognition.start()` in iOS PWAs. Stop the stream immediately after — ASR manages its own audio capture.
+
+---
+
+## FP-035 — Speak game shows word but doesn't read it aloud
+**Source:** Idris App — index.html
+**Symptom:** Word appears on screen but no TTS audio. Child must already know the word to attempt it.
+**Root cause:** `loadSpeakWord()` only sets DOM text. `speak()` was never called.
+
+**Fix:**
+```javascript
+function loadSpeakWord() {
+  const w = L().words[S.speakIdx % L().words.length];
+  document.getElementById('speak-emoji').textContent = w.e;
+  document.getElementById('speak-word').textContent = w.w;
+  document.getElementById('speak-result').textContent = '';
+  document.getElementById('micBtn').classList.remove('listening');
+  speak(w.w); // ← read word aloud when it loads
+}
+// In speak(): utt.rate = 0.7 (slower than default 1.0 — better for ASD children learning words)
+```
+**UX rationale:** ASD children benefit from audio + visual pairing. Word should be modeled before child attempts to repeat it. Rate 0.7 gives clear, unhurried pronunciation.
+
+---
+
 ## STATS
 | Source | Count | Most critical |
 |--------|-------|--------------|
 | HadithVerifier (real) | 6 | FP-001 RLS, FP-002 ENV |
 | Shared | 3 | FP-007 empty content, FP-008 JSON fences |
-| Idris App | 8 | FP-011 PWA mic, FP-015 profile injection |
-| **Total** | **17** | |
+| Idris App | 17 | FP-011 PWA mic, FP-034 iPhone mic, FP-030 TTS emoji |
+| **Total** | **26** | |
 
-Last updated: 2026-05-01 | Next review: after Idris App Phase 2
+Last updated: 2026-05-02 | Next review: after Idris App Phase 2

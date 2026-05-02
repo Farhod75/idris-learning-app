@@ -382,7 +382,17 @@ function startListening() {
   };
 
   recognition.onend = () => stopListening();
-  recognition.start();
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => { stream.getTracks().forEach(t => t.stop()); recognition.start(); })
+      .catch(() => {
+        document.getElementById('micLabel').textContent = 'Allow microphone access first';
+        setStatus('error', '🎤 Allow microphone: Settings → Safari → Microphone → Allow');
+        stopListening();
+      });
+  } else {
+    recognition.start();
+  }
 }
 
 function stopListening() {
@@ -467,7 +477,8 @@ Rules:
 function speakText(text, lang) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
+  const cleaned = text.replace(/\p{Emoji}/gu, '').replace(/\s+/g, ' ').trim();
+  const utt = new SpeechSynthesisUtterance(cleaned);
   utt.lang = lang || "en-US";
   utt.rate = 0.85;   // slightly slow — better for Idris
   utt.pitch = 1.1;   // slightly higher — more engaging for children

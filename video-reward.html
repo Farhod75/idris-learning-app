@@ -274,25 +274,39 @@
   <p>Choose a reward tier to preview:</p>
 
   <div class="tier-cards">
-    <div class="tier-card tier-big" onclick="startReward(5, 15)">
+    <div class="tier-card tier-big" onclick="startReward(0, 0, true)">
       <div class="tier-icon">🏆</div>
       <div class="tier-info">
-        <strong>All done! 30 min video</strong>
-        <span>5+ tasks completed ⭐⭐⭐⭐⭐</span>
+        <strong>All done today! 30 min video</strong>
+        <span>daily_complete flag</span>
       </div>
     </div>
-    <div class="tier-card tier-med" onclick="startReward(3, 9)">
+    <div class="tier-card tier-big" onclick="startReward(20, 20)">
+      <div class="tier-icon">🥇</div>
+      <div class="tier-info">
+        <strong>20 tasks — 5 min video</strong>
+        <span>⭐⭐⭐⭐⭐ ×4</span>
+      </div>
+    </div>
+    <div class="tier-card tier-med" onclick="startReward(15, 15)">
       <div class="tier-icon">🌟</div>
       <div class="tier-info">
-        <strong>Great job! 5 min video</strong>
-        <span>3–4 tasks completed ⭐⭐⭐</span>
+        <strong>15 tasks — 2 min video</strong>
+        <span>⭐⭐⭐ ×5</span>
       </div>
     </div>
-    <div class="tier-card tier-small" onclick="startReward(1, 3)">
+    <div class="tier-card tier-small" onclick="startReward(10, 10)">
       <div class="tier-icon">👍</div>
       <div class="tier-info">
-        <strong>Good start! 2 min video</strong>
-        <span>1–2 tasks completed ⭐</span>
+        <strong>10 tasks — 1 min video</strong>
+        <span>⭐⭐ ×5</span>
+      </div>
+    </div>
+    <div class="tier-card tier-small" onclick="startReward(5, 5)">
+      <div class="tier-icon">✅</div>
+      <div class="tier-info">
+        <strong>5 tasks — 30 sec video</strong>
+        <span>⭐ ×5</span>
       </div>
     </div>
   </div>
@@ -352,11 +366,13 @@ const VIDEOS = [
   { id: 'eBVqcTEC3zQ', title: 'One Little Finger',      emoji: '☝️' },
 ];
 
-// Reward tiers: tasks threshold → allowed seconds
-function getTier(tasks) {
-  if (tasks >= 5) return { seconds: 30 * 60, label: '30 min video', emoji: '🏆', title: 'Amazing! All done! 🎉' };
-  if (tasks >= 3) return { seconds:  5 * 60, label:  '5 min video', emoji: '🌟', title: 'Great job! 🌟'         };
-  return              { seconds:  2 * 60, label:  '2 min video', emoji: '👍', title: 'Good start! 👍'        };
+// FP-028: Reward tiers — tasks threshold → allowed seconds
+function getTier(tasks, dailyComplete) {
+  if (dailyComplete)  return { seconds: 30 * 60, label: '30 min video', emoji: '🏆', title: 'All done today! 🏆'   };
+  if (tasks >= 20)    return { seconds:  5 * 60, label:  '5 min video', emoji: '🥇', title: 'Amazing! 20 tasks! 🎉' };
+  if (tasks >= 15)    return { seconds:  2 * 60, label:  '2 min video', emoji: '🌟', title: 'Great job! 15 tasks! 🌟' };
+  if (tasks >= 10)    return { seconds:      60, label:  '1 min video', emoji: '👍', title: 'Well done! 10 tasks! 👍' };
+  return                     { seconds:      30, label: '30 sec video', emoji: '✅', title: 'Good start! ✅'          };
 }
 
 function starsString(stars) {
@@ -370,15 +386,26 @@ let timerInterval  = null;
 let secsRemaining  = 0;
 let totalSecs      = 0;
 let playerReady    = false;
+let _lastVideoIdx  = -1;
+
+// FP-027: Pick a different video each reward (no immediate repeat)
+function pickNextVideo() {
+  let idx;
+  do { idx = Math.floor(Math.random() * VIDEOS.length); }
+  while (VIDEOS.length > 1 && idx === _lastVideoIdx);
+  _lastVideoIdx = idx;
+  return VIDEOS[idx];
+}
 
 // ─── URL PARAMS ────────────────────────────────────────────────────────────
 const params = new URLSearchParams(window.location.search);
 const urlTasks = parseInt(params.get('tasks'), 10);
 const urlStars = parseInt(params.get('stars'),  10);
+const urlDaily = params.get('daily') === '1';
 
 // Auto-start if params provided
-if (!isNaN(urlTasks)) {
-  startReward(urlTasks, isNaN(urlStars) ? urlTasks * 3 : urlStars);
+if (urlDaily || !isNaN(urlTasks)) {
+  startReward(isNaN(urlTasks) ? 0 : urlTasks, isNaN(urlStars) ? 0 : urlStars, urlDaily);
 }
 
 // ─── SCREENS ───────────────────────────────────────────────────────────────
@@ -388,9 +415,9 @@ function showScreen(id) {
 }
 
 // ─── START FLOW ────────────────────────────────────────────────────────────
-function startReward(tasks, stars) {
-  const tier   = getTier(tasks);
-  const video  = VIDEOS[Math.floor(Math.random() * VIDEOS.length)];
+function startReward(tasks, stars, dailyComplete) {
+  const tier   = getTier(tasks, dailyComplete);
+  const video  = pickNextVideo(); // FP-027
 
   // Store for later screens
   window._rewardState = { tier, video, stars };
@@ -583,19 +610,11 @@ function launchConfetti() {
 }
 
 // ─── NAVIGATION ────────────────────────────────────────────────────────────
+// FP-029: Always use direct href — not history.back() or new window
 function goBack() {
-  if (timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null;
-  }
-  if (ytPlayer && playerReady) {
-    ytPlayer.stopVideo();
-  }
-  if (window.history.length > 1) {
-    window.history.back();
-  } else {
-    window.location.href = 'index.html';
-  }
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  if (ytPlayer && playerReady) ytPlayer.stopVideo();
+  window.location.href = '/index.html';
 }
 
 // ─── UTILS ─────────────────────────────────────────────────────────────────
