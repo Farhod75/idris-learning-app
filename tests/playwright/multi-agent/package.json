@@ -1,0 +1,29 @@
+{
+  "name": "idris-multi-agent-qa",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:orchestrator": "playwright test orchestrator.spec.ts --project=ipad-safari",
+    "test:en": "playwright test agents/en-agent.spec.ts --project=ipad-safari",
+    "test:ru": "playwright test agents/ru-agent.spec.ts --project=ipad-safari",
+    "test:uz": "playwright test agents/uz-agent.spec.ts --project=ipad-safari",
+    "test:tg": "playwright test agents/tg-agent.spec.ts --project=ipad-safari",
+    "test:ar": "playwright test agents/ar-agent.spec.ts --project=ipad-safari",
+    "test:es": "playwright test agents/es-agent.spec.ts --project=ipad-safari",
+    "test:fr": "playwright test agents/fr-agent.spec.ts --project=ipad-safari",
+    "test:iphone": "playwright test --project=iphone-safari",
+    "test:chrome": "playwright test --project=desktop-chrome",
+    "test:headed": "playwright test --headed --project=ipad-safari",
+    "report": "playwright show-report reports/html"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.9.1",
+    "@playwright/test": "^1.44.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  }
+}
