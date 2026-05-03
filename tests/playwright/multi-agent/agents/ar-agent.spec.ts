@@ -35,10 +35,10 @@ test.describe('[AR] Arabic — full language suite + RTL', () => {
     const dir = await page.evaluate(() => document.documentElement.dir);
     expect(dir, 'Arabic requires dir="rtl" on <html> — layout and text alignment depend on it').toBe('rtl');
 
-    const mainAppDir = await page.locator('#main-app').evaluate(
+    const mainAppDir = await page.locator('#scr-main').evaluate(
       el => window.getComputedStyle(el).direction,
     );
-    expect(mainAppDir, '#main-app computed direction must be rtl for Arabic').toBe('rtl');
+    expect(mainAppDir, '#scr-main computed direction must be rtl for Arabic').toBe('rtl');
   });
 
   // Arabic script must appear in visible text
@@ -47,8 +47,8 @@ test.describe('[AR] Arabic — full language suite + RTL', () => {
     await agent.init(page);
     await agent.selectProfile(page);
 
-    const text = (await page.locator('#main-app').textContent()) ?? '';
+    const text = (await page.locator('#scr-main').textContent()) ?? '';
     const hasArabic = /[\u0600-\u06FF]/.test(text);
-    expect(hasArabic, `Expected Arabic characters (U+0600-U+06FF) in #main-app text. Got: "${text.slice(0, 80)}"`).toBe(true);
+    expect(hasArabic, `Expected Arabic characters (U+0600-U+06FF) in #scr-main text. Got: "${text.slice(0, 80)}"`).toBe(true);
   });
 });

@@ -54,7 +54,7 @@ export class BaseAgent {
       window.localStorage.setItem('app-profiles', val);
     }, profileToLocalStorage(this.profile));
     await page.goto('/');
-    await page.waitForSelector('#scr-profiles, #main-app', {
+    await page.waitForSelector('#scr-profiles, #scr-main', {
       state: 'visible',
       timeout: 8000,
     });
@@ -65,19 +65,31 @@ export class BaseAgent {
     const item = page.locator('.profile-item').first();
     await item.waitFor({ state: 'visible', timeout: 5000 });
     await item.tap();
-    await page.waitForSelector('#main-app', { state: 'visible', timeout: 8000 });
+    await page.waitForSelector('#scr-main', { state: 'visible', timeout: 8000 });
   }
 
   /** Navigate back to main app (home screen). */
   private async backToMain(page: Page): Promise<void> {
-    // Try clicking a back button first
-    const back = page
-      .locator('.back-btn, [onclick*="showScreen(\'main\')"], [onclick*="showMain"]')
-      .first();
-    if (await back.isVisible({ timeout: 500 }).catch(() => false)) {
-      await back.tap();
+    // Use JS evaluation — most reliable across all game screens
+    const closed = await page.evaluate(() => {
+      const active = document.querySelector('.game-screen.active') as HTMLElement | null;
+      if (active) {
+        const fn = (window as any).closeGame;
+        if (typeof fn === 'function') { fn(active.id); return true; }
+        active.classList.remove('active');
+      }
+      const main = document.getElementById('scr-main');
+      if (main) { main.classList.add('active'); }
+      return false;
+    });
+    if (!closed) {
+      // Fallback: tap visible back button
+      const back = page.locator('.gbk-btn').filter({ hasText: '←' }).first();
+      if (await back.isVisible({ timeout: 500 }).catch(() => false)) {
+        await back.tap();
+      }
     }
-    await page.waitForSelector('#main-app', { state: 'visible', timeout: 5000 }).catch(() => {});
+    await page.waitForSelector('#scr-main', { state: 'visible', timeout: 5000 }).catch(() => {});
   }
 
   // ─── Check: document direction ───────────────────────────────────────────
@@ -98,17 +110,17 @@ export class BaseAgent {
       this.add('character_encoding', true, 'latin_skip');
       return;
     }
-    const text = (await page.locator('#main-app').textContent().catch(() => '')) ?? '';
+    const text = (await page.locator('#scr-main').textContent().catch(() => '')) ?? '';
     const passed = this.langCfg.charPattern.test(text);
     this.add('character_encoding', passed, `sample="${text.slice(0, 50)}"`);
-    if (!passed) this.err(`No ${this.lang} characters found in #main-app`);
+    if (!passed) this.err(`No ${this.lang} characters found in #scr-main`);
   }
 
   // ─── Check: language switching works ────────────────────────────────────
 
   async checkLanguageSwitching(page: Page): Promise<void> {
     // The app should have loaded in the injected language — verify main-app has content
-    const text = (await page.locator('#main-app').textContent().catch(() => '')) ?? '';
+    const text = (await page.locator('#scr-main').textContent().catch(() => '')) ?? '';
     // For non-English, verify text is present and the lang attribute is set
     const docLang = await page.evaluate(() => document.documentElement.lang);
     const passed = text.trim().length > 10 && (docLang === this.lang || docLang.startsWith(this.lang));
@@ -164,7 +176,7 @@ export class BaseAgent {
 
   async checkTouchTargets(page: Page): Promise<void> {
     const els = page.locator(
-      '#main-app button, #main-app .mode-card, #main-app .fam-pill, #main-app .nav-btn',
+      '#scr-main button, #scr-main .mode-card, #scr-main .fam-pill, #scr-main .nav-btn',
     );
     const count = await els.count();
     const violations: string[] = [];
@@ -334,7 +346,7 @@ export class BaseAgent {
       // If navigation happened (voice module opened in same tab), go back
       if (page.url().includes('voice-module') || page.url().includes('idris-voice')) {
         await page.goBack();
-        await page.waitForSelector('#main-app', { state: 'visible', timeout: 5000 }).catch(() => {});
+        await page.waitForSelector('#scr-main', { state: 'visible', timeout: 5000 }).catch(() => {});
       }
     }
 
