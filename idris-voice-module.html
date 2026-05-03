@@ -131,7 +131,7 @@
 </head>
 <body>
 
-<button class="btn btn-secondary" onclick="window.close()" style="margin:12px 0 0 12px;display:inline-flex;align-items:center;gap:6px;">← Back</button>
+<button class="btn btn-secondary" onclick="window.location.href='index.html'" style="margin:12px 0 0 12px;display:inline-flex;align-items:center;gap:6px;">← Back</button>
 
 <h1>🎤 Voice Module</h1>
 <p class="subtitle">Speaker identification + speech recognition for Idris's app</p>
@@ -197,6 +197,15 @@
   <button class="btn btn-secondary" onclick="speakText('Hello Idris! Let us count together. How many trains do you see?', 'en-US')">
     <span class="btn-icon">🔊</span> Test TTS (app speaks to Idris)
   </button>
+
+  <!-- Mic test with waveform -->
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">🎙️ Mic test</div>
+    <p style="font-size:13px;color:#666;margin:0 0 10px">Tap to verify your microphone is working before using the app.</p>
+    <canvas id="waveCanvas" width="400" height="60" style="width:100%;height:60px;border-radius:8px;background:#F5F5F5;display:block;margin-bottom:10px"></canvas>
+    <div id="micTestStatus" style="font-size:13px;color:#888;text-align:center;margin-bottom:10px">Tap the button below to test</div>
+    <button class="btn" id="micTestBtn" onclick="toggleMicTest()" style="width:100%">🎤 Start mic test</button>
+  </div>
 
 </div>
 
@@ -384,10 +393,17 @@ function startListening() {
   recognition.onend = () => stopListening();
   if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(stream => { stream.getTracks().forEach(t => t.stop()); recognition.start(); })
+      .then(stream => {
+        stream.getTracks().forEach(t => t.stop());
+        setTimeout(() => recognition.start(), 500);
+      })
       .catch(() => {
+        const isChrome = /Chrome/.test(navigator.userAgent) && !/Edg|OPR/.test(navigator.userAgent);
+        const msg = isChrome
+          ? '🔒 Click the lock icon in the address bar → Allow microphone'
+          : '⚙️ Settings → Safari → Microphone → Allow';
         document.getElementById('micLabel').textContent = 'Allow microphone access first';
-        setStatus('error', '🎤 Allow microphone: Settings → Safari → Microphone → Allow');
+        setStatus('error', msg);
         stopListening();
       });
   } else {
@@ -402,6 +418,85 @@ function stopListening() {
   document.getElementById('micBtn').textContent = '🎤';
   document.getElementById('micLabel').textContent = 'Tap to start listening';
   setStatus('active', 'Ready — tap mic to start');
+}
+
+// ============================================================
+// MIC TEST — AudioContext waveform visualizer
+// ============================================================
+let _micTestStream = null;
+let _micTestAnimId = null;
+
+function toggleMicTest() {
+  if (_micTestStream) {
+    stopMicTest();
+  } else {
+    startMicTest();
+  }
+}
+
+function startMicTest() {
+  const btn = document.getElementById('micTestBtn');
+  const status = document.getElementById('micTestStatus');
+  const canvas = document.getElementById('waveCanvas');
+  const ctx = canvas.getContext('2d');
+
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(stream => {
+      _micTestStream = stream;
+      btn.textContent = '⏹ Stop mic test';
+      status.textContent = 'Listening... speak into the mic!';
+      status.style.color = '#4CAF50';
+
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioCtx.createMediaStreamSource(stream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      const data = new Uint8Array(analyser.frequencyBinCount);
+
+      function draw() {
+        _micTestAnimId = requestAnimationFrame(draw);
+        analyser.getByteTimeDomainData(data);
+        ctx.fillStyle = '#F5F5F5';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#6C63FF';
+        ctx.beginPath();
+        const sliceW = canvas.width / data.length;
+        let x = 0;
+        for (let i = 0; i < data.length; i++) {
+          const y = (data[i] / 128) * (canvas.height / 2);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          x += sliceW;
+        }
+        ctx.stroke();
+      }
+      draw();
+    })
+    .catch(() => {
+      const isChrome = /Chrome/.test(navigator.userAgent) && !/Edg|OPR/.test(navigator.userAgent);
+      status.textContent = isChrome
+        ? '🔒 Click the lock icon → Allow microphone'
+        : '⚙️ Settings → Safari → Microphone → Allow';
+      status.style.color = '#E53935';
+    });
+}
+
+function stopMicTest() {
+  if (_micTestStream) {
+    _micTestStream.getTracks().forEach(t => t.stop());
+    _micTestStream = null;
+  }
+  if (_micTestAnimId) { cancelAnimationFrame(_micTestAnimId); _micTestAnimId = null; }
+  const btn = document.getElementById('micTestBtn');
+  const status = document.getElementById('micTestStatus');
+  const canvas = document.getElementById('waveCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#F5F5F5';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  btn.textContent = '🎤 Start mic test';
+  status.textContent = 'Mic test stopped — mic is working!';
+  status.style.color = '#4CAF50';
 }
 
 // ============================================================

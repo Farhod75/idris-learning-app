@@ -606,24 +606,65 @@ if (m) utt.voice = m;
 **Symptom:** `SpeechRecognition.start()` fires, `onstart` never fires, no error shown.
 **Root cause:** PWA context on iPhone has separate mic permission from Safari browser. Must call `getUserMedia` explicitly each time to trigger the permission dialog.
 
-**Fix:**
+**Complete fix — 4 rules:**
+
+1. **`new SR()` must be created INSIDE getUserMedia `.then()`** — not before. On iOS, the audio session isn't active until getUserMedia resolves.
+2. **500ms delay required** between stream stop and `recognition.start()` — iOS needs time to hand off the audio session.
+3. **Browser-aware error messages** — Chrome and Safari show different UI for granting permissions.
+4. **Extract `doStart()` helper** — avoids duplicating recognition setup in the else branch.
+
 ```javascript
-// Wrap recognition.start() in getUserMedia — triggers permission dialog if needed
-if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-  navigator.mediaDevices.getUserMedia({ audio: true })
-    .then(stream => {
-      stream.getTracks().forEach(t => t.stop()); // release immediately — ASR manages its own stream
-      recognition.start();
-    })
-    .catch(() => {
-      // Show user-facing instruction — cannot programmatically open Settings
-      resultEl.textContent = '🎤 Allow microphone in Settings → Safari → Microphone';
-    });
-} else {
-  recognition.start();
+function startMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { /* show unsupported message */ return; }
+
+  function doStart() {
+    const recognition = new SR();
+    recognition.lang = 'en-US'; // set per language
+    recognition.onresult = () => { /* handle result */ };
+    recognition.onerror = () => { /* reset UI */ };
+    recognition.onend = () => { /* reset UI */ };
+    recognition.start();
+  }
+
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        stream.getTracks().forEach(t => t.stop()); // release — ASR manages its own stream
+        setTimeout(doStart, 500); // 500ms required on iOS for audio session handoff
+      })
+      .catch(() => {
+        // Browser-specific instructions — cannot open Settings programmatically
+        const isChrome = /Chrome/.test(navigator.userAgent) && !/Edg|OPR/.test(navigator.userAgent);
+        const msg = isChrome
+          ? '🔒 Click the lock icon in the address bar → Allow microphone'
+          : '⚙️ Settings → Safari → Microphone → Allow';
+        resultEl.textContent = msg;
+      });
+  } else {
+    doStart(); // desktop fallback — no getUserMedia needed
+  }
 }
 ```
-**Rule:** Always call `getUserMedia` before `SpeechRecognition.start()` in iOS PWAs. Stop the stream immediately after — ASR manages its own audio capture.
+
+**Mic test waveform pattern** (verify mic before using ASR):
+```javascript
+navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const analyser = audioCtx.createAnalyser();
+  audioCtx.createMediaStreamSource(stream).connect(analyser);
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  function draw() {
+    requestAnimationFrame(draw);
+    analyser.getByteTimeDomainData(data);
+    // draw waveform on canvas
+  }
+  draw();
+  // stopTest: stream.getTracks().forEach(t => t.stop())
+});
+```
+
+**Rule:** Always call `getUserMedia` before `SpeechRecognition.start()` in iOS PWAs. Create `new SR()` INSIDE the `.then()` callback. Use 500ms delay. Show browser-specific permission instructions on `.catch()`.
 
 ---
 

@@ -1186,26 +1186,32 @@ function startSpeak2(){
   btn.classList.add('listening');
   if(dot)dot.classList.add('on');
   document.getElementById('speak-result').textContent='🎙️ ...';
-  _recog=new SR();
   const lm={'en':'en-US','ru':'ru-RU','uz':'uz-UZ','tg':'ru-RU','ar':'ar-SA','es':'es-ES','fr':'fr-FR'};
-  _recog.lang=lm[S.lang]||'en-US';
-  _recog.onresult=()=>{
-    btn.classList.remove('listening');
-    if(dot)dot.classList.remove('on');
-    const msg=L().celebrate[Math.floor(Math.random()*L().celebrate.length)];
-    document.getElementById('speak-result').textContent='✅ '+msg;
-    addStar();speak(msg);
-  };
-  _recog.onerror=()=>{btn.classList.remove('listening');if(dot)dot.classList.remove('on');document.getElementById('speak-result').textContent='Try again! 🎤';};
-  _recog.onend=()=>{btn.classList.remove('listening');if(dot)dot.classList.remove('on');};
+  function doStart(){
+    _recog=new SR();
+    _recog.lang=lm[S.lang]||'en-US';
+    _recog.onresult=()=>{
+      btn.classList.remove('listening');if(dot)dot.classList.remove('on');
+      const msg=L().celebrate[Math.floor(Math.random()*L().celebrate.length)];
+      document.getElementById('speak-result').textContent='✅ '+msg;
+      addStar();speak(msg);
+    };
+    _recog.onerror=()=>{btn.classList.remove('listening');if(dot)dot.classList.remove('on');document.getElementById('speak-result').textContent='Try again! 🎤';};
+    _recog.onend=()=>{btn.classList.remove('listening');if(dot)dot.classList.remove('on');};
+    _recog.start();
+  }
   if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){
     navigator.mediaDevices.getUserMedia({audio:true})
       .then(stream=>{
         stream.getTracks().forEach(t=>t.stop());
-        setTimeout(()=>{_recog.start();},500);
+        setTimeout(doStart,500);
       })
-      .catch(()=>{btn.classList.remove('listening');if(dot)dot.classList.remove('on');document.getElementById('speak-result').textContent='🎤 Allow microphone in Settings → Safari → Microphone';});
-  }else{_recog.start();}
+      .catch(()=>{
+        btn.classList.remove('listening');if(dot)dot.classList.remove('on');
+        const isChrome=/Chrome/.test(navigator.userAgent)&&!/Edg|OPR/.test(navigator.userAgent);
+        document.getElementById('speak-result').textContent=isChrome?'🔒 Click the lock icon → Allow microphone':'⚙️ Settings → Safari → Microphone → Allow';
+      });
+  }else{doStart();}
 }
 // alias
 function startSpeak(){S.speakIdx=0;const l=L();setText('speak-title',l.speak_title);setText('speak-hint',l.speak_hint);setText('speak-next-lbl',l.speak_next);loadSpeakWord();}
