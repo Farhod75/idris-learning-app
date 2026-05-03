@@ -32,7 +32,7 @@ export const LANGUAGES = [
   { code: 'uz', label: "O'zbek",     bcp47: 'uz-UZ', dir: 'ltr', flag: '🇺🇿',
     charPattern: /[a-zA-Z']/,
     wordSample: 'olma' },
-  { code: 'tg', label: 'Тоҷикӣ',    bcp47: 'tg-TG', dir: 'ltr', flag: '🇹🇯',
+  { code: 'tg', label: 'Тоҷикӣ',    bcp47: 'tg-TG', ttsBcp47: 'ru-RU', dir: 'ltr', flag: '🇹🇯',
     charPattern: /[\u0400-\u04FF]/,
     wordSample: 'себ' },
   { code: 'ar', label: 'العربية',   bcp47: 'ar-SA', dir: 'rtl', flag: '🇸🇦',

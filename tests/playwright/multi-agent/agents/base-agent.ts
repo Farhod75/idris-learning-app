@@ -318,7 +318,9 @@ export class BaseAgent {
       });
     }, this.langCfg.bcp47);
 
-    const expectedPrefix = this.langCfg.bcp47.split('-')[0]; // e.g. 'en', 'ar'
+    // Some languages use a fallback TTS voice (e.g. tg → ru-RU, no Tajik voice exists)
+    const effectiveBcp47 = (this.langCfg as any).ttsBcp47 ?? this.langCfg.bcp47;
+    const expectedPrefix = effectiveBcp47.split('-')[0]; // e.g. 'en', 'ar', 'ru'
     const passed =
       spokenLang === 'no_api' || // speechSynthesis not available — skip
       spokenLang === ''         || // speak() didn't fire — not a hard failure
@@ -326,7 +328,7 @@ export class BaseAgent {
     this.add('tts_language_tag', passed,
       `spoken="${spokenLang}" expected_prefix="${expectedPrefix}"`);
     if (!passed)
-      this.err(`TTS lang tag mismatch: got "${spokenLang}", expected prefix "${expectedPrefix}"`);
+      this.err(`TTS lang tag mismatch: got "${spokenLang}", expected prefix "${expectedPrefix}" (${effectiveBcp47})`);
   }
 
   // ─── Check: navigation does not open new tabs ────────────────────────────
