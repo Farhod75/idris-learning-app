@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "fix:agent": "ts-node orchestrator-with-fixer.ts",
+    "fix:local": "cross-env BASE_URL=http://localhost:3000 ts-node orchestrator-with-fixer.ts",
+    "fix:prod": "cross-env BASE_URL=https://idris-learning-app.vercel.app ts-node orchestrator-with-fixer.ts",
     "test": "playwright test",
     "test:orchestrator": "playwright test orchestrator.spec.ts --project=ipad-safari",
     "test:en": "playwright test agents/en-agent.spec.ts --project=ipad-safari",
@@ -24,6 +27,8 @@
     "@axe-core/playwright": "^4.9.1",
     "@playwright/test": "^1.44.0",
     "@types/node": "^20.0.0",
+    "cross-env": "^7.0.3",
+    "ts-node": "^10.9.2",
     "typescript": "^5.4.0"
   }
 }

@@ -1,4 +1,4 @@
-﻿name: Deploy to Vercel
+name: Deploy to Vercel
 
 on:
   push:
@@ -19,26 +19,47 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Validate Vercel secrets
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "VERCEL_TOKEN is not set in GitHub Secrets."
+            echo "Fix: GitHub repo Settings -> Secrets and variables -> Actions"
+            echo "Add: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID"
+            echo "Get token at: vercel.com -> Account Settings -> Tokens"
+            exit 1
+          fi
+          echo "Vercel secrets present"
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
-      - name: Pull Vercel environment
+      - name: Deploy to Vercel (production)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+        run: vercel --prod --token=$VERCEL_TOKEN --yes
 
-      - name: Build project
+      - name: Deploy preview (pull request)
+        if: github.event_name == 'pull_request'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: vercel build --prod --token=$VERCEL_TOKEN
+        run: |
+          PREVIEW_URL=$(vercel --token=$VERCEL_TOKEN --yes 2>&1 | tail -1)
+          echo "PREVIEW_URL=$PREVIEW_URL" >> $GITHUB_ENV
+          echo "Preview: $PREVIEW_URL"
 
-      - name: Deploy to Vercel
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+      - name: Comment preview URL on PR
+        if: github.event_name == 'pull_request' && env.PREVIEW_URL != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Preview: ${process.env.PREVIEW_URL}`
+            })

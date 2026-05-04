@@ -89,3 +89,16 @@ assets/sounds/*.m4a
 *.swp
 
 .vercel
+
+# Multi-agent generated reports (keep bug-queue.json, exclude run reports)
+tests/playwright/multi-agent/reports/fix-report*.json
+tests/playwright/multi-agent/reports/verify-report*.json
+tests/playwright/multi-agent/reports/orchestrator-report*.json
+tests/playwright/multi-agent/reports/results.json
+tests/playwright/multi-agent/reports/fp-log.md
+tests/playwright/multi-agent/reports/artifacts/
+tests/playwright/multi-agent/reports/html/
+tests/playwright/multi-agent/reports/screenshots/
+tests/playwright/multi-agent/package-lock.json
+tests/reports/
+diag.js

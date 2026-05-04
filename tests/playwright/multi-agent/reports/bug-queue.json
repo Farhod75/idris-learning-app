@@ -1,0 +1,45 @@
+{
+  "version": "1.0",
+  "generated": "2026-05-04",
+  "bugs": [
+    {
+      "id": "FP-039",
+      "title": "Match game cards stretch full viewport on desktop",
+      "severity": "medium",
+      "status": "verified",
+      "file": "index.html",
+      "fix": {
+        "find": ".match-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }",
+        "replace": ".match-grid {\n  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;\n  margin-bottom: 24px; max-width: 360px; margin-left: auto; margin-right: auto;\n}"
+      },
+      "test_file": "tests/playwright/match-card-size.spec.ts",
+      "verify": {
+        "selector": ".match-card",
+        "assert_max_height_px": 200,
+        "assert_max_width_px": 200,
+        "assert_min_height_px": 72,
+        "viewports": [
+          {
+            "name": "desktop",
+            "width": 1280,
+            "height": 720
+          },
+          {
+            "name": "ipad",
+            "width": 768,
+            "height": 1024
+          },
+          {
+            "name": "mobile",
+            "width": 390,
+            "height": 844
+          }
+        ]
+      },
+      "attempts": 2,
+      "fix_result": "applied",
+      "verify_result": "PASS",
+      "logged_to_fix_patterns": true
+    }
+  ]
+}
