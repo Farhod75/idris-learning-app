@@ -11,6 +11,7 @@ import * as path from 'path';
 import { runFixAgent }    from './agents/fix-agent';
 import { runVerifyAgent } from './agents/verify-agent';
 import { runLogAgent }    from "./agents/log-agent";
+import { runReviewAgent } from "./agents/review-agent";
 
 function safeReadJson(filePath: string): any {
   const raw = fs.readFileSync(filePath, 'utf-8').replace(/^\uFEFF/, '');
@@ -50,6 +51,15 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
+  // -- Step 1.5: REVIEW-AGENT (RouteLLM) ---------------------
+  console.log('\n-- Step 1.5: Review Agent (RouteLLM) ----------');
+  const reviewReport = await runReviewAgent();
+  console.log('   Approved: ' + reviewReport.approved + ' | Blocked: ' + reviewReport.blocked);
+  if (reviewReport.approved === 0 && reviewReport.blocked > 0) {
+    console.log('   All fixes blocked -- skipping verify');
+    return;
+  }
+
   // Step 2: Wait for server to pick up file changes
   console.log(`\nâ”€â”€ Step 2: Waiting ${VERIFY_DELAY_MS / 1000}s for server reload â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€`);
   await sleep(VERIFY_DELAY_MS);
@@ -63,7 +73,7 @@ async function main(): Promise<void> {
   const logResult = await runLogAgent();
   console.log(`   Logged: ${logResult.logged} | Skipped: ${logResult.skipped}`);
 
-  // Step 4: Summary
+
   console.log('\n' + 'â•'.repeat(60));
   console.log('  SUMMARY');
   console.log('â•'.repeat(60));

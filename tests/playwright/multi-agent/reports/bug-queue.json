@@ -36,7 +36,7 @@
           }
         ]
       },
-      "attempts": 3,
+      "attempts": 4,
       "fix_result": "applied",
       "verify_result": "PASS",
       "logged_to_fix_patterns": true,
