@@ -1,4 +1,4 @@
-# FIX_PATTERNS.md
+﻿# FIX_PATTERNS.md
 # Real bug fixes from production — extracted from HadithVerifier + Idris App
 # Author: Farhod Elbekov | github.com/Farhod75
 # Aligned with: QA_STANDARDS.md (hadith-verifier repo)
@@ -738,3 +738,21 @@ Last updated: 2026-05-02 | Next review: after Idris App Phase 2
 **Fix:** .match-grid max-width 360px margin auto. .match-card max-width and max-height 110px
 **Prevention:** Test match game on desktop. Playwright check card height less than 200px
 **Status:** Fix pending - apply to index.html next session
+---
+
+## FP-042 — [System.IO.File] ignores PowerShell working directory
+- **Symptom**: `Could not find path 'C:\Users\Farhod\tests\...'` even after `cd C:\QA\Idris\...`
+- **Root cause**: `[System.IO.File]::ReadAllText("relative\path")` resolves from the .NET process
+  working directory (`C:\Users\Farhod`), NOT from PowerShell's current location
+- **Fix**: Always use absolute paths with `$BASE = "C:\QA\Idris\idris-learning-app"` prefix
+- **Rule**: NEVER use relative paths with `[System.IO.File]` — always `"$BASE\path\to\file"`
+- **Also affects**: `[System.IO.File]::WriteAllText`, `[System.IO.File]::ReadAllBytes`
+- **Safe alternatives**: `Get-Content "relative"` and `Set-Content "relative"` DO respect `cd`
+- **Prevention**: Add `$BASE = $PWD.Path` at top of every PowerShell script that uses System.IO.File
+## FP-043 — PowerShell inline if/else fails when pasted line-by-line
+- **Symptom**: `else : The term 'else' is not recognized`
+- **Root cause**: PowerShell interactive mode treats each line as a separate command.
+  When `if {...}` completes, the next line `else {...}` is a new command — not recognized
+- **Fix**: Always paste full if/else blocks at once, OR use a .ps1 script file
+- **Rule**: Multi-line if/else must be pasted as ONE block in interactive PowerShell
+- **Prevention**: Put all logic in .ps1 files, run with `.\script.ps1` — never paste line by line

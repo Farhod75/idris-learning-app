@@ -36,10 +36,16 @@
           }
         ]
       },
-      "attempts": 2,
+      "attempts": 3,
       "fix_result": "applied",
       "verify_result": "PASS",
-      "logged_to_fix_patterns": true
+      "logged_to_fix_patterns": true,
+      "review": {
+        "enabled": true,
+        "last_decision": null,
+        "last_model": null,
+        "blocked_count": 0
+      }
     }
   ]
 }
