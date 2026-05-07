@@ -9,6 +9,7 @@
 import * as fs   from 'fs';
 import * as path from 'path';
 import { runFixAgent }    from './agents/fix-agent';
+import { runRagAgent }    from "./agents/rag-agent";
 import { runVerifyAgent } from './agents/verify-agent';
 import { runLogAgent }    from "./agents/log-agent";
 import { runReviewAgent } from "./agents/review-agent";
@@ -41,6 +42,20 @@ async function main(): Promise<void> {
     console.error(`âŒ Bug queue not found: ${BUG_QUEUE_PATH}`);
     process.exit(1);
   }
+
+  // -- Step 0: RAG-AGENT (Supabase pgvector) ----------------
+  console.log('\n-- Step 0: RAG Agent (Supabase pgvector) ----');
+  const queue = JSON.parse(fs.readFileSync(BUG_QUEUE_PATH, 'utf-8').replace(/^\uFEFF/, ''));
+  const openBugs = queue.bugs.filter((b: any) => b.status === 'open');
+  for (const bug of openBugs) {
+    const ragReport = await runRagAgent(bug.id, bug.title + ' ' + (bug.fix?.find ?? ''));
+    console.log('   [' + bug.id + '] Patterns found: ' + ragReport.results_found);
+    if (ragReport.results_found > 0) {
+      const top = ragReport.results[0];
+      console.log('   Best match: ' + top.pattern_id + ' (' + Math.round(top.similarity * 100) + '% match)');
+    }
+  }
+
 
   // Step 1: Apply fixes
   console.log('\nâ”€â”€ Step 1: Fix Agent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€');
