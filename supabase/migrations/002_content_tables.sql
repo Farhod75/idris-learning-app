@@ -1,0 +1,4 @@
+﻿-- Migration 002: ASD Content Tables
+-- Run in Supabase SQL editor
+-- Tables: child_profiles, content_categories, game_content, content_submissions, child_progress
+-- Already executed: 2026-05-07
