@@ -229,7 +229,6 @@ function syncToEngineeringStandards(): void {
       }
     }
     execSync(`git add -A && git diff --cached --quiet || git commit -m "sync: docs-agent ${new Date().toISOString().substring(0,10)}" && git push origin main`, { cwd: ES_REPO, stdio: "pipe" });
-      { cwd: ES_REPO, stdio: "pipe" });
     log("  ✅ engineering-standards pushed");
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
