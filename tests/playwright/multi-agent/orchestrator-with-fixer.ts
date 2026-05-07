@@ -12,6 +12,7 @@ import { runFixAgent }    from './agents/fix-agent';
 import { runRagAgent }    from "./agents/rag-agent";
 import { runVerifyAgent } from './agents/verify-agent';
 import { runLogAgent }    from "./agents/log-agent";
+import { runDocsAgent }   from "./agents/docs-agent";
 import { runReviewAgent } from "./agents/review-agent";
 
 function safeReadJson(filePath: string): any {
@@ -87,6 +88,12 @@ async function main(): Promise<void> {
   console.log("\n── Step 4: Log Agent ─────────────────────────────────────────────");
   const logResult = await runLogAgent();
   console.log(`   Logged: ${logResult.logged} | Skipped: ${logResult.skipped}`);
+
+  // -- Step 5: DOCS-AGENT (auto FP logging + sync) ----------
+  console.log('\n-- Step 5: Docs Agent (auto FP + sync) ------');
+  const docsResult = await runDocsAgent();
+  console.log('   FP logged: ' + docsResult.logged + ' | ' + (docsResult.fp_number || 'none'));
+
 
 
   console.log('\n' + 'â•'.repeat(60));

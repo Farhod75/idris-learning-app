@@ -35,7 +35,7 @@ async function callRouteLLM(prompt: string, score: number): Promise<{decision:Re
     return { decision: score > 0.6 ? "ESCALATE" : "APPROVE", reason:"Local heuristic", risks:[], suggestions:[], model_used:"local-heuristic", tokens_used:0 };
   }
   const body = {
-    model: `router-${ROUTING_CONFIG.threshold}`,
+    model: "claude-haiku-4-5-20251001",
     messages: [
       { role:"system", content:`You are a code review agent. Respond ONLY with JSON:\n{"decision":"APPROVE","confidence":0.9,"reason":"one sentence","risks":[],"suggestions":[]}` },
       { role:"user", content:prompt }
