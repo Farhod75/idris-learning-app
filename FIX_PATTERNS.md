@@ -756,3 +756,13 @@ Last updated: 2026-05-02 | Next review: after Idris App Phase 2
 - **Fix**: Always paste full if/else blocks at once, OR use a .ps1 script file
 - **Rule**: Multi-line if/else must be pasted as ONE block in interactive PowerShell
 - **Prevention**: Put all logic in .ps1 files, run with `.\script.ps1` — never paste line by line
+
+---
+
+## FP-044 — Card height exceeds maximum constraint in desktop viewport
+
+- **Symptom**: Card component renders at 450px height, exceeding 200px maximum threshold on desktop 1280px viewport
+- **Root cause**: CSS height property or flex/grid sizing not properly constrained; likely missing `max-height` rule or conflicting responsive breakpoint
+- **Fix**: Add `max-height: 200px` to card component; verify breakpoint overrides don't conflict; check flex-grow/grid-auto-rows aren't expanding container
+- **Rule**: Enforce explicit max-height constraints on fixed-dimension components across all breakpoints
+- **Prevention**: Add visual regression test for card dimensions; include max-height in component spec; validate CSS cascade for height properties

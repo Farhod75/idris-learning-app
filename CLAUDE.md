@@ -282,3 +282,6 @@ Support all 4 languages. Follow WCAG 2.1 AA."
 |------|--------------|------|-------|------------|-------|-------|
 | 2026-05-01 | Grandfather | RU | Count, Match | happy | 12 | First session |
 ```
+
+## Auto-logged FP-044 (2026-05-07)
+Card 0: height 450px >= 200px [FP-039 regression]
