@@ -1,1 +1,8 @@
-﻿{"base_url":"https://routellm.abacus.ai/v1","threshold":0.5,"strong_model":"gpt-4o","weak_model":"claude-haiku-4-5-20251001","enabled":true}
+﻿{
+  "base_url": "https://routellm.abacus.ai/v1",
+  "model": "route-llm",
+  "strong_model": "claude-sonnet-4-6",
+  "weak_model": "claude-haiku-4-5",
+  "enabled": true,
+  "notes": "route-llm auto-routes based on complexity. No threshold needed."
+}
