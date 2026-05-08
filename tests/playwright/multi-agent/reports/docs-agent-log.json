@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-05-07T21:41:04.509Z",
+  "errors_detected": 1,
+  "fp_generated": "FP-044",
+  "errors": [
+    {
+      "source": "verify-agent",
+      "bugId": "FP-039",
+      "error": "Card 0: height 450px >= 200px [FP-039 regression]",
+      "context": "viewport: desktop 1280xundefined"
+    }
+  ]
+}

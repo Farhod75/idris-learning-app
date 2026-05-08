@@ -1,0 +1,17 @@
+{
+  "agent": "rag-agent",
+  "timestamp": "2026-05-07T21:33:59.801Z",
+  "bug_id": "FP-039",
+  "query": "Match game cards stretch full viewport on desktop .match-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }",
+  "results_found": 1,
+  "results": [
+    {
+      "pattern_id": "FP-039",
+      "title": "Match game cards full viewport height on desktop",
+      "content": "## FP-039 — Match game cards full viewport height on desktop\n**Date:** 2026-05-03\n**Symptom:** .match-card stretches to 400px on desktop. Content appears at bottom corner.\n**Root cause:** aspect-ratio:1 plus grid-template-columns:1fr on wide desktop = very tall cards\n**Fix:** .match-grid max-width 360px margin auto. .match-card max-width and max-height 110px\n**Prevention:** Test match game on desktop. Playwright check card height less than 200px\n**Status:** Fix pending - apply to index.html next session\n---",
+      "category": "css",
+      "similarity": 0.729263668235863
+    }
+  ],
+  "recommendation": "Similar pattern found: FP-039 (73% match)\nTitle: Match game cards full viewport height on desktop\nCategory: css\nApply this pattern as the basis for the fix."
+}
