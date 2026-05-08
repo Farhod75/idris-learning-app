@@ -1273,6 +1273,10 @@ function startMatch(){
 }
 function renderMatchGrid(){
   document.getElementById('match-prog').style.width=(S.matchMatched/3*100)+'%';
+  const mg=document.getElementById('match-grid');
+  mg.style.gridTemplateColumns='repeat(3, 110px)';
+  mg.style.width='354px';
+  mg.style.margin='0 auto';
   document.getElementById('match-grid').innerHTML=mState.map((c,i)=>`
     <div class="match-card ${c.matched?'matched':''} ${c.sel?'selected':''}"
       onclick="selectMatch(${i})"
