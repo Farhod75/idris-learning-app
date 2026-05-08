@@ -1145,7 +1145,7 @@ let EMOJIS=['🚗','🍎','⭐','🐱','🦕','🎨','🌙','🎵']; // fallback
 let countItems=[];
 async function loadCountItems(){
   try{
-    const r=await fetch(`/api/content?type=counting&lang=${S.lang||'ru'}&age=${S.currentProfile?.age||7}&count=10`);
+    const r=await fetch(`/api/content-handler-handler-handler?type=counting&lang=${S.lang||'ru'}&age=${S.currentProfile?.age||7}&count=10`);
     const j=await r.json();
     if(j.items?.length){
       countItems=j.items;
@@ -1253,7 +1253,7 @@ function startSpeak(){S.speakIdx=0;const l=L();setText('speak-title',l.speak_tit
 let MATCH_PAIRS=[{e:"🍎",l:"apple"},{e:"🚗",l:"car"},{e:"🐱",l:"cat"},{e:"🌙",l:"moon"},{e:"🦕",l:"dino"},{e:"🎵",l:"music"}]; // fallback
 async function loadMatchPairs(){
   try{
-    const r=await fetch(`/api/content?type=matching&lang=${S.lang||'ru'}&age=${S.currentProfile?.age||7}&count=6`);
+    const r=await fetch(`/api/content-handler-handler-handler?type=matching&lang=${S.lang||'ru'}&age=${S.currentProfile?.age||7}&count=6`);
     const j=await r.json();
     if(j.items?.length){
       MATCH_PAIRS=j.items.map(x=>({e:x.emoji,l:x.word}));
