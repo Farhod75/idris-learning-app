@@ -902,13 +902,22 @@ function goStep(n){
 // ONBOARDING — LANGUAGE
 // ═══════════════════════════════════════════
 function renderLangScreen(){
-  const g=document.getElementById('ob-lang-grid');
-  g.innerHTML=LANG_LIST.map(l=>`
-    <div class="lang-card ${S.uiLang===l.code?'sel':''}" onclick="pickUILang('${l.code}')">
+  const g = document.getElementById('ob-lang-grid');
+  g.innerHTML = LANG_LIST.map(l => `
+    <div class="lang-card ${S.uiLang === l.code ? 'sel' : ''}" onclick="pickUILang('${l.code}')">
       <span class="lang-flag">${l.flag}</span>
       <div class="lang-name">${l.label}</div>
     </div>
   `).join('');
+
+  // ✅ FIX: if a language is already selected (returning user / state), enable button
+  if (S.uiLang && LANGS_CFG[S.uiLang]) {
+    const btn = document.getElementById('ob-lang-next');
+    if (btn) btn.disabled = false;
+    // Also update button label to match the stored language
+    const lbl = document.getElementById('ob-lang-next-lbl');
+    if (lbl) lbl.textContent = LANGS_CFG[S.uiLang].ob_next || 'Continue →';
+  }
 }
 function pickUILang(code){
   console.log('pickUILang:', code, 'in LANGS_CFG:', code in LANGS_CFG);
