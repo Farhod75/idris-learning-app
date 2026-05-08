@@ -16,6 +16,8 @@ const GAME_TO_CATEGORY: Record<string, string> = {
   speaking: "Animals",
   family:   "Family",
   colors:   "Colors",
+  food:     "Food",
+  emojis:   "Animals",  // default for emojis
 };
 
 export default async function handler(req: any, res: any) {
@@ -24,12 +26,15 @@ export default async function handler(req: any, res: any) {
     process.env.SUPABASE_SERVICE_KEY!
   );
 
-  const gameType = req.query?.type  || "counting";
-  const language = req.query?.lang  || "ru";
-  const age      = parseInt(req.query?.age   || "7");
-  const count    = parseInt(req.query?.count || "6");
+  const gameType     = req.query?.type     || "counting";
+  const language     = req.query?.lang     || "ru";
+  const age          = parseInt(req.query?.age   || "7");
+  const count        = parseInt(req.query?.count || "6");
+  const categoryOverride = req.query?.category as string | undefined;
 
-  const categoryName = GAME_TO_CATEGORY[gameType];
+  const categoryName = categoryOverride
+    ? categoryOverride.charAt(0).toUpperCase() + categoryOverride.slice(1)
+    : GAME_TO_CATEGORY[gameType];
   const categoryId   = categoryName ? CATEGORY_IDS[categoryName] : null;
 
   try {
