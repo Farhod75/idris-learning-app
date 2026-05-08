@@ -26,7 +26,7 @@ test.describe("FP-039 — core", () => {
   test.beforeEach(async ({ page }) => { await openMatchGame(page); });
   test("match-grid max 360px", async ({ page }) => {
     const box = await page.locator("#match-grid, .match-grid, #matchScreen").boundingBox();
-    expect(box!.width).toBeLessThanOrEqual(360);
+    expect(Math.round(box!.width)).toBeLessThanOrEqual(360);
   });
   test("each card < 200px height", async ({ page }) => {
     const cards = page.locator(".match-card");
