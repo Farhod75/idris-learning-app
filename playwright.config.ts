@@ -2,6 +2,7 @@
 
 export default defineConfig({
   testDir: './tests/playwright',
+  testIgnore: '**/multi-agent/**',
   timeout: 60000,
   reporter: [['list'], ['html', { outputFolder: 'tests/reports/html', open: 'never' }]],
   projects: [

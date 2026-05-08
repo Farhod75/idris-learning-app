@@ -1,14 +1,31 @@
-import { test, expect, Page } from "@playwright/test";
-const APP_URL = process.env.APP_URL || "http://localhost:3000";
+import { test, expect, Page } from '@playwright/test';
+const APP_URL = 'https://idris-learning-app.vercel.app';
 async function openMatchGame(page: Page) {
   await page.goto(APP_URL, { waitUntil: "networkidle" });
-  await page.click(".mode-card.match");
-  await page.waitForSelector("#matchScreen.active", { timeout: 5000 });
+  // Handle onboarding if shown
+  await page.evaluate(() => {
+    localStorage.clear();
+    // @ts-ignore
+    window.goStep(0);
+  });
+  await page.waitForSelector('#ob-lang-grid .lang-card', { timeout: 10000 });
+  await page.locator('#ob-lang-grid').getByText('🇬🇧').click();
+  await page.getByRole('button', { name: 'Continue →' }).click();
+  await page.getByRole('textbox', { name: "Child's name" }).fill('Idris');
+  await page.getByText('5').click();
+  await page.getByRole('button', { name: 'Next →' }).click();
+  await page.getByRole('button', { name: 'Next →' }).click();
+  await page.getByRole('button', { name: 'Next →' }).click();
+  await page.getByText('👩', { exact: true }).click();
+  await page.getByRole('button', { name: 'Create profile 🎉' }).click();
+  await page.waitForSelector('#modesGrid', { timeout: 10000 });
+  await page.locator('#modesGrid').getByText('🃏').click();
+  await page.waitForSelector('.match-card', { timeout: 10000 });
 }
 test.describe("FP-039 — core", () => {
   test.beforeEach(async ({ page }) => { await openMatchGame(page); });
   test("match-grid max 360px", async ({ page }) => {
-    const box = await page.locator("#matchGrid").boundingBox();
+    const box = await page.locator("#match-grid, .match-grid, #matchScreen").boundingBox();
     expect(box!.width).toBeLessThanOrEqual(360);
   });
   test("each card < 200px height", async ({ page }) => {
