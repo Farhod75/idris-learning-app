@@ -33,8 +33,8 @@
     },
     {
       "src": "/api/content",
-      "dest": "/api/content.ts"
-    },
+      "dest": "/api/content-handler.ts"
+  },
     {
       "handle": "filesystem"
     },
