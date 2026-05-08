@@ -102,3 +102,5 @@ tests/playwright/multi-agent/reports/screenshots/
 tests/playwright/multi-agent/package-lock.json
 tests/reports/
 diag.js
+
+.claude/settings.local.json
