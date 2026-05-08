@@ -1116,9 +1116,9 @@ function openGame(type){
   const map={count:'game-count',speak:'game-speak',match:'game-match',family:'game-family',aac:'game-aac'};
   if(type==='voice'){window.location.href='idris-voice-module.html';return;}
   const scrId=map[type];if(!scrId)return;
-  if(type==='count')startCount();
+  if(type==='count'){loadCountItems().then(()=>startCount());}
   else if(type==='speak')startSpeak();
-  else if(type==='match')startMatch();
+  else if(type==='match'){loadMatchPairs().then(()=>startMatch());}
   else if(type==='family')startFamily();
   else if(type==='aac')renderAACFull();
   document.getElementById(scrId).classList.add('active');
@@ -1132,7 +1132,19 @@ function closeGame(id){
 // ═══════════════════════════════════════════
 // COUNTING GAME
 // ═══════════════════════════════════════════
-const EMOJIS=['🚗','🍎','⭐','🐱','🦕','🎨','🌙','🎵'];
+let EMOJIS=['🚗','🍎','⭐','🐱','🦕','🎨','🌙','🎵']; // fallback
+let countItems=[];
+async function loadCountItems(){
+  try{
+    const r=await fetch(`/api/content?type=counting&lang=${S.lang||'ru'}&age=${S.currentProfile?.age||7}&count=10`);
+    const j=await r.json();
+    if(j.items?.length){
+      countItems=j.items;
+      EMOJIS=j.items.map(x=>x.emoji);
+      console.log(`[content] ✅ ${countItems.length} numbers loaded (${S.lang})`);
+    }
+  }catch(e){ console.warn('[content] using fallback EMOJIS',e.message); }
+}
 function startCount(){
   S.countStep=0;
   const l=L();
@@ -1229,7 +1241,17 @@ function startSpeak(){S.speakIdx=0;const l=L();setText('speak-title',l.speak_tit
 // ═══════════════════════════════════════════
 // MATCH GAME
 // ═══════════════════════════════════════════
-const MATCH_PAIRS=[{e:"🍎",l:"apple"},{e:"🚗",l:"car"},{e:"🐱",l:"cat"},{e:"🌙",l:"moon"},{e:"🦕",l:"dino"},{e:"🎵",l:"music"}];
+let MATCH_PAIRS=[{e:"🍎",l:"apple"},{e:"🚗",l:"car"},{e:"🐱",l:"cat"},{e:"🌙",l:"moon"},{e:"🦕",l:"dino"},{e:"🎵",l:"music"}]; // fallback
+async function loadMatchPairs(){
+  try{
+    const r=await fetch(`/api/content?type=matching&lang=${S.lang||'ru'}&age=${S.currentProfile?.age||7}&count=6`);
+    const j=await r.json();
+    if(j.items?.length){
+      MATCH_PAIRS=j.items.map(x=>({e:x.emoji,l:x.word}));
+      console.log(`[content] ✅ ${MATCH_PAIRS.length} animals loaded (${S.lang})`);
+    }
+  }catch(e){ console.warn('[content] using fallback MATCH_PAIRS',e.message); }
+}
 let mState=[];
 function startMatch(){
   S.matchMatched=0;S.matchSel=null;

@@ -32,6 +32,10 @@
       "continue": true
     },
     {
+      "src": "/api/content",
+      "dest": "/api/content.ts"
+    },
+    {
       "handle": "filesystem"
     },
     {
