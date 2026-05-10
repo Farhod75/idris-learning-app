@@ -549,7 +549,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 ═══════════════════════════════════════ -->
 <div class="reward-overlay" id="rewardOverlay">
   <div class="confetti-layer" id="confettiLayer"></div>
-  <div class="reward-card">
+  <div class="song-nm" id="rSongNm" onclick="speak(this.textContent)" style="cursor:pointer">The Wheels on the Bus</div>
     <span class="reward-emoji-big" id="rEmoji">🎉</span>
     <div class="reward-title-big" id="rTitle">Amazing!</div>
     <div class="reward-sub-big" id="rSub">You did it!</div>
@@ -1372,7 +1372,7 @@ function triggerReward(taskType){
   document.getElementById('rActDots').innerHTML=S.actDots.map((_,i)=>`<div class="act-dot" onclick="tapDot(${i})"></div>`).join('');
   spawnConfetti();
   document.getElementById('rewardOverlay').classList.add('active');
-  speak(title);
+  setTimeout(()=>speak(title), 300);
   startTimer(30);
 }
 function tapDot(i){
