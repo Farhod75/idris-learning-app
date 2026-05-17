@@ -47,12 +47,18 @@ test('match pairs game - complete 3 pairs', async ({ page }) => {
   await expect(page.locator('#match-grid, .match-grid')).toBeVisible({ timeout: 5000 });
 
   // Match 3 pairs
-  await page.getByText('ðŸ¶').click();
-  await page.getByText('dog').click();
-  await page.getByText('ðŸ±').click();
-  await page.getByText('cat', { exact: true }).click();
-  await page.getByText('ðŸŸ').click();
-  await page.getByText('fish').click();
+  await page.locator('.match-card').nth(0).click();
+  await page.waitForTimeout(300);
+  await page.locator('.match-card').nth(3).click();
+  await page.waitForTimeout(800);
+  await page.locator('.match-card').nth(1).click();
+  await page.waitForTimeout(300);
+  await page.locator('.match-card').nth(4).click();
+  await page.waitForTimeout(800);
+  await page.locator('.match-card').nth(2).click();
+  await page.waitForTimeout(300);
+  await page.locator('.match-card').nth(5).click();
+  await page.waitForTimeout(800);
 
   // Reward screen should appear
   await expect(page.getByRole('button', { name: 'Keep going! ðŸš€' })).toBeVisible({ timeout: 5000 });
