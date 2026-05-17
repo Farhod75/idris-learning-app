@@ -99,7 +99,6 @@ tests/playwright/multi-agent/reports/fp-log.md
 tests/playwright/multi-agent/reports/artifacts/
 tests/playwright/multi-agent/reports/html/
 tests/playwright/multi-agent/reports/screenshots/
-tests/playwright/multi-agent/package-lock.json
 tests/reports/
 diag.js
 
