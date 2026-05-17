@@ -8,6 +8,7 @@ export interface AppProfile {
   id: number;
   name: string;
   age: number;
+  lang: string;
   uiLang: string;
   homeLangs: string[];
   interests: number[]; // indices into LANGS_CFG[lang].interests[]
@@ -54,6 +55,7 @@ export function buildTestProfile(uiLang: LangCode = 'en'): AppProfile {
     id: 1000000,
     name: 'Idris',
     age: 7,
+    lang: uiLang,
     uiLang,
     homeLangs: ['en', 'ru', 'uz', 'tg'],
     interests: [1, 10], // dinos (1), trains (10) — Idris's known interests

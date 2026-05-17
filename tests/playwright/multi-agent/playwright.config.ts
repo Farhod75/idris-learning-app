@@ -14,8 +14,8 @@ export default defineConfig({
   ],
   outputDir: './reports/artifacts',
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
-    trace: 'on', // always record traces (FP pattern discovery)
+    baseURL: process.env.BASE_URL || 'https://idris-learning-app.vercel.app',
+    trace: 'retain-on-failure', // always record traces (FP pattern discovery)
     screenshot: 'on',
     video: 'off',
     viewport: { width: 1024, height: 1366 }, // iPad viewport (CLAUDE.md)
@@ -44,17 +44,11 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1280, height: 900 },
-        hasTouch: false,
+        hasTouch: true,
         isMobile: false,
       },
     },
   ],
-  webServer: process.env.CI
-    ? {
-        command: 'npx serve .. -p 3000 -s',
-        port: 3000,
-        reuseExistingServer: false,
-        timeout: 30_000,
-      }
-    : undefined,
+   // webServer disabled — using Vercel prod URL
+
 });

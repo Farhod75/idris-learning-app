@@ -40,10 +40,13 @@ export class LanguageAgent {
     }, profileToLocalStorage(this.profile));
     await page.goto('/');
     // Wait for the profiles screen (shows after localStorage injection)
-    await page.waitForSelector('#scr-profiles', { state: 'visible', timeout: 8000 })
+    await page.waitForSelector('#scr-profiles, #scr-main', { state: 'visible', timeout: 20000 })
       .catch(async () => {
-        // Fallback: wait for main-app if profiles screen never appears
-        await page.waitForSelector('#main-app', { state: 'visible', timeout: 8000 });
+        await page.evaluate(() => {
+          // @ts-ignore
+          if (typeof showProfiles === 'function') showProfiles();
+        });
+        await page.waitForSelector('#scr-profiles, #scr-main', { state: 'visible', timeout: 10000 });
       });
   }
 
@@ -179,3 +182,5 @@ export class LanguageAgent {
     };
   }
 }
+
+

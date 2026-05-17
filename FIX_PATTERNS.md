@@ -766,3 +766,953 @@ Last updated: 2026-05-02 | Next review: after Idris App Phase 2
 - **Fix**: Add `max-height: 200px` to card component; verify breakpoint overrides don't conflict; check flex-grow/grid-auto-rows aren't expanding container
 - **Rule**: Enforce explicit max-height constraints on fixed-dimension components across all breakpoints
 - **Prevention**: Add visual regression test for card dimensions; include max-height in component spec; validate CSS cascade for height properties
+
+---
+### FP-036: Match Cards Game Fails to Render Card Elements
+
+**Pattern:** The match cards game screen renders no `.match-card` elements while all other game modes and core app functionality remain intact.
+**Root Cause:** The match cards game component fails to initialise or inject `.match-card` DOM elements, likely due to a missing or failed data binding step (e.g. an empty/undefined card dataset passed to the renderer), a broken import or dynamic `import()` call for the match-cards module, or a CSS `display:none` / `visibility:hidden` rule applied to the card container that prevents Playwright from detecting the elements.
+**Fix:** (1) Guard the card-rendering loop against empty or undefined datasets and log a console error when the card array is falsy. (2) Verify the dynamic module import for the match-cards component resolves correctly and add a fallback error boundary. (3) Confirm the `.match-card` container is not hidden by a stale CSS rule or a feature-flag check that evaluates to `false` for the `en` locale.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** en
+**Severity:** minor
+
+javascript
+// Fix example: guard card rendering against empty dataset
+function renderMatchCards(cards) {
+  if (!cards || cards.length === 0) {
+    console.error('[MatchCards] No card data provided – aborting render.');
+    // Optionally surface a user-visible fallback
+    document.querySelector('.match-cards-container')
+      ?.insertAdjacentHTML('beforeend',
+        '<p class="error-msg">Cards could not be loaded. Please try again.</p>');
+    return;
+  }
+
+  const container = document.querySelector('.match-cards-container');
+  container.innerHTML = ''; // clear stale state
+
+  cards.forEach(card => {
+    const el = document.createElement('div');
+    el.classList.add('match-card');
+    el.dataset.cardId = card.id;
+    el.textContent = card.label;
+    container.appendChild(el);
+  });
+}
+
+// Fix example: ensure the container is visible before rendering
+function showMatchCardsScreen() {
+  const screen = document.querySelector('.match-cards-screen');
+  if (screen) {
+    screen.style.display = ''   // remove any inline hide
+    screen.removeAttribute('hidden');
+  }
+  renderMatchCards(getCardDataForLocale('en'));
+}
+
+---
+
+---
+### FP-036: Application Server Not Running During QA Test Execution
+
+**Pattern:** The QA agent crashes immediately on page load because the application server is not running at the expected localhost port, yielding a score of 0.00 with no functional checks performed.
+**Root Cause:** The Playwright test runner attempts to navigate to `localhost:3000` (or configured base URL) before the dev/preview server process has been started or has finished binding to its port, resulting in `ERR_CONNECTION_REFUSED` and an unhandled agent crash rather than a graceful test failure.
+**Fix:** Add a server readiness pre-check (health-poll) in the Playwright global setup that retries the base URL up to N times before allowing any test suite to proceed; also ensure the server start command is declared in `playwright.config.js` under the `webServer` option so Playwright manages the lifecycle automatically.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** all
+**Severity:** critical
+
+javascript
+// playwright.config.js — let Playwright manage the server lifecycle
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  webServer: {
+    command: 'npm run start', // or 'npm run dev'
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI, // reuse locally, always fresh on CI
+    timeout: 30_000, // ms to wait for server to be ready
+    stdout: 'pipe',
+    stderr: 'pipe',
+  },
+  use: {
+    baseURL: 'http://localhost:3000',
+  },
+});
+
+// --- OR: manual health-poll in globalSetup.js (fallback approach) ---
+import { chromium } from '@playwright/test';
+
+async function waitForServer(url, retries = 10, delayMs = 2000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const browser = await chromium.launch();
+      const page = await browser.newPage();
+      const response = await page.goto(url, { timeout: 5000 });
+      await browser.close();
+      if (response && response.ok()) return; // server is up
+    } catch (_) {
+      // server not ready yet
+    }
+    console.warn(`Server not ready — retrying in ${delayMs}ms (attempt ${i + 1}/${retries})`);
+    await new Promise(r => setTimeout(r, delayMs));
+  }
+  throw new Error(`Server at ${url} did not become ready after ${retries} attempts.`);
+}
+
+export default async function globalSetup() {
+  await waitForServer('http://localhost:3000');
+}
+
+---
+
+---
+### FP-036: Playwright Agent Crash Due to Missing `hasTouch: true` Context Configuration
+
+**Pattern:** Test agent crashes entirely when `locator.tap()` is called without `hasTouch: true` set in the browser context, preventing any checks from running and yielding a QA score of 0.
+**Root Cause:** Playwright's `locator.tap()` requires the browser context to be initialized with `hasTouch: true`; omitting this flag causes an immediate runtime error that aborts the entire test run before any checks execute, since iPad/iPhone Safari and Chrome on Android are touch-primary targets.
+**Fix:** Add `hasTouch: true` (and optionally `isMobile: true`) to all browser context configurations used for mobile/tablet device emulation in Playwright test setup.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** all
+**Severity:** critical
+
+javascript
+// playwright.config.js or per-test context setup
+
+// BEFORE (broken):
+const context = await browser.newContext({
+  ...devices['iPad Pro'],
+  // hasTouch not set — tap() will throw
+});
+
+// AFTER (fixed):
+const context = await browser.newContext({
+  ...devices['iPad Pro'],   // spreads isMobile + hasTouch for named devices
+  hasTouch: true,           // explicit override for custom contexts
+  isMobile: true,
+});
+
+// For all mobile/tablet targets, ensure the base config includes:
+// playwright.config.js
+projects: [
+  {
+    name: 'iPad Safari',
+    use: {
+      ...devices['iPad Pro 11'],
+      hasTouch: true,
+    },
+  },
+  {
+    name: 'iPhone Safari',
+    use: {
+      ...devices['iPhone 14'],
+      hasTouch: true,
+    },
+  },
+  {
+    name: 'Chrome Android',
+    use: {
+      ...devices['Pixel 7'],
+      hasTouch: true,
+    },
+  },
+],
+
+---
+
+---
+### FP-036: Playwright Agent Crash Due to Missing hasTouch Context Configuration
+
+**Pattern:** Test agent crashes entirely when `locator.tap()` is called without initializing the browser context with `hasTouch: true`, rendering the app completely untestable and producing a QA score of 0.00.
+**Root Cause:** Playwright's `locator.tap()` method requires the browser context to be explicitly configured with `hasTouch: true`; without it, the method throws a fatal error that propagates uncaught, crashing the agent before any checks can run.
+**Fix:** Add `hasTouch: true` to the Playwright browser context options in the test setup configuration, and wrap `locator.tap()` calls in a try/catch fallback that degrades to `locator.click()` for non-touch contexts.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** uz
+**Severity:** critical
+
+javascript
+// In Playwright test setup / browser context factory:
+const context = await browser.newContext({
+  // ... existing options ...
+  hasTouch: true,          // ← required for locator.tap() to work
+  viewport: { width: 768, height: 1024 },
+});
+
+// Defensive helper to avoid future agent crashes:
+async function safeTap(locator) {
+  try {
+    await locator.tap();
+  } catch (err) {
+    if (
+      err.message.includes('hasTouch') ||
+      err.message.includes('test context was not initialized')
+    ) {
+      console.warn('[safeTap] hasTouch not set — falling back to click()');
+      await locator.click();
+    } else {
+      throw err;  // re-throw unrelated errors
+    }
+  }
+}
+
+---
+
+---
+### FP-036: Missing `hasTouch` Context Initialization Causes Agent Crash
+
+**Pattern:** Playwright test agent crashes before executing any checks because the browser context is not initialized with `hasTouch: true`, making all `locator.tap()` calls throw immediately.
+**Root Cause:** When a Playwright `BrowserContext` is created without `hasTouch: true` in its options, the WebKit/Chromium context reports no touch support, and any `locator.tap()` invocation throws a hard error rather than falling back to a click, crashing the agent and yielding a QA score of 0.00 with zero completed checks.
+**Fix:** Add `hasTouch: true` (and optionally `isMobile: true`) to every `browser.newContext()` call used by mobile/tablet test agents, or set it globally in `playwright.config.ts` under the relevant project definitions.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** tg
+**Severity:** critical
+
+javascript
+// playwright.config.ts — apply to all mobile/tablet projects
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  projects: [
+    {
+      name: 'iPad Safari',
+      use: {
+        ...devices['iPad (gen 7)'],
+        hasTouch: true,   // ← required: enables locator.tap()
+        isMobile: true,
+      },
+    },
+    {
+      name: 'iPhone Safari',
+      use: {
+        ...devices['iPhone 14'],
+        hasTouch: true,
+        isMobile: true,
+      },
+    },
+    {
+      name: 'Chrome Android',
+      use: {
+        ...devices['Pixel 7'],
+        hasTouch: true,
+        isMobile: true,
+      },
+    },
+  ],
+});
+
+// If contexts are created programmatically in agent setup:
+async function createAgentContext(browser) {
+  return browser.newContext({
+    hasTouch: true,   // ← must be set before any tap() call
+    isMobile: true,
+    locale: 'tg',     // set appropriate locale per language agent
+  });
+}
+
+---
+
+---
+### FP-036: Agent Crash Due to Missing Touch Support Configuration
+
+**Pattern:** Playwright agent crashes before any checks execute when `hasTouch` is not enabled in browser context, causing `locator.tap()` to fail and producing a QA score of 0.00 with no failed checks reported.
+**Root Cause:** `locator.tap()` requires the browser context to be launched with `hasTouch: true`; without it, Playwright throws immediately on the first tap interaction, aborting the entire agent run before any ASD safety checks (touch targets, text direction, reward system) can be evaluated.
+**Fix:** Ensure all mobile-targeting browser contexts (iPad Safari, iPhone Safari, Chrome Android) are instantiated with `hasTouch: true` and `isMobile: true` in the Playwright context options. Add a pre-flight assertion in the agent harness to verify touch capability before beginning checks.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** ar
+**Severity:** critical
+
+javascript
+// playwright.config.js or agent browser context setup
+const context = await browser.newContext({
+  ...devices['iPad (gen 7)'], // or iPhone / Android device descriptor
+  hasTouch: true,             // REQUIRED: prevents locator.tap() crash
+  isMobile: true,
+  locale: 'ar',
+  // RTL viewport consideration for Arabic
+  viewport: { width: 1024, height: 1366 },
+});
+
+// Pre-flight guard in agent harness
+async function assertTouchSupported(context) {
+  const supported = await context.evaluate(() => navigator.maxTouchPoints > 0);
+  if (!supported) {
+    throw new Error(
+      '[FP-036] Touch support not detected in browser context. ' +
+      'Ensure hasTouch: true is set before running ASD safety checks.'
+    );
+  }
+}
+
+// Usage
+await assertTouchSupported(context);
+// ... proceed with touch target, text direction, reward system checks
+
+---
+
+---
+### FP-036: Playwright Agent Crash Due to Missing hasTouch Context Initialization
+
+**Pattern:** Test agents crash entirely when `locator.tap()` is called without initializing the browser context with `hasTouch: true`, rendering the app untestable on touch-target devices.
+**Root Cause:** Playwright browser contexts default to `hasTouch: false`; calling `locator.tap()` in this state throws an unrecoverable exception that halts the agent before any checks can execute, producing a QA score of 0.00 despite no individual check failures being recorded.
+**Fix:** Add `hasTouch: true` (and optionally `isMobile: true`) to all Playwright browser context configurations used for mobile/tablet device emulation, and add a pre-flight assertion that verifies touch capability before the first `tap()` call.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** es
+**Severity:** critical
+
+javascript
+// playwright.config.js or per-test context setup
+const context = await browser.newContext({
+  // Required for locator.tap() to work on mobile emulation profiles
+  hasTouch: true,
+  isMobile: true,
+  // Example: iPad Safari profile
+  userAgent:
+    'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 ' +
+    '(KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+  viewport: { width: 1024, height: 1366 },
+  deviceScaleFactor: 2,
+});
+
+// Pre-flight guard — add to shared test helper
+async function assertTouchEnabled(context) {
+  const touchEnabled = await context.evaluate(() => navigator.maxTouchPoints > 0);
+  if (!touchEnabled) {
+    throw new Error(
+      'Browser context does not have touch support. ' +
+      'Ensure hasTouch: true is set in newContext() options.'
+    );
+  }
+}
+
+// Usage in test
+test.beforeAll(async ({ browser }) => {
+  const context = await browser.newContext({ hasTouch: true, isMobile: true });
+  await assertTouchEnabled(context);
+  // ... rest of setup
+});
+
+---
+
+---
+### FP-036: Playwright Context Missing hasTouch Configuration Causes Agent Crash
+
+**Pattern:** Test agent crashes entirely when `locator.tap()` is called without initializing the browser context with `hasTouch: true`, rendering the app untestable on touch-target platforms.
+**Root Cause:** Playwright's `locator.tap()` method requires the browser context to be created with `hasTouch: true` in the context options; omitting this flag causes the action to throw an unhandled exception that propagates up and crashes the QA agent before any checks can complete, yielding a 0.00 QA score despite no individual check failures being recorded.
+**Fix:** Set `hasTouch: true` in the Playwright `BrowserContext` options for all mobile/tablet device profiles (iPad Safari, iPhone Safari, Chrome on Android). Prefer using `devices` presets which include this flag automatically, or set it explicitly in the context factory.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** fr
+**Severity:** critical
+
+javascript
+// Fix example — context factory (e.g. playwright.config.js or agent setup)
+const { chromium, devices } = require('@playwright/test');
+
+// Option A: use a built-in device preset (hasTouch included automatically)
+const iPhone = devices['iPhone 13'];
+const iPad  = devices['iPad Pro 11'];
+
+const context = await browser.newContext({
+  ...iPhone,          // spreads hasTouch: true, viewport, userAgent, etc.
+  locale: 'fr-FR',
+});
+
+// Option B: set hasTouch explicitly when not using a device preset
+const context = await browser.newContext({
+  hasTouch: true,     // ← required for locator.tap() to work
+  viewport: { width: 390, height: 844 },
+  userAgent: '...custom UA...',
+  locale: 'fr-FR',
+});
+
+// Defensive wrapper — ensures tap() is never called on a non-touch context
+async function safeTap(locator, contextOptions) {
+  if (!contextOptions.hasTouch) {
+    throw new Error(
+      '[FP-036] Cannot call locator.tap(): context was not initialized with hasTouch:true. ' +
+      'Update the context factory before running touch-based checks.'
+    );
+  }
+  await locator.tap();
+}
+
+---
+
+---
+### FP-036: Missing `hasTouch` Configuration Causes Agent Crash Before Any Checks Run
+
+**Pattern:** Playwright test agent crashes on first `locator.tap()` call when the browser context is initialized without `hasTouch: true`, resulting in a QA score of 0.00 with zero completed checks.
+**Root Cause:** The Playwright `BrowserContext` defaults `hasTouch` to `false`; calling `locator.tap()` on a context without touch support throws `page does not support tap`, which is unhandled at the agent level and terminates the entire run before any functional checks execute.
+**Fix:** Set `hasTouch: true` (and optionally `isMobile: true`) in all Playwright context/device configurations used by the QA agent, particularly for iPad Safari and iPhone Safari target profiles.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** all
+**Severity:** critical
+
+javascript
+// playwright.config.js or agent context factory
+const context = await browser.newContext({
+  // For mobile/tablet target profiles
+  hasTouch: true,
+  isMobile: true,
+  // Example device descriptors (use as needed)
+  // ...devices['iPad (gen 7)'],
+  // ...devices['iPhone 13'],
+});
+
+// If using device descriptors, they include hasTouch automatically:
+// const context = await browser.newContext({
+//   ...playwright.devices['iPad (gen 7)'],
+// });
+
+// Guard in agent tap helper to surface a clear error instead of crashing:
+async function safeTap(locator, page) {
+  const hasTouch = await page.evaluate(() => navigator.maxTouchPoints > 0);
+  if (!hasTouch) {
+    throw new Error(
+      '[FP-036] Context missing hasTouch:true — reinitialize context with hasTouch enabled'
+    );
+  }
+  await locator.tap();
+}
+
+---
+
+---
+### FP-036: Missing `hasTouch` Context Initialization Causes Agent Crash
+
+**Pattern:** Playwright test agent crashes on `locator.tap()` calls when the browser context is not initialized with `hasTouch: true`, leaving the target language entirely untested and producing a 0.00 QA score.
+**Root Cause:** The Playwright browser context for touch-enabled device simulation is created without the `hasTouch: true` option, causing `locator.tap()` to throw immediately and abort the entire agent run before any checks execute.
+**Fix:** Add `hasTouch: true` (and optionally `isMobile: true`) to all browser context creation calls used by touch-dependent test agents, or use a named Playwright device descriptor that includes touch support.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** uz
+**Severity:** critical
+
+javascript
+// Before (broken)
+const context = await browser.newContext({
+  locale: 'uz',
+  // hasTouch not set — defaults to false
+});
+
+// After (fixed)
+const context = await browser.newContext({
+  locale: 'uz',
+  hasTouch: true,
+  isMobile: true, // recommended when simulating touch devices
+});
+
+// Alternative: use a built-in device descriptor
+const { devices } = require('@playwright/test');
+const context = await browser.newContext({
+  ...devices['iPad (gen 7)'], // includes hasTouch:true, isMobile:true
+  locale: 'uz',
+});
+
+---
+
+---
+### FP-036: Missing `hasTouch` Context Initialization Causes Agent Crash on Touch Interactions
+
+**Pattern:** Playwright test agent crashes entirely when `locator.tap()` is called without `hasTouch: true` set in the browser context, resulting in a 0.00 QA score with no checks completed.
+**Root Cause:** The Playwright browser context is instantiated without `hasTouch: true`, so any `locator.tap()` call throws a fatal error that propagates uncaught and terminates the agent before any checks can run. This is especially impactful for mobile-target PWAs (iPad Safari, iPhone Safari, Chrome on Android) where tap is the primary interaction primitive.
+**Fix:** Set `hasTouch: true` (and optionally pair with an appropriate mobile `viewport` and `userAgent`) in every browser context factory used by the QA agent. Apply globally in the Playwright config so no language-specific agent can be launched without it.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** tg
+**Severity:** critical
+
+javascript
+// playwright.config.js — global default for all projects
+const { defineConfig, devices } = require('@playwright/test');
+
+module.exports = defineConfig({
+  use: {
+    // Ensure touch is always enabled for this mobile-first PWA
+    hasTouch: true,
+    viewport: { width: 390, height: 844 }, // iPhone 14 baseline
+    userAgent: devices['iPhone 14'].userAgent,
+  },
+  projects: [
+    {
+      name: 'iPad Safari',
+      use: {
+        ...devices['iPad (gen 7)'],
+        hasTouch: true, // explicit override — never rely on device preset alone
+      },
+    },
+    {
+      name: 'iPhone Safari',
+      use: {
+        ...devices['iPhone 14'],
+        hasTouch: true,
+      },
+    },
+    {
+      name: 'Chrome Android',
+      use: {
+        ...devices['Pixel 7'],
+        hasTouch: true,
+      },
+    },
+  ],
+});
+
+// If contexts are created programmatically inside the agent:
+async function createAgentContext(browser, options = {}) {
+  if (!options.hasTouch) {
+    console.warn('[QA Agent] hasTouch not set — forcing true to prevent tap() crash');
+  }
+  return browser.newContext({
+    hasTouch: true, // mandatory for this PWA
+    ...options,     // allow overrides but hasTouch default is safe
+  });
+}
+
+---
+
+---
+### FP-036: Playwright Agent Crash Due to Missing hasTouch Context Initialization
+
+**Pattern:** QA agent crashes before any checks run because the Playwright browser context is not initialized with `hasTouch: true`, causing `locator.tap()` to throw and producing a 0.00 QA score with no actionable failed checks.
+**Root Cause:** `locator.tap()` in Playwright requires the browser context to be created with `hasTouch: true`; without it, the call throws immediately, terminating the agent before touch-target, text-direction, reward-system, or game-screen checks can execute.
+**Fix:** Add `hasTouch: true` (and optionally `isMobile: true`) to the Playwright `browser.newContext()` call in the QA agent setup, or use a pre-configured device descriptor that includes touch support.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** ar
+**Severity:** critical
+
+javascript
+// playwright.config.js or agent context setup
+const context = await browser.newContext({
+  hasTouch: true,       // Required for locator.tap() to work
+  isMobile: true,       // Recommended for mobile-first PWA testing
+  locale: 'ar',
+  // Use a device preset as an alternative:
+  // ...devices['iPad (gen 7)'],
+  // ...devices['iPhone 13'],
+});
+
+// Or via Playwright devices helper:
+import { devices } from '@playwright/test';
+use: {
+  ...devices['iPad (gen 7)'],  // includes hasTouch: true automatically
+  locale: 'ar',
+}
+
+---
+
+---
+### FP-036: Playwright Agent Crash Due to Missing Touch Support Configuration
+
+**Pattern:** The QA agent crashes entirely when `locator.tap()` is called on a browser context not configured with touch support, resulting in zero checks executed and a QA score of 0.00 despite no individual check failures.
+**Root Cause:** Playwright's `locator.tap()` requires the browser context to be instantiated with `hasTouch: true`; when this flag is absent, the page context rejects the tap action and throws an unhandled exception that propagates up to crash the agent before any checks can run.
+**Fix:** Ensure all Playwright browser contexts targeting touch-based devices (iPad Safari, iPhone Safari, Chrome on Android) are created with `hasTouch: true` and an appropriate `userAgent` / `viewport`. Add a global agent-level try/catch around the tap invocation with a fallback to `locator.click()` so a missing touch config degrades gracefully rather than crashing the agent.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** es
+**Severity:** critical
+
+javascript
+// playwright.config.js — device profiles must include hasTouch
+const ASD_DEVICES = {
+  'iPad Safari': {
+    userAgent: 'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15',
+    viewport: { width: 1024, height: 1366 },
+    hasTouch: true,          // ← was missing; caused agent crash
+    defaultBrowserType: 'webkit',
+  },
+  'iPhone Safari': {
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15',
+    viewport: { width: 390, height: 844 },
+    hasTouch: true,
+    defaultBrowserType: 'webkit',
+  },
+  'Chrome Android': {
+    userAgent: 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36',
+    viewport: { width: 412, height: 915 },
+    hasTouch: true,
+    defaultBrowserType: 'chromium',
+  },
+};
+
+// agent helper — graceful fallback so one bad tap never crashes the run
+async function safeTap(locator) {
+  try {
+    await locator.tap();
+  } catch (err) {
+    if (
+      err.message.includes('page context was not') ||
+      err.message.includes('touch') ||
+      err.message.includes('hasTouch')
+    ) {
+      console.warn('[FP-036] tap() failed — falling back to click(). Check hasTouch config.', err.message);
+      await locator.click();
+    } else {
+      throw err; // re-throw unrelated errors
+    }
+  }
+}
+
+---
+
+---
+### FP-036: Playwright Agent Crash Due to Missing hasTouch Context Configuration
+
+**Pattern:** Test agents crash entirely when `locator.tap()` is called without initializing the Playwright browser context with `hasTouch: true`, rendering the app untestable on touch-target devices.
+**Root Cause:** Playwright's `locator.tap()` method requires the browser context to be explicitly configured with `hasTouch: true`; omitting this flag causes the test runner to throw a fatal context error before any checks can execute, resulting in a QA score of 0.00 despite no individual check failures being recorded.
+**Fix:** Add `hasTouch: true` to all browser context configurations used in mobile/tablet test suites, and add a pre-flight assertion in the agent bootstrap to validate touch support is enabled before executing any tap-based interactions.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** fr
+**Severity:** critical
+
+javascript
+// playwright.config.js or per-test context setup
+const context = await browser.newContext({
+  hasTouch: true,          // Required for locator.tap() to work
+  viewport: { width: 768, height: 1024 }, // iPad dimensions
+  userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_0 like Mac OS X)'
+});
+
+// Optional: pre-flight guard in agent bootstrap
+async function assertTouchEnabled(context) {
+  const touchEnabled = await context.newPage().evaluate(
+    () => navigator.maxTouchPoints > 0
+  );
+  if (!touchEnabled) {
+    throw new Error(
+      '[FP-036] Agent bootstrap failed: hasTouch not set on browser context. ' +
+      'All tap()-based checks will crash. Set hasTouch: true in newContext().'
+    );
+  }
+}
+
+---
+
+---
+### FP-036: Arabic Locale Initial Screen Render Timeout
+
+**Pattern:** The app fails to render the initial `#scr-profiles` or `#scr-main` screen within the allotted timeout when launched under the Arabic (`ar`) locale, causing agent/test crashes with a QA score of 0.00.
+**Root Cause:** RTL locale initialisation (Arabic) likely triggers additional layout recalculation, font loading (e.g. Arabic web fonts via `@font-face`), or an async i18n resource fetch that blocks DOM visibility. The app may also conditionally apply `dir="rtl"` and `lang="ar"` attributes via JavaScript after DOMContentLoaded, delaying the point at which `#scr-profiles` or `#scr-main` transitions from `display:none` / `visibility:hidden` to visible, causing the 8000 ms Playwright `waitForSelector` to expire before the element appears.
+**Fix:** 1) Ensure the `dir` and `lang` attributes are set synchronously in the HTML `<html>` tag (or via a blocking inline script) before any deferred JS runs. 2) Preload Arabic font files with `<link rel="preload">`. 3) Await the i18n bundle load before toggling screen visibility. 4) Increase the Playwright selector timeout for RTL locales to 12000 ms as a short-term guard.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** ar
+**Severity:** critical
+
+javascript
+// 1. In HTML <head> — set RTL attributes synchronously
+// <html lang="ar" dir="rtl"> (static markup, not JS-injected)
+
+// 2. i18n initialisation guard — wait for bundle before showing screen
+async function initApp(locale) {
+  // Ensure i18n bundle is fully loaded before revealing UI
+  await loadI18nBundle(locale); // must resolve before screen toggle
+
+  const profilesScreen = document.getElementById('scr-profiles');
+  const mainScreen = document.getElementById('scr-main');
+
+  if (profilesScreen) {
+    profilesScreen.style.display = ''; // or remove hidden class
+  }
+}
+
+// 3. Playwright test — extend timeout for RTL locales
+const RTL_LOCALES = ['ar', 'he', 'fa', 'ur'];
+const selectorTimeout = RTL_LOCALES.includes(locale) ? 12000 : 8000;
+
+await page.waitForSelector('#scr-profiles, #scr-main', {
+  state: 'visible',
+  timeout: selectorTimeout,
+});
+
+// 4. Preload Arabic fonts in <head>
+// <link rel="preload" href="/fonts/arabic-regular.woff2"
+//       as="font" type="font/woff2" crossorigin="anonymous">
+
+---
+
+---
+### FP-036: Playwright Test Context Missing Touch Support Configuration
+
+**Pattern:** Agent crashes entirely when `locator.tap()` is called without initializing the Playwright browser context with `hasTouch: true`, rendering the app untestable and producing a QA score of 0.
+**Root Cause:** Playwright's `locator.tap()` method requires the browser context to be explicitly configured with `hasTouch: true`; without it, the context does not emulate a touch-capable device, causing an immediate runtime error that aborts all subsequent checks.
+**Fix:** Set `hasTouch: true` in the Playwright browser context options (and optionally pair with a mobile `viewport`) wherever `tap()` interactions are used in QA agent test suites.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** all
+**Severity:** critical
+
+javascript
+// playwright.config.js or per-test context setup
+const context = await browser.newContext({
+  hasTouch: true,          // Required for locator.tap() to work
+  viewport: { width: 390, height: 844 }, // e.g. iPhone 14 dimensions
+  userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) '
+           + 'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 '
+           + 'Mobile/15E148 Safari/604.1',
+});
+
+// Alternatively, use a built-in Playwright device descriptor:
+// const { devices } = require('@playwright/test');
+// const context = await browser.newContext({
+//   ...devices['iPad (gen 7)'],  // or 'iPhone 14', 'Pixel 7', etc.
+// });
+
+const page = await context.newPage();
+// locator.tap() will now work correctly
+await page.locator('#symbol-button').tap();
+
+---
+
+---
+### FP-036: Playwright Agent Crash Due to Missing hasTouch Context Configuration
+
+**Pattern:** Test agent crashes entirely when `locator.tap()` is called without `hasTouch: true` in the Playwright browser context, rendering all checks unrunnable and producing a 0.00 QA score despite no individual check failures.
+**Root Cause:** Playwright's `locator.tap()` method requires the browser context to be initialized with `hasTouch: true`; omitting this flag causes an unhandled exception that propagates up and crashes the agent before any functional checks can execute, resulting in a misleadingly passing-but-zero-scored run.
+**Fix:** Add `hasTouch: true` to all mobile browser context configurations (iPad Safari, iPhone Safari, Chrome on Android) in the Playwright test setup, and add a global agent-level try/catch with graceful degradation so a single tap failure cannot abort the entire check suite.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** uz
+**Severity:** critical
+
+javascript
+// In playwright.config.js or browser context factory
+const mobileContextOptions = {
+  ...devices['iPad (gen 7)'], // or iPhone / Android device descriptor
+  hasTouch: true,             // ← required for locator.tap() to work
+  locale: 'uz-UZ',
+};
+
+// Example: creating context with touch support
+const context = await browser.newContext(mobileContextOptions);
+
+// Additionally, wrap agent-level tap calls to prevent full crash:
+async function safeTap(locator, description) {
+  try {
+    await locator.tap();
+  } catch (err) {
+    console.error(`[WARN] tap() failed for "${description}": ${err.message}`);
+    // Fall back to click so remaining checks can still run
+    await locator.click();
+  }
+}
+
+---
+
+---
+### FP-036: Playwright Agent Crash Due to Missing hasTouch Context Initialization
+
+**Pattern:** The QA agent crashes entirely when `locator.tap()` is called without initializing the Playwright browser context with `hasTouch: true`, resulting in zero checks completing and a QA score of 0.00.
+**Root Cause:** Playwright's `locator.tap()` method requires the browser context to be created with `hasTouch: true` in its context options; without this flag, the underlying CDP/WebDriver session does not emulate a touch-capable device, causing an immediate runtime exception that aborts the entire agent run before any checks are recorded.
+**Fix:** Add `hasTouch: true` to the Playwright `BrowserContext` options in the test harness setup, and optionally guard all `.tap()` calls with a capability check so a single missing flag cannot abort the full suite.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** tg
+**Severity:** critical
+
+javascript
+// In your Playwright context factory (e.g., qa-agent/context.js)
+const context = await browser.newContext({
+  // --- existing options ---
+  locale: langCode,          // e.g. 'tg'
+  timezoneId: 'Asia/Dushanbe',
+
+  // --- FP-036 fix: enable touch emulation so locator.tap() does not throw ---
+  hasTouch: true,
+  isMobile: true,            // recommended companion flag for iPad/iPhone targets
+
+  // Optional: explicit viewport matching target devices
+  viewport: { width: 390, height: 844 },
+});
+
+// Defensive wrapper (prevents one missing flag from killing the whole suite)
+async function safeTap(locator, description) {
+  try {
+    await locator.tap();
+  } catch (err) {
+    if (err.message.includes('hasTouch')) {
+      console.error(
+        `[FP-036] safeTap failed for "${description}": context missing hasTouch:true. ` +
+        'Falling back to locator.click().'
+      );
+      await locator.click();
+    } else {
+      throw err;
+    }
+  }
+}
+
+---
+
+---
+### FP-036: Playwright Agent Crash Due to Missing `hasTouch` Context Option
+
+**Pattern:** The QA agent crashes before executing any checks when the Playwright browser context is launched without `hasTouch: true`, causing a total test blackout with a QA score of 0.00 despite no individual check failures.
+**Root Cause:** Touch-dependent UI interactions (tap events, gesture handlers) used in the PWA — particularly relevant on iPad Safari and Chrome Android targets — throw or hang when the Playwright context does not declare touch support via `hasTouch: true`. The uncaught error propagates to the agent runner and terminates the entire session before any check is recorded.
+**Fix:** Add `hasTouch: true` (and optionally `isMobile: true`) to all Playwright browser context configurations targeting mobile/tablet device profiles. Apply globally in the shared context factory so no per-language agent can launch without it.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** ar
+**Severity:** critical
+
+javascript
+// playwright.config.js or shared context factory
+const { chromium, devices } = require('@playwright/test');
+
+// Option A — use a built-in device descriptor (recommended)
+const iPhone = devices['iPhone 13'];
+const iPad   = devices['iPad Pro 11'];
+
+// Option B — manual context creation (ensure hasTouch is always set)
+async function createMobileContext(browser, extraOptions = {}) {
+  return browser.newContext({
+    hasTouch: true,   // ← required; absence causes agent crash
+    isMobile: true,
+    viewport: { width: 390, height: 844 },
+    locale: extraOptions.locale ?? 'en-US',
+    ...extraOptions,
+  });
+}
+
+// Playwright config — apply to all projects targeting mobile
+module.exports = {
+  projects: [
+    {
+      name: 'iPad Safari',
+      use: { ...devices['iPad Pro 11'], locale: 'ar' },
+    },
+    {
+      name: 'iPhone Safari',
+      use: { ...devices['iPhone 13'], locale: 'ar' },
+    },
+    {
+      name: 'Chrome Android',
+      use: { ...devices['Pixel 5'], locale: 'ar' },
+    },
+  ],
+};
+
+// Guard in agent runner — fail fast with a clear message instead of crashing
+async function launchAgent(contextOptions) {
+  if (!contextOptions.hasTouch) {
+    throw new Error(
+      '[FP-036] hasTouch not set in context options. ' +
+      'All mobile/tablet agents require hasTouch: true to prevent crash.'
+    );
+  }
+  // ... rest of agent bootstrap
+}
+
+---
+
+---
+### FP-036: Playwright Agent Crash Due to Missing Touch Support Configuration
+
+**Pattern:** The QA agent crashes before any checks execute because the Playwright browser context is initialized without touch support enabled, causing `locator.tap()` to throw a fatal error that halts the entire test run.
+**Root Cause:** `locator.tap()` requires the browser context to be created with `hasTouch: true`; when this flag is absent (default is `false`), Playwright throws an unhandled exception at the first touch interaction, crashing the agent and yielding a QA score of 0.00 with zero failed checks recorded — masking all real functionality issues including ASD-critical requirements.
+**Fix:** Set `hasTouch: true` (and optionally `isMobile: true`) in the Playwright `BrowserContext` options for all mobile/tablet device profiles; additionally wrap `locator.tap()` calls in a try/catch that falls back to `locator.click()` so a misconfigured context degrades gracefully rather than crashing.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** es
+**Severity:** critical
+
+javascript
+// playwright.config.js — ensure touch is enabled for mobile/tablet projects
+const mobileContextOptions = {
+  hasTouch: true,
+  isMobile: true,
+  // ...other device descriptor fields
+};
+
+// In your project definitions:
+projects: [
+  {
+    name: 'iPad Safari',
+    use: {
+      ...devices['iPad (gen 7)'],
+      hasTouch: true, // explicit override — never rely on device preset alone
+    },
+  },
+  {
+    name: 'iPhone Safari',
+    use: {
+      ...devices['iPhone 14'],
+      hasTouch: true,
+    },
+  },
+  {
+    name: 'Chrome Android',
+    use: {
+      ...devices['Pixel 7'],
+      hasTouch: true,
+    },
+  },
+],
+
+// helpers/tapSafe.js — graceful fallback used by all agents
+async function tapSafe(locator) {
+  try {
+    await locator.tap();
+  } catch (err) {
+    if (
+      err.message.includes('test context was not initialized') ||
+      err.message.includes('hasTouch')
+    ) {
+      console.warn('[tapSafe] Touch not supported in context — falling back to click()');
+      await locator.click();
+    } else {
+      throw err; // re-throw unexpected errors
+    }
+  }
+}
+
+module.exports = { tapSafe };
+
+---
+
+---
+### FP-036: Playwright Test Context Missing hasTouch Configuration Causes Agent Crash
+
+**Pattern:** The QA agent crashes entirely when `locator.tap()` is called without initializing the Playwright browser context with `hasTouch: true`, preventing any checks from completing and yielding a 0.00 QA score despite no individual check failures.
+**Root Cause:** Playwright's `locator.tap()` method requires the browser context to be created with `hasTouch: true` in its context options; omitting this flag causes the underlying CDP/WebDriver session to reject touch events, throwing an unhandled exception that crashes the agent before any test assertions can run.
+**Fix:** Add `hasTouch: true` (and optionally `isMobile: true`) to the Playwright `BrowserContext` options in the test harness configuration, ensuring all touch-dependent interactions are supported across all language/persona test runs.
+**Detected by:** auto-qa multi-agent
+**Languages affected:** fr
+**Severity:** critical
+
+javascript
+// In your Playwright test harness / browser context factory:
+// BEFORE (broken):
+const context = await browser.newContext({
+  locale: 'fr-FR',
+  // hasTouch omitted — causes locator.tap() to crash
+});
+
+// AFTER (fixed):
+const context = await browser.newContext({
+  locale: 'fr-FR',
+  hasTouch: true,   // Required for locator.tap() to work
+  isMobile: true,   // Recommended for iPad/iPhone Safari & Android Chrome targets
+  viewport: { width: 390, height: 844 }, // e.g. iPhone 14 viewport
+});
+
+// If using playwright.config.ts projects, apply per-project:
+// projects: [
+//   {
+//     name: 'iPad Safari',
+//     use: {
+//       ...devices['iPad (gen 7)'],
+//       hasTouch: true,
+//       locale: 'fr-FR',
+//     },
+//   },
+//   {
+//     name: 'iPhone Safari',
+//     use: {
+//       ...devices['iPhone 14'],
+//       hasTouch: true,
+//       locale: 'fr-FR',
+//     },
+//   },
+//   {
+//     name: 'Chrome Android',
+//     use: {
+//       ...devices['Pixel 7'],
+//       hasTouch: true,
+//       locale: 'fr-FR',
+//     },
+//   },
+// ]
+
+---

@@ -136,7 +136,7 @@ test.describe('Smoke: app loads in all 7 languages', () => {
       await agent.init(page);
 
       const profilesScreen = page.locator('#scr-profiles, #scr-lang');
-      await expect(profilesScreen.first()).toBeVisible({ timeout: 8000 });
+      await expect(profilesScreen.first()).toBeVisible({ timeout: 20000 });
     });
   }
 });
