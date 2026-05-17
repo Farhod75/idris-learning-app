@@ -43,7 +43,7 @@ test('match pairs game - complete 3 pairs', async ({ page }) => {
   await page.getByRole('button', { name: 'Create profile ðŸŽ‰' }).click();
 
   // Open match game
-  await page.locator('#modesGrid').getByText('ðŸƒ').click();
+  await page.locator('#modesGrid .mode-card.match').click();
   await expect(page.locator('#match-grid, .match-grid')).toBeVisible({ timeout: 5000 });
 
   // Match 3 pairs
@@ -61,7 +61,7 @@ test('match pairs game - complete 3 pairs', async ({ page }) => {
   await page.waitForTimeout(800);
 
   // Reward screen should appear
-  await expect(page.getByRole('button', { name: 'Keep going! ðŸš€' })).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('#rContinueBtn')).toBeVisible({ timeout: 5000 });
 });
 
 test('match pairs - emoji cards are at least 72px', async ({ page }) => {
