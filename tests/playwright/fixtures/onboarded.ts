@@ -133,13 +133,14 @@ export class IdrisAppPage {
   // ── Language ────────────────────────────────────────────────────────────
 
   async switchLanguage(lang: 'EN' | 'RU' | 'TG' | 'UZ' | 'AR' | 'ES' | 'FR') {
-    await this.page.locator('.lang-btn').click();
-    await this.page.waitForSelector('#langSheet.active', { timeout: 3000 });
-    await this.page.locator('#langSheetGrid .sheet-opt').nth(
-    {'EN':0,'RU':1,'UZ':2,'TG':3,'AR':4,'ES':5,'FR':6}[lang] ?? 0
-    ).click();
-    await this.page.waitForTimeout(300);
-  }
+  const idx = {'EN':0,'RU':1,'UZ':2,'TG':3,'AR':4,'ES':5,'FR':6}[lang] ?? 0;
+  await this.page.locator('.lang-btn').click();
+  await this.page.waitForSelector('#langSheet.active', { timeout: 5000 });
+  // Wait for sheet options to render
+  await this.page.waitForSelector('#langSheetGrid .sheet-opt', { timeout: 5000 });
+  await this.page.locator('#langSheetGrid .sheet-opt').nth(idx).click();
+  await this.page.waitForTimeout(500);
+}
 
   // ── Counting game ───────────────────────────────────────────────────────
 
