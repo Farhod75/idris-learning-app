@@ -17,7 +17,7 @@ async function reachMainApp(page) {
   await freshStart(page);
   await page.waitForSelector("#ob-lang-grid .lang-card", { timeout: 10000 });
   await page.locator("#ob-lang-grid .lang-card").first().click();
-  await page.getByRole("button", { name: "Continue →" }).click();
+  await page.locator('#ob-lang-next').click();
   await page.getByRole("textbox", { name: "Child's name" }).fill("Idris");
   await page.getByText("5").click();
   await page.getByRole("button", { name: "Next →" }).click();

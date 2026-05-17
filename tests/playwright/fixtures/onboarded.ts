@@ -135,7 +135,9 @@ export class IdrisAppPage {
   async switchLanguage(lang: 'EN' | 'RU' | 'TG' | 'UZ' | 'AR' | 'ES' | 'FR') {
     await this.page.locator('.lang-btn').click();
     await this.page.waitForSelector('#langSheet.active', { timeout: 3000 });
-    await this.page.locator('#langSheetGrid .sheet-opt').filter({ hasText: lang }).click();
+    await this.page.locator('#langSheetGrid .sheet-opt').nth(
+    {'EN':0,'RU':1,'UZ':2,'TG':3,'AR':4,'ES':5,'FR':6}[lang] ?? 0
+    ).click();
     await this.page.waitForTimeout(300);
   }
 
