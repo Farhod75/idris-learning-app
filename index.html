@@ -129,6 +129,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 .mode-card.family::before{background:var(--sun)}
 .mode-card.aac::before{background:var(--sky)}
 .mode-card.voice::before{background:var(--pink)}
+.mode-card.draw::before{background:var(--mint)}
 .mode-card:active{transform:scale(.96)}
 .mode-icon{font-size:44px;line-height:1;position:relative}
 .mode-name{font-family:'Baloo 2',cursive;font-size:16px;font-weight:700;position:relative}
@@ -1146,7 +1147,7 @@ function renderModes(){
     {id:'count',icon:'🔢',cls:'count',name:l.count_title,desc:'numbers'},
     {id:'speak',icon:'🎤',cls:'speak',name:l.speak_title,desc:'words'},
     {id:'match',icon:'🃏',cls:'match',name:l.match_title,desc:'pairs'},
-    {id:'draw',icon:'✏️',cls:'count',name:'Draw!',desc:'numbers 1-10'},
+    {id:'draw',icon:'✏️',cls:'draw',name:'Draw!',desc:'numbers 1-10'},
     {id:'family',icon:'🤗',cls:'family',name:l.family_title,desc:'together'},
     {id:'aac',icon:'💬',cls:'aac',name:l.aac_title,desc:'communication'},
     {id:'voice',icon:'🎙️',cls:'voice',name:'Voice',desc:'speak & listen'},
