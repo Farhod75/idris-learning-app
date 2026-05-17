@@ -1,7 +1,7 @@
 # CLAUDE.md
 # Project constitution for idris-learning-app
 # Auto-loaded by Claude Code on every session
-# Last updated: 2026-05-17
+# Last updated: 2026-05-17 (added Rule 7: One Task at a Time)
 
 ---
 
@@ -51,6 +51,14 @@ ASD learning app for Idris with: counting (1-1000), match pairs (30 themes), spe
 - Tests must pass on iPad WebKit project (Ubuntu CI runner).
 - Multi-agent suite uses Vercel prod URL: `BASE_URL=https://idris-learning-app.vercel.app`.
 - `tsconfig.json` MUST include `"DOM"` in `lib` array.
+
+### 7. One Task at a Time
+- **Give ONE task per response.** No multi-step pipelines, no "and then", no "while you're at it".
+- **After giving the task, STOP.** Wait for explicit confirmation that it completed and what the result was.
+- **Only after confirmation, give the next task.** Never assume a previous task succeeded — confirmation is the user's word, not inference.
+- **Exception:** atomic command groups belong together (e.g. `git add X && git commit -m Y && git push` is one task).
+- **Overview requests:** if the user asks for a full plan, give the plan WITHOUT executing — then revert to one-task-at-a-time when they say "go".
+- **Why:** pipelines hide failures, lose state, and force the user to track what worked. One-at-a-time keeps both sides honest.
 
 ---
 

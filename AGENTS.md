@@ -2,7 +2,7 @@
 # Agent orchestration rulebook + session log
 # Per QA_STANDARDS_AGENT_RULES.md Section 8.5
 # Read before every Claude session
-# Last updated: 2026-05-16
+# Last updated: 2026-05-17 (added Workflow Rule: One Task at a Time)
 
 ---
 
@@ -62,6 +62,20 @@ Examples:
 - Use emoji getByText() selectors in CI specs → use CSS class selectors
 - Call real Supabase/Claude API in CI push tests
 - Use .tap() in desktop-chrome project → use hasTouch:true instead
+- **Dump multi-step pipelines on the user** → one task at a time (see Workflow Rule below)
+
+## 🚦 Workflow Rule — ONE TASK AT A TIME (Farhod's Rule)
+
+This rule overrides convenience. Violated repeatedly in session 2026-05-17 → made explicit.
+
+- **Give ONE task per response.** No multi-step pipelines, no "and then", no "while you're at it".
+- **After giving the task, STOP.** Wait for explicit confirmation that it completed and what the result was.
+- **Only after confirmation, give the next task.** Never assume a previous task succeeded — confirmation is the user's word, not inference.
+- **Exception:** atomic command groups belong together (e.g. `git add X && git commit -m Y && git push` is one task).
+- **Overview requests:** if the user asks for a full plan, give the plan WITHOUT executing — then revert to one-task-at-a-time when they say "go".
+- **Why:** pipelines hide failures, lose state, and force the user to track what worked. One-at-a-time keeps both sides honest.
+
+See also: CLAUDE.md Rule 7, AGENTS.md "For Claude" self-rule #10.
 
 ## Agent Run Commands
 
@@ -155,4 +169,4 @@ Per QA_STANDARDS_AGENT_RULES.md — every session must:
 7. Check HR/HV repos for new patterns at START of every session
 8. Log every fix pattern discovered to FIX_PATTERNS.md
 9. Never give "directions" — give ready-to-paste complete files
-10. Confirm each step before moving to next (Farhod's rule)
+10. **ONE TASK AT A TIME** (Farhod's rule) — Give ONE task per response. STOP. Wait for explicit confirmation of completion + result before giving next task. No pipelines. No "and then". Atomic git groups (add+commit+push) count as one task. See full rule above in "Workflow Rule" section.

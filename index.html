@@ -595,6 +595,37 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
   </div>
 </div>
 
+<!-- ─── DRAW GAME ─── -->
+<div class="screen game-screen" id="game-draw">
+  <button class="gbk-btn" onclick="closeGame('game-draw')">←</button>
+  <div class="game-header">
+    <div class="game-title" id="draw-title">Draw!</div>
+    <div class="game-helper" id="draw-q">Trace the number with your finger</div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:12px">
+    <button class="btn-secondary" id="draw-prev" onclick="prevDrawNum()" style="min-width:60px;min-height:60px;font-size:24px;border-radius:50%">←</button>
+    <div id="draw-target" style="font-size:120px;font-weight:900;color:var(--orange);min-width:120px;text-align:center;font-family:Nunito,sans-serif">1</div>
+    <button class="btn-secondary" id="draw-next" onclick="nextDrawNum()" style="min-width:60px;min-height:60px;font-size:24px;border-radius:50%">→</button>
+  </div>
+  <div style="text-align:center;padding:0 16px 8px">
+    <div style="background:#FFF3E0;padding:8px 16px;border-radius:12px;display:inline-block;font-size:14px;color:#E65100">
+      <span id="draw-helper">👆 Trace the number!</span>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:center;padding:16px">
+    <canvas id="drawCanvas" width="320" height="320"
+      style="background:white;border:4px dashed #FFB74D;border-radius:20px;touch-action:none;max-width:95vw"></canvas>
+  </div>
+  <div class="game-progress" style="margin:0 16px">
+    <div class="game-prog-fill" id="draw-prog" style="width:0%"></div>
+  </div>
+  <div style="display:flex;gap:12px;padding:16px;justify-content:center">
+    <button class="btn-secondary" onclick="clearDrawCanvas()" style="min-height:var(--touch)">🗑 Clear</button>
+    <button class="btn-primary" onclick="submitDraw()" style="min-height:var(--touch)">✅ Done!</button>
+    <button class="btn-secondary" onclick="speakDrawNum()" style="min-height:var(--touch)">🔊 Hear it</button>
+  </div>
+</div>
+
 <!-- LANG SHEET -->
 <div class="sheet-overlay" id="langSheet" onclick="closeLangSheet()">
   <div class="sheet" onclick="event.stopPropagation()">
@@ -1115,6 +1146,7 @@ function renderModes(){
     {id:'count',icon:'🔢',cls:'count',name:l.count_title,desc:'numbers'},
     {id:'speak',icon:'🎤',cls:'speak',name:l.speak_title,desc:'words'},
     {id:'match',icon:'🃏',cls:'match',name:l.match_title,desc:'pairs'},
+    {id:'draw',icon:'✏️',cls:'count',name:'Draw!',desc:'numbers 1-10'},
     {id:'family',icon:'🤗',cls:'family',name:l.family_title,desc:'together'},
     {id:'aac',icon:'💬',cls:'aac',name:l.aac_title,desc:'communication'},
     {id:'voice',icon:'🎙️',cls:'voice',name:'Voice',desc:'speak & listen'},
@@ -1142,12 +1174,13 @@ function renderAACQuick(){
 // GAME LAUNCHER
 // ═══════════════════════════════════════════
 function openGame(type){
-  const map={count:'game-count',speak:'game-speak',match:'game-match',family:'game-family',aac:'game-aac'};
+  const map={count:'game-count',speak:'game-speak',match:'game-match',family:'game-family',aac:'game-aac',draw:'game-draw'};
   if(type==='voice'){window.location.href='idris-voice-module.html';return;}
   const scrId=map[type];if(!scrId)return;
   if(type==='count')startCount();
   else if(type==='speak')startSpeak();
   else if(type==='match')startMatch();
+  else if(type==='draw')startDraw();
   else if(type==='family')startFamily();
   else if(type==='aac')renderAACFull();
   document.getElementById(scrId).classList.add('active');
@@ -1418,6 +1451,7 @@ function singAlong(){
 function triggerReward(taskType){
   const l=L();const sc=STAR_COUNTS[taskType]||2;
   S.totalStars+=sc;setText('starsCount',S.totalStars);
+  logSession(taskType, sc, sc);
   if(S.currentProfile){S.currentProfile.stars=S.totalStars;saveProfiles();}
   updateFuelBar();
   const title=l.celebrate[Math.floor(Math.random()*l.celebrate.length)];
@@ -1513,6 +1547,315 @@ function addStar(){
 }
 
 // ═══════════════════════════════════════════
+// DRAW GAME — Number tracing
+// ═══════════════════════════════════════════
+
+let drawState = {
+  currentNum: 1,
+  isDrawing: false,
+  hasDrawn: false,
+  strokeCount: 0,
+  ctx: null,
+};
+
+function startDraw(){
+  drawState.currentNum = 1;
+  drawState.strokeCount = 0;
+  drawState.hasDrawn = false;
+  setTimeout(initDrawCanvas, 50);
+  renderDrawNum();
+}
+
+function initDrawCanvas(){
+  const canvas = document.getElementById('drawCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  drawState.ctx = ctx;
+  ctx.lineWidth = 12;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#FF6B35';
+
+  canvas.addEventListener('mousedown', startStroke);
+  canvas.addEventListener('mousemove', drawStroke);
+  canvas.addEventListener('mouseup', endStroke);
+  canvas.addEventListener('mouseleave', endStroke);
+
+  canvas.addEventListener('touchstart', e => {e.preventDefault(); startStroke(getTouch(e));});
+  canvas.addEventListener('touchmove', e => {e.preventDefault(); drawStroke(getTouch(e));});
+  canvas.addEventListener('touchend', e => {e.preventDefault(); endStroke();});
+
+  clearDrawCanvas();
+}
+
+function getTouch(e){
+  const t = e.touches[0] || e.changedTouches[0];
+  const rect = e.target.getBoundingClientRect();
+  return { offsetX: t.clientX - rect.left, offsetY: t.clientY - rect.top };
+}
+
+function startStroke(e){
+  drawState.isDrawing = true;
+  drawState.hasDrawn = true;
+  drawState.ctx.beginPath();
+  drawState.ctx.moveTo(e.offsetX, e.offsetY);
+}
+
+function drawStroke(e){
+  if(!drawState.isDrawing) return;
+  drawState.ctx.lineTo(e.offsetX, e.offsetY);
+  drawState.ctx.stroke();
+}
+
+function endStroke(){
+  if(drawState.isDrawing) drawState.strokeCount++;
+  drawState.isDrawing = false;
+}
+
+function clearDrawCanvas(){
+  const canvas = document.getElementById('drawCanvas');
+  if(!canvas) return;
+  const ctx = drawState.ctx || canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.save();
+  ctx.font = 'bold 240px Nunito, sans-serif';
+  ctx.fillStyle = 'rgba(255,179,77,.25)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(drawState.currentNum, canvas.width/2, canvas.height/2);
+  ctx.restore();
+
+  drawState.hasDrawn = false;
+  drawState.strokeCount = 0;
+}
+
+function renderDrawNum(){
+  document.getElementById('draw-target').textContent = drawState.currentNum;
+  document.getElementById('draw-prog').style.width = ((drawState.currentNum-1)/10*100) + '%';
+  setTimeout(clearDrawCanvas, 100);
+  speakDrawNum();
+}
+
+function speakDrawNum(){
+  speak(String(drawState.currentNum));
+}
+
+function nextDrawNum(){
+  if(drawState.currentNum >= 10){
+    closeGame('game-draw');
+    triggerReward('drawing');
+    logSession('drawing', 10, drawState.strokeCount);
+    return;
+  }
+  drawState.currentNum++;
+  drawState.hasDrawn = false;
+  renderDrawNum();
+}
+
+function prevDrawNum(){
+  if(drawState.currentNum <= 1) return;
+  drawState.currentNum--;
+  drawState.hasDrawn = false;
+  renderDrawNum();
+}
+
+function submitDraw(){
+  if(!drawState.hasDrawn){
+    document.getElementById('draw-helper').textContent = '👆 Draw the number first!';
+    return;
+  }
+  addStar();
+  document.getElementById('draw-helper').textContent = '⭐ Great job! ⭐';
+  speak(L().celebrate[Math.floor(Math.random()*L().celebrate.length)]);
+  setTimeout(()=>{
+    document.getElementById('draw-helper').textContent = '👆 Trace the number!';
+    nextDrawNum();
+  }, 1800);
+}
+
+// ═══════════════════════════════════════════
+// SESSION LOG + MASTERY DETECTION
+// ═══════════════════════════════════════════
+
+const MASTERY_THRESHOLDS = {
+  counting:  { sessionsToMaster: 10, accuracyTarget: 90 },
+  matching:  { sessionsToMaster: 8,  accuracyTarget: 85 },
+  speaking:  { sessionsToMaster: 12, accuracyTarget: 80 },
+  family:    { sessionsToMaster: 6,  accuracyTarget: 100 },
+  drawing:   { sessionsToMaster: 10, accuracyTarget: 100 },
+  aac:       { sessionsToMaster: 15, accuracyTarget: 100 },
+};
+
+const BOREDOM_THRESHOLD = 15;
+
+function logSession(taskType, score, attempts){
+  if(!S.currentProfile) return;
+  const log = loadSessionLog();
+  log.push({
+    profileId: S.currentProfile.id,
+    taskType,
+    score: score || 1,
+    attempts: attempts || 1,
+    accuracy: attempts ? Math.round((score/attempts)*100) : 100,
+    timestamp: Date.now(),
+    date: new Date().toISOString().split('T')[0],
+    stars: S.totalStars,
+  });
+  if(log.length > 500) log.splice(0, log.length - 500);
+  try { localStorage.setItem('session-log', JSON.stringify(log)); } catch{}
+  checkMasteryAndBoredom(taskType);
+}
+
+function loadSessionLog(){
+  try { return JSON.parse(localStorage.getItem('session-log') || '[]'); }
+  catch { return []; }
+}
+
+function checkMasteryAndBoredom(taskType){
+  if(!S.currentProfile) return;
+  const log = loadSessionLog().filter(e => e.profileId === S.currentProfile.id);
+  const taskLog = log.filter(e => e.taskType === taskType);
+  if(taskLog.length === 0) return;
+
+  const threshold = MASTERY_THRESHOLDS[taskType];
+  if(!threshold) return;
+
+  const recent = taskLog.slice(-threshold.sessionsToMaster);
+  const avgAccuracy = recent.reduce((s,e) => s + e.accuracy, 0) / recent.length;
+  const masteryKey = `mastery-${S.currentProfile.id}-${taskType}`;
+  const alreadyMastered = localStorage.getItem(masteryKey) === '1';
+
+  if(recent.length >= threshold.sessionsToMaster
+     && avgAccuracy >= threshold.accuracyTarget
+     && !alreadyMastered){
+    localStorage.setItem(masteryKey, '1');
+    setTimeout(()=>showMasteryBadge(taskType), 1500);
+  }
+
+  const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+  const recentWeek = taskLog.filter(e => e.timestamp > weekAgo);
+  if(recentWeek.length >= BOREDOM_THRESHOLD){
+    const boredomKey = `bored-${S.currentProfile.id}-${taskType}-${new Date().toISOString().split('T')[0]}`;
+    if(!localStorage.getItem(boredomKey)){
+      localStorage.setItem(boredomKey, '1');
+      setTimeout(()=>suggestNewGame(taskType), 2000);
+    }
+  }
+}
+
+function showMasteryBadge(taskType){
+  const names = {
+    counting:'Counting',matching:'Matching',speaking:'Speaking',
+    family:'Family',drawing:'Drawing',aac:'Talk Board',
+  };
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;top:20%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,#FFD700,#FF6B35);color:white;padding:24px 32px;border-radius:24px;box-shadow:0 12px 48px rgba(0,0,0,.3);z-index:9999;text-align:center;font-family:Nunito,sans-serif;animation:fadeInScale .5s ease';
+  banner.innerHTML = `
+    <div style="font-size:48px;margin-bottom:8px">🏆</div>
+    <div style="font-size:24px;font-weight:900;margin-bottom:4px">MASTERED!</div>
+    <div style="font-size:18px;font-weight:700">${names[taskType] || taskType}</div>
+    <div style="font-size:14px;margin-top:8px;opacity:.9">You're amazing, ${S.currentProfile.name}!</div>
+  `;
+  document.body.appendChild(banner);
+  speak('Mastered! You are amazing!');
+  setTimeout(()=>banner.remove(), 4000);
+}
+
+function suggestNewGame(taskType){
+  const alternatives = {
+    counting: 'drawing',
+    matching: 'speaking',
+    speaking: 'family',
+    family:   'matching',
+    drawing:  'counting',
+    aac:      'speaking',
+  };
+  const next = alternatives[taskType] || 'matching';
+  const names = {counting:'Count',matching:'Match',speaking:'Speak',family:'Family',drawing:'Draw',aac:'Talk'};
+
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:white;border:3px solid var(--orange);color:#333;padding:14px 18px;border-radius:18px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:600;font-family:Nunito,sans-serif;max-width:90%';
+  banner.innerHTML = `
+    <div style="font-size:16px;font-weight:800;color:var(--orange);margin-bottom:4px">✨ Try something new!</div>
+    <div style="font-size:13px;color:#666">Let's play <b>${names[next]}</b> today — you've been doing great with ${names[taskType]}!</div>
+  `;
+  document.body.appendChild(banner);
+  setTimeout(()=>banner.style.opacity='0', 5000);
+  setTimeout(()=>banner.remove(), 5500);
+}
+
+function getProgressSummary(){
+  if(!S.currentProfile) return null;
+  const log = loadSessionLog().filter(e => e.profileId === S.currentProfile.id);
+  const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+  const thisWeek = log.filter(e => e.timestamp > weekAgo);
+
+  const byTask = {};
+  log.forEach(e => {
+    if(!byTask[e.taskType]) byTask[e.taskType] = { count: 0, mastered: false };
+    byTask[e.taskType].count++;
+    const key = `mastery-${S.currentProfile.id}-${e.taskType}`;
+    byTask[e.taskType].mastered = localStorage.getItem(key) === '1';
+  });
+
+  return {
+    totalSessions: log.length,
+    thisWeekSessions: thisWeek.length,
+    totalStars: S.totalStars,
+    byTask,
+    streak: calculateStreak(log),
+  };
+}
+
+function calculateStreak(log){
+  if(log.length === 0) return 0;
+  const days = new Set(log.map(e => e.date));
+  let streak = 0;
+  const today = new Date();
+  for(let i = 0; i < 30; i++){
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const ds = d.toISOString().split('T')[0];
+    if(days.has(ds)) streak++;
+    else if(i > 0) break;
+  }
+  return streak;
+}
+
+function renderProgressCard(){
+  const p = getProgressSummary();
+  if(!p) return '';
+  const taskNames = {counting:'🔢 Count',matching:'🃏 Match',speaking:'🎤 Speak',family:'🤗 Family',drawing:'✏️ Draw',aac:'💬 Talk'};
+  const tasks = Object.entries(p.byTask).map(([k,v]) =>
+    `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #EEE">
+       <span>${taskNames[k]||k}</span>
+       <span style="font-weight:700">${v.count} plays ${v.mastered?'🏆':''}</span>
+     </div>`).join('');
+
+  return `
+    <div style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);border-radius:20px;padding:18px;margin:16px 0;font-family:Nunito,sans-serif">
+      <div style="font-size:18px;font-weight:900;color:var(--orange);margin-bottom:12px">📊 ${S.currentProfile.name}'s Progress</div>
+      <div style="display:flex;gap:12px;margin-bottom:14px">
+        <div style="flex:1;background:white;border-radius:14px;padding:10px;text-align:center">
+          <div style="font-size:24px;font-weight:900;color:var(--orange)">${p.totalSessions}</div>
+          <div style="font-size:11px;color:#888">Total plays</div>
+        </div>
+        <div style="flex:1;background:white;border-radius:14px;padding:10px;text-align:center">
+          <div style="font-size:24px;font-weight:900;color:#4CAF50">${p.thisWeekSessions}</div>
+          <div style="font-size:11px;color:#888">This week</div>
+        </div>
+        <div style="flex:1;background:white;border-radius:14px;padding:10px;text-align:center">
+          <div style="font-size:24px;font-weight:900;color:#9C27B0">🔥${p.streak}</div>
+          <div style="font-size:11px;color:#888">Day streak</div>
+        </div>
+      </div>
+      ${tasks ? `<div style="background:white;border-radius:12px;padding:12px;font-size:14px">${tasks}</div>` : ''}
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════
 // TTS
 // ═══════════════════════════════════════════
 function stripForTTS(t){
@@ -1571,6 +1914,15 @@ function showProfiles(){
       <div style="font-size:20px;color:#CCC">›</div>
     </div>
   `).join('');
+  const progressCard = renderProgressCard();
+  if(progressCard){
+    const existingCard = document.getElementById('progress-card-inject');
+    if(existingCard) existingCard.remove();
+    const div = document.createElement('div');
+    div.id = 'progress-card-inject';
+    div.innerHTML = progressCard;
+    document.getElementById('profilesList').parentNode.insertBefore(div, document.getElementById('profilesList'));
+  }
   showScreen('scr-profiles');
 }
 
