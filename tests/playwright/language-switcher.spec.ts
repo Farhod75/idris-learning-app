@@ -1,68 +1,52 @@
-import { test, expect } from '@playwright/test';
+/**
+ * tests/playwright/language-switcher.spec.ts
+ * Language switcher tests — uses POM fixture
+ * CI compatible — no emoji selectors
+ */
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/');
-  await page.waitForLoadState('networkidle');
-  await page.evaluate(() => {
-    localStorage.clear();
-    // @ts-ignore
-    window.goStep(0);
-    // @ts-ignore
-    window.pickUILang('en');
+import { test, expect } from './fixtures/onboarded';
+
+test.describe('Language Switcher', () => {
+
+  test('language sheet opens when lang button clicked', async ({ onboardedPage }) => {
+    await onboardedPage.assertOnMainApp();
+    await onboardedPage.page.locator('.lang-btn').click();
+    await expect(onboardedPage.page.locator('#langSheet')).toHaveClass(/active/);
   });
-  await page.waitForSelector('#ob-lang-grid', { timeout: 5000 });
-  await page.locator('#ob-lang-grid .lang-card').first().click();
-  await page.getByRole('button', { name: 'Continue →' }).click();
-  await page.getByRole('textbox', { name: "Child's name" }).fill('Idris');
-  await page.getByText('5').click();
-  await page.getByRole('button', { name: 'Next →' }).click();
-  await page.getByRole('button', { name: 'Next →' }).click();
-  await page.getByRole('button', { name: 'Next →' }).click();
-  await page.getByText('👩', { exact: true }).click();
-  await page.getByRole('button', { name: 'Create profile 🎉' }).click();
-  await page.waitForSelector('#modesGrid', { timeout: 10000 });
-});
 
-test('language sheet opens when lang button clicked', async ({ page }) => {
-  await page.locator('.lang-btn').click();
-  await expect(page.locator('#langSheet')).toHaveClass(/active/);
-});
+  test('switch to Russian — UI updates', async ({ onboardedPage }) => {
+    await onboardedPage.switchLanguage('RU');
+    const bodyText = await onboardedPage.page.locator('body').textContent();
+    expect(bodyText).toContain('Русский');
+  });
 
-test('switch to Russian - UI updates to RU', async ({ page }) => {
-  await page.locator('.lang-btn').click();
-  await page.waitForSelector('#langSheet.active', { timeout: 3000 });
-  await page.locator('#langSheetGrid .sheet-opt').filter({ hasText: 'Русский' }).click();
-  await page.waitForTimeout(500);
-  const bodyText = await page.locator('body').textContent();
-  expect(bodyText).toContain('Русский');
-});
+  test('switch to Tajik — UI updates', async ({ onboardedPage }) => {
+    await onboardedPage.switchLanguage('TG');
+    const bodyText = await onboardedPage.page.locator('body').textContent();
+    expect(bodyText).toContain('Тоҷикӣ');
+  });
 
-test('switch to Tajik - UI updates to TG', async ({ page }) => {
-  await page.locator('.lang-btn').click();
-  await page.waitForSelector('#langSheet.active', { timeout: 3000 });
-  await page.locator('#langSheetGrid .sheet-opt').filter({ hasText: 'Тоҷикӣ' }).click();
-  await page.waitForTimeout(500);
-  const bodyText = await page.locator('body').textContent();
-  expect(bodyText).toContain('Тоҷикӣ');
-});
+  test('switch back to English — UI updates', async ({ onboardedPage }) => {
+    await onboardedPage.switchLanguage('RU');
+    await onboardedPage.page.waitForTimeout(300);
+    await onboardedPage.switchLanguage('EN');
+    const bodyText = await onboardedPage.page.locator('body').textContent();
+    expect(bodyText).toContain('English');
+  });
 
-test('switch back to English - UI updates to EN', async ({ page }) => {
-  await page.locator('.lang-btn').click();
-  await page.waitForSelector('#langSheet.active', { timeout: 3000 });
-  await page.locator('#langSheetGrid .sheet-opt').filter({ hasText: 'Русский' }).click();
-  await page.waitForTimeout(300);
-  await page.locator('.lang-btn').click();
-  await page.waitForSelector('#langSheet.active', { timeout: 3000 });
-  await page.locator('#langSheetGrid .sheet-opt').filter({ hasText: 'English' }).click();
-  await page.waitForTimeout(500);
-  const bodyText = await page.locator('body').textContent();
-  expect(bodyText).toContain('English');
-});
+  test('language sheet closes after selection', async ({ onboardedPage }) => {
+    await onboardedPage.page.locator('.lang-btn').click();
+    await onboardedPage.page.waitForSelector('#langSheet.active', { timeout: 3000 });
+    await onboardedPage.page.locator('#langSheetGrid .sheet-opt').filter({ hasText: 'RU' }).click();
+    await onboardedPage.page.waitForTimeout(500);
+    await expect(onboardedPage.page.locator('#langSheet')).not.toHaveClass(/active/);
+  });
 
-test('language sheet closes after selection', async ({ page }) => {
-  await page.locator('.lang-btn').click();
-  await page.waitForSelector('#langSheet.active', { timeout: 3000 });
-  await page.locator('#langSheetGrid .sheet-opt').filter({ hasText: 'Русский' }).click();
-  await page.waitForTimeout(500);
-  await expect(page.locator('#langSheet')).not.toHaveClass(/active/);
+  test('language persists after opening a game', async ({ onboardedPage }) => {
+    await onboardedPage.switchLanguage('RU');
+    await onboardedPage.openGame('count');
+    const titleText = await onboardedPage.page.locator('.game-title').textContent();
+    expect(titleText).toContain('Считаем');
+  });
+
 });
