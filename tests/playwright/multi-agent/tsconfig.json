@@ -6,11 +6,8 @@
     "strict": false,
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "types": ["node", "@playwright/test"]
+    "skipLibCheck": true
   },
-  "ts-node": {
-    "transpileOnly": true,
-    "files": false
-  }
+  "include": ["tests/**/*", "api/**/*"],
+  "exclude": ["node_modules", "tests/playwright/multi-agent"]
 }

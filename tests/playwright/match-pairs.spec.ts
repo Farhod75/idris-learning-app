@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('complete onboarding and reach main app', async ({ page }) => {
-  await page.locator('#ob-lang-grid').getByText('🇬🇧').click();
+  await page.locator('#ob-lang-grid .lang-card').first().click();
   await page.getByRole('button', { name: 'Continue →' }).click();
   await page.getByRole('textbox', { name: "Child's name" }).fill('Idris');
   await page.getByText('5').click();
@@ -29,7 +29,7 @@ test('complete onboarding and reach main app', async ({ page }) => {
 
 test('match pairs game - complete 3 pairs', async ({ page }) => {
   // Onboarding
-  await page.locator('#ob-lang-grid').getByText('🇬🇧').click();
+  await page.locator('#ob-lang-grid .lang-card').first().click();
   await page.getByRole('button', { name: 'Continue →' }).click();
   await page.getByRole('textbox', { name: "Child's name" }).fill('Idris');
   await page.getByText('5').click();
@@ -60,7 +60,7 @@ test('match pairs game - complete 3 pairs', async ({ page }) => {
 
 test('match pairs - emoji cards are at least 72px', async ({ page }) => {
   // Onboarding
-  await page.locator('#ob-lang-grid').getByText('🇬🇧').click();
+  await page.locator('#ob-lang-grid .lang-card').first().click();
   await page.getByRole('button', { name: 'Continue →' }).click();
   await page.getByRole('textbox', { name: "Child's name" }).fill('Idris');
   await page.getByText('5').click();
