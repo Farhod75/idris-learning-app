@@ -1,0 +1,35 @@
+{
+  "hooks": {
+    "PreToolUse": {
+      "Write": "echo '[$(date +%H:%M)] Writing file - logging to CLAUDE.md if bug fix'",
+      "Edit": "echo '[$(date +%H:%M)] Editing file - logging to CLAUDE.md if bug fix'"
+    },
+    "PostToolUse": {
+      "Bash": "if echo \"$CLAUDE_LAST_BASH\" | grep -qE '(playwright test|pytest|npm test)'; then echo 'Test run detected'; fi"
+    },
+    "Stop": "node .claude/hooks/log-session.js || true",
+    "SessionStart": "cat CLAUDE.md AGENTS.md FIX_PATTERNS.md 2>/dev/null | head -300 || echo 'No constitution files found - read them first'"
+  },
+  "rules": {
+    "auto_log_bugs": true,
+    "auto_update_changelog": true,
+    "auto_update_fix_patterns": true,
+    "require_test_before_commit": true,
+    "min_touch_target_px": 72,
+    "forbid_emoji_selectors": true,
+    "forbid_powershell_set_content_utf8": true,
+    "always_use_pom_fixture": true
+  },
+  "agents": {
+    "verify": "npx playwright test --project=ipad",
+    "verify_fast": "npx playwright test --project=ipad --workers=4",
+    "log": "node tests/playwright/multi-agent/agents/log-agent.js",
+    "docs": "node tests/playwright/multi-agent/agents/docs-agent.js"
+  },
+  "skip_patterns": [
+    "node_modules",
+    ".vercel",
+    "test-results",
+    "*.log"
+  ]
+}

@@ -1,287 +1,230 @@
-# CLAUDE.md — Idris Learning App Project
-# Aligned with: QA_STANDARDS.md from github.com/Farhod75/engineering-standards
-# Author: Farhod Elbekov | ISTQB CT-AI | CTFL v4.0 | CT-GenAI (in progress)
-# Last updated: 2026-05-01
+# CLAUDE.md
+# Project constitution for idris-learning-app
+# Auto-loaded by Claude Code on every session
+# Last updated: 2026-05-17
 
 ---
 
-## 📌 What This Project Is
+## 🧑 WHO
 
-An **AI-powered, multilingual, family-inclusive learning PWA** for Idriszhon (age 7, ASD).
-Installs on iPad via Safari. No App Store needed.
-
-**Aligned standards:** `QA_STANDARDS.md` covers test structure, AI/LLM testing, accessibility,
-RAG patterns, and CI/CD. This file extends those for the Idris app domain specifically.
-
----
-
-## 🧒 Child Context (always load before generating content)
-
-```yaml
-name: Idriszhon (nickname: Idris)
-age: 7
-condition: ASD (Autism Spectrum Disorder)
-primary_input_language: English   # dominant from cartoons — use as app UI language
-home_languages: [Uzbek, Russian, Tajik, English]
-profile_file: idris-profile.md    # MUST be loaded into system prompt for AI content generation
-interests: [trains, dinosaurs, drawing, music]
-```
-
-> ⚠️ Always read `idris-profile.md` before generating any game content, challenges,
-> word lists, or reward animations. Content must reflect Idris's actual preferences.
+**Developer:** Farhod Elbekov — SDET / AI QA Engineer, Charlotte NC
+**Stack:** Vanilla HTML PWA + Supabase + Vercel + Playwright TS + Claude API
+**For:** Idriszhon, age 5, ASD, Dushanbe Tajikistan
+**Family:** Mama Gavkhar, Deda Farhod, ABA therapist Ms. Brower Kaitlin (Mon-Fri)
+**Certifications:** ISTQB CT-AI, CTFL v4.0, CT-GenAI (in progress), CCA Foundations (in progress)
 
 ---
 
-## 🗂️ Project File Structure
+## 🎯 PROJECT GOAL
 
-```
-idris-app/
-├── CLAUDE.md                   ← this file (Claude Project context)
-├── idris-profile.md            ← child personalization (feed to Claude API)
-├── idris-mom-questionnaire.md  ← family fills this → updates idris-profile.md
-├── index.html                  ← main PWA (single file, iPad Safari target)
-├── manifest.json               ← PWA install manifest
-├── sw.js                       ← Service Worker (offline support)
-├── lang/
-│   ├── en.json                 ← English strings
-│   ├── ru.json                 ← Russian strings
-│   ├── uz.json                 ← Uzbek strings
-│   └── tg.json                 ← Tajik strings
-├── assets/
-│   ├── sounds/                 ← gentle reward sounds (no sudden loud SFX)
-│   └── icons/                  ← iPad home screen icons
-└── tests/
-    ├── playwright/             ← iPad touch simulation tests
-    ├── pytest/                 ← AI content quality evals
-    └── evals/                  ← LLM-as-judge for generated game content
-```
+ASD learning app for Idris with: counting (1-1000), match pairs (30 themes), speak words, family challenges, AAC talk board, rocket fuel reward system, YouTube video rewards by task type, multi-language (EN/RU/TG/UZ/AR/ES/FR).
+
+**Live:** https://idris-learning-app.vercel.app
+**Repo:** github.com/Farhod75/idris-learning-app
 
 ---
 
-## 🛠️ Stack Defaults
-*(extends QA_STANDARDS.md stack section)*
+## 🚨 HARD RULES (NEVER VIOLATE)
 
-| Layer | Technology | Notes |
-|-------|-----------|-------|
-| Frontend | HTML + CSS + Vanilla JS | No framework — keeps iPad PWA fast |
-| AI API | Claude API `claude-sonnet-4-20250514` | Content generation, personalization |
-| Personalization | Prompt-based RAG via `idris-profile.md` | Phase 1 |
-| Test E2E | Playwright | iPad viewport: 1024×1366, touch mode |
-| Test AI | pytest + LLM-as-judge | Eval generated content safety & age-appropriateness |
-| CI/CD | GitHub Actions | Lint → Test → Deploy to GitHub Pages |
-| Accessibility | WCAG 2.1 AA (ASD-enhanced) | See extended rules below |
+### 1. File Encoding
+- **NEVER use PowerShell `Set-Content` with `-Encoding UTF8`** — it adds BOM that corrupts emojis.
+- **ALWAYS use Python** (`open('file','w',encoding='utf-8')`) or VS Code direct edit.
+- **NEVER use `.tap()`** in desktop-chrome project. Use `hasTouch:true` instead.
+
+### 2. Playwright Selectors
+- **NEVER use emoji `getByText('🇬🇧')`** — breaks in GitHub Actions CI.
+- **ALWAYS use CSS class selectors** like `.lang-card.first()` or `#modesGrid .mode-card.match`.
+- **NEVER use `.game-title`** alone — too broad. Use `#count-title`, `#match-title`, etc.
+
+### 3. Touch Targets (ASD Override)
+- **72px minimum** for all interactive elements (NOT WCAG's 44px).
+- Apply to: language cards, mode cards, family pills, nav buttons, match cards, count options.
+
+### 4. No Countdown Timers
+- Children with ASD experience anxiety from countdown timers. Use progress bars instead.
+
+### 5. Sensitive Files
+- **`.claude/settings.local.json` must be in `.gitignore`** — contains API keys.
+- If accidentally committed: `git filter-repo --path .claude --invert-paths --force` + rotate key at console.anthropic.com.
+
+### 6. CI Compatibility
+- Tests must pass on iPad WebKit project (Ubuntu CI runner).
+- Multi-agent suite uses Vercel prod URL: `BASE_URL=https://idris-learning-app.vercel.app`.
+- `tsconfig.json` MUST include `"DOM"` in `lib` array.
 
 ---
 
-## 🤖 Claude API Usage Pattern
+## 🧰 STACK & FILES
 
-### System prompt structure (MUST follow this order):
-```javascript
-const systemPrompt = `
-You are a gentle learning assistant for Idriszhon, age 7, ASD.
+### Core
+- `index.html` (~100KB) — main PWA, all game logic, reward overlay, video popup
+- `api/content.ts`, `api/content-handler.ts` — Supabase content API
+- `api/videos.ts` — reward video API by task type
+- `seed.sql`, `002_consent_and_privacy.sql` — Supabase schema + seed
 
-CHILD PROFILE:
-${await loadFile('idris-profile.md')}   // always inject full profile
+### Tests
+- `tests/playwright/fixtures/onboarded.ts` — POM fixture (`onboardedPage` + `freshPage`)
+- `tests/playwright/touch-targets.spec.ts` — 6 tests
+- `tests/playwright/match-pairs.spec.ts` — 5 tests
+- `tests/playwright/match-card-size.spec.ts` — 6 tests
+- `tests/playwright/language-switcher.spec.ts` — 6 tests
+- `tests/playwright/accessibility.spec.ts` — axe-core + 72px (warning only in CI)
+- `playwright.config.ts` — projects: desktop, iphone14, ipad (gen7)
 
-CURRENT SESSION:
-- Language: ${lang}
-- Family member present: ${selectedFamilyMember}
-- Game type: ${gameType}
-- Stars earned today: ${starsToday}
+### Multi-Agent
+- `tests/playwright/multi-agent/agents/` — base, language, fix, verify, log, docs
+- `tests/playwright/multi-agent/playwright.config.ts` — language projects EN/RU/TG/UZ/AR/ES/FR
 
-CONTENT RULES (MUST follow):
-- Max 6 words per instruction
-- Always pair text with emoji
-- Celebrate every attempt, not just correct answers
-- Never use countdown timers or pressure language
-- Connect content to: trains 🚂, dinosaurs 🦕, or his known cartoons
-- Output language: ${lang}
-- Return JSON only, no markdown, no preamble
-`;
-```
+### CI
+- `.github/workflows/ci.yml` — 5 jobs: typecheck, verify-agent, log-agent, docs-agent, language-agent
+- `.github/workflows/deploy.yml` — Vercel deploy
 
-### Expected response shape (always request JSON):
-```typescript
-interface GameContent {
-  items: Array<{
-    emoji: string;
-    word: { en: string; ru: string; uz: string; tg: string; };
-    category: string;        // "transport" | "animal" | "food" | "color"
-    idrisRelevance: "high" | "medium" | "low";
-  }>;
-  familyChallenge: {
-    emoji: string;
-    instruction: string;     // max 10 words
-    familyMember: string;
-  };
-  rewardMessage: string;     // in selected language, max 5 words
-}
+### Documentation
+- `AGENTS.md` — session log, agent rules, pending work
+- `CHANGELOG.md` — version history (v1.59.x → v1.60.x)
+- `FIX_PATTERNS.md` — 9+ documented fix patterns
+- `ABOUT.md` — project context
+
+---
+
+## 📋 PRE-FLIGHT CHECKLIST (Run at START of every session)
+
+```bash
+# 1. Read constitution
+cat CLAUDE.md AGENTS.md FIX_PATTERNS.md
+
+# 2. Check repo state
+git status
+git log --oneline -5
+
+# 3. Check CI status
+# https://github.com/Farhod75/idris-learning-app/actions
+
+# 4. Verify deployed file matches local
+python -c "data=open('index.html','rb').read(); print('BOM:', data[:3].hex()); print('Size:', len(data))"
+# Expected: BOM 3c2144 (no BOM), Size ~100000 bytes
 ```
 
 ---
 
-## ♿ Accessibility Rules — WCAG 2.1 AA + ASD Extensions
-*(extends QA_STANDARDS.md accessibility section)*
+## 🔁 STANDARD WORKFLOWS
 
-### Hard requirements (MUST — same level as QA_STANDARDS MUST):
-```
-Touch targets:        min 72px × 72px  (QA_STANDARDS says 44px — override for ASD)
-Font size body:       min 18px
-Font size game text:  min 24px
-Color contrast:       min 4.5:1 (AA)
-Animation:           respect prefers-reduced-motion
-Flashing:            NEVER > 3 flashes/second (WCAG 2.3.1 — seizure threshold)
-Timers:              NEVER add countdown pressure — self-directed pace only
-Audio:               All sounds OPTIONAL, default LOW volume
-```
+### Workflow A — Fix a bug
+1. Reproduce the bug locally first
+2. Search FIX_PATTERNS.md for similar pattern
+3. Write/update a Playwright test that reproduces it
+4. Apply the fix
+5. Run tests: `npx playwright test --project=ipad`
+6. Update FIX_PATTERNS.md with the new pattern (if novel)
+7. Update CHANGELOG.md with version bump
+8. Commit: `git commit -m "fix: description [vX.X.X]"`
+9. Push: `git push origin main`
 
-### Should (same convention as QA_STANDARDS SHOULD):
-```
-Haptic feedback:     gentle only, never startling
-Background motion:   minimal, no parallax
-Reward animations:   subtle, < 2 seconds
-Session break cue:   suggest break every 10 minutes
-```
+### Workflow B — Add a new feature
+1. Update CLAUDE.md with the feature's hard rules
+2. Write Playwright tests FIRST (TDD)
+3. Implement in `index.html` or API
+4. Test on iPad project locally
+5. Commit + push
+6. Verify CI green before declaring done
 
----
-
-## 🎮 Games Backlog
-*(treat like QA_STANDARDS project kickstart checklist)*
-
-| Priority | Game | Status | Language | Notes |
-|----------|------|--------|----------|-------|
-| P0 | Counting 1–10 | ✅ Prototype | All 4 | Add train/dino emojis from profile |
-| P0 | Picture Match | ✅ Prototype | All 4 | Expand category library |
-| P0 | Speak & Repeat | ✅ Prototype | All 4 | Integrate Web Speech API |
-| P0 | Family Challenges | ✅ Prototype | All 4 | Expand to 20+ challenges |
-| P1 | Letter Recognition | 🔲 TODO | EN first | A–Z with his cartoon characters |
-| P1 | Color Matching | 🔲 TODO | All 4 | Use his favorite colors from profile |
-| P1 | Animal Sounds | 🔲 TODO | All 4 | High interest — use profile animals |
-| P2 | Draw & Tap | 🔲 TODO | All 4 | Tablet finger drawing mini-game |
-| P2 | Sing Along | 🔲 TODO | All 4 | Family karaoke mode, soft mic |
-| P3 | Shape Recognition | 🔲 TODO | All 4 | Basic geometry |
-
----
-
-## 🧪 Test Strategy
-*(aligned with QA_STANDARDS.md test structure rules)*
-
-### E2E Tests (Playwright)
-```python
-# Target: iPad Safari simulation
-# viewport: {"width": 1024, "height": 1366}
-# touch: True
-
-# MUST test:
-- All touch targets are ≥ 72px
-- Language switch works for all 4 languages
-- Game completes and awards star
-- Family challenge loads based on selected family member
-- No animation flashes more than 3 times
-
-# SHOULD test:
-- Offline mode via Service Worker
-- PWA install prompt appears
-- Profile loads correctly from idris-profile.md
-```
-
-### AI Content Evals (pytest + LLM-as-judge)
-```python
-# Per QA_STANDARDS.md AI/LLM testing patterns:
-
-def eval_generated_content(content: GameContent) -> EvalResult:
-    """
-    LLM-as-judge: is this content safe and appropriate for Idris?
-    Judge model: claude-sonnet-4-20250514
-    """
-    criteria = [
-        "age_appropriate",        # 7-year-old level
-        "asd_safe",               # no sudden scary content  
-        "language_correct",       # correct target language
-        "idris_relevant",         # matches his interests from profile
-        "family_inclusive",       # involves family member
-        "instruction_brevity",    # max 6 words per instruction
-    ]
-```
-
-### RAG Quality Tests
-```python
-# Per QA_STANDARDS.md RAG testing rules:
-# Test that profile data actually influences generated content
-
-def test_profile_influences_content():
-    # Given: idris-profile.md says Idris likes trains
-    # When: counting game content is generated
-    # Then: at least 50% of emojis should be transport-related
-    assert train_emoji_ratio(generated_content) >= 0.5
+### Workflow C — Pre-deploy verification
+```bash
+npx playwright test --project=ipad
+# Must be 17/17 green before push
 ```
 
 ---
 
-## 👨‍👩‍👧‍👦 Family Involvement — Non-Negotiable Rules
+## 🤖 AGENTS (auto-loaded)
 
-Every session MUST contain at least one "family moment" activity.
-The app NEVER rewards solo screen time over human interaction.
-Family challenges MUST use the language of the family member selected.
-
-These are functional requirements, not nice-to-haves. Test them like any P0 feature.
-
----
-
-## 🔄 Profile Update Workflow
-
-```
-Mom fills idris-mom-questionnaire.md
-        ↓
-Grandfather (Farhod) reviews answers
-        ↓
-Updates idris-profile.md
-        ↓
-Commits to repo (triggers CI)
-        ↓
-CI runs eval tests: does new content reflect updated profile?
-        ↓
-Deploy updated app to GitHub Pages
-        ↓
-Family uses updated app on iPad
-```
+| Agent | Trigger | Action |
+|-------|---------|--------|
+| **verify-agent** | Every push | Runs 17 Playwright iPad tests; BLOCKS deploy if red |
+| **log-agent** | After verify-agent | Parses results → `bug-queue.json` artifact |
+| **docs-agent** | After verify-agent (push only) | Auto-commits CHANGELOG update |
+| **language-agent** | Manual dispatch | Full EN/RU/TG/UZ/AR/ES/FR suite against prod |
 
 ---
 
-## 💬 Effective Prompts for This Project
+## 🐛 BUG LOG (auto-updated by Claude Code)
 
-When asking Claude to help, always specify:
+When fixing a bug, Claude Code MUST append an entry here:
 
-**Good pattern:**
+### Format
 ```
-"Using Idris's profile (loves trains, age 7, ASD), generate 10 new 
-family challenge cards in Uzbek for the papa family member. 
-Return JSON matching GameContent interface. Keep instructions under 6 words."
-```
-
-**Good pattern:**
-```
-"Add a new 'Animal Sounds' game to index.html. 
-Use animals from idris-profile.md favorites list. 
-Touch targets minimum 72px. No countdown timers. 
-Support all 4 languages. Follow WCAG 2.1 AA."
+## [DATE] BUG-### — Short description
+**Symptom:** what user/test saw
+**Root cause:** technical reason
+**Fix:** what changed
+**Files:** comma-separated paths
+**Pattern:** P-XXX (if added to FIX_PATTERNS.md)
+**Version:** vX.X.X
 ```
 
-**Avoid:**
-```
-"Make a new game for Idris"  ← too vague, Claude won't apply profile
-"Add sounds"                 ← missing accessibility constraints
-```
+### Active log
+
+<!-- Claude Code: prepend new bug entries below this line -->
+
+## [2026-05-17] BUG-013 — Match cards too wide on desktop
+**Symptom:** match-grid stretches to ~500px wide on desktop, 2 cards visible
+**Root cause:** CSS grid-template-columns: repeat(3, 1fr) expands without max-width
+**Fix:** Apply inline style in renderMatchGrid(): grid-template-columns: repeat(3, 110px); width: 354px
+**Files:** index.html
+**Pattern:** P-UI-01
+**Version:** v1.60.x
+
+## [2026-05-17] BUG-012 — Watch reward opens YouTube new tab instead of vidPopup
+**Symptom:** Tapping Watch reward redirects to YouTube search page
+**Root cause:** Button onclick not set OR points to openVideoReward() instead of openVidPopup()
+**Fix:** Ensure `onclick="openVidPopup()"` on Watch reward button
+**Files:** index.html line ~578
+**Version:** v1.60.6 (attempted, may need re-verification)
+
+## [2026-05-17] BUG-011 — Do This Now dot not clickable
+**Symptom:** Tapping the green dot does nothing
+**Root cause:** tapDot(${i}) onclick may have stale closure or HTML attribute quote conflict
+**Fix:** Ensure escaped quotes in onclick: `<div class="act-dot" onclick="tapDot(${i})"></div>`
+**Files:** index.html ~line 1435
+**Version:** v1.60.x
+
+## [2026-05-17] BUG-010 — UTF-8 BOM corrupting emojis
+**Symptom:** All emojis render as `ðŸš€` on live app after PowerShell edits
+**Root cause:** PowerShell Set-Content -Encoding UTF8 adds UTF-8 BOM (EF BB BF)
+**Fix:** Use `git cat-file blob <commit>:index.html | python -c "open('index.html','wb').write(sys.stdin.buffer.read())"` to restore clean version
+**Files:** index.html
+**Pattern:** P-ENC-01
+**Version:** v1.60.12
 
 ---
 
-## 📅 Session Log (append after each play session)
+## 🌐 KEY URLS
 
-```markdown
-| Date | Family Member | Lang | Games | Idris Mood | Stars | Notes |
-|------|--------------|------|-------|------------|-------|-------|
-| 2026-05-01 | Grandfather | RU | Count, Match | happy | 12 | First session |
-```
+- Live app: https://idris-learning-app.vercel.app
+- Repo: https://github.com/Farhod75/idris-learning-app
+- CI: https://github.com/Farhod75/idris-learning-app/actions
+- Supabase project: bdwgjoaizyxqokmfehgj
+- Anthropic console: https://console.anthropic.com
 
-## Auto-logged FP-044 (2026-05-07)
-Card 0: height 450px >= 200px [FP-039 regression]
+---
+
+## 🕋 NOTES
+
+- **Farhod on Hajj:** 2026-05-19 → 2026-06-06
+- **Next session after Hajj:** start with reading CLAUDE.md + AGENTS.md + FIX_PATTERNS.md
+- **Gavkhar's device:** iPhone (Dushanbe) — iOS Safari TTS is the priority
+- **Idris's therapy:** ABA with Ms. Brower Kaitlin, Monday-Friday
+
+---
+
+## 🛠️ AUTO-LOGGING PROTOCOL
+
+When Claude Code starts work on a bug, it MUST:
+
+1. **Before writing any code** — append a `[WIP]` entry to BUG LOG section above
+2. **After fix passes tests** — update entry to `[DONE]` with final files/pattern/version
+3. **If novel pattern** — also append to `FIX_PATTERNS.md` with full template
+4. **At end of session** — append summary to `AGENTS.md` Session Log section
+5. **Commit message** — must include `[vX.X.X]` semver tag and reference BUG-###
+
+This file is the single source of truth. Treat it as code, not docs.
