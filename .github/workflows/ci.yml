@@ -1,0 +1,276 @@
+# =============================================================================
+# .github/workflows/ci.yml — idris-learning-app
+# Smart push gate — follows HR pattern (CI #45)
+# Author: Farhod Elbekov | ISTQB CT-AI #26-CT-AI-00063-USA
+#
+# AGENTS WIRED:
+# verify-agent  → Playwright 17 tests (iPad) — blocks bad push
+# log-agent     → parses results → uploads bug-queue.json artifact
+# docs-agent    → auto-updates CHANGELOG.md on every push
+# language-agent → EN/RU/TG/UZ/AR/ES/FR checks (manual dispatch only)
+# axe-core      → WCAG 2.1 AA + 72px ASD touch targets
+# =============================================================================
+
+name: Idris Learning App CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_multiagent:
+        description: 'Run full language-agent suite against prod'
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+      version:
+        description: 'Version tag for docs-agent (e.g. 1.60.0)'
+        default: '1.60.0'
+        required: false
+
+env:
+  BASE_URL: https://idris-learning-app.vercel.app
+  NODE_VERSION: '20'
+
+jobs:
+  # ── Job 1: TypeScript Check ──────────────────────────────────────────────
+  typecheck:
+    name: TypeScript Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: TypeScript check (warning only)
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+  # ── Job 2: verify-agent — Playwright 17 tests (iPad) ────────────────────
+  # BLOCKS push if red — all 17 must pass
+  verify_agent:
+    name: verify-agent — Playwright iPad (17 tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Install WebKit (iPad)
+        run: npx playwright install webkit --with-deps
+
+      - name: touch-targets.spec.ts
+        run: npx playwright test tests/playwright/touch-targets.spec.ts --project=ipad
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+
+      - name: match-pairs.spec.ts
+        run: npx playwright test tests/playwright/match-pairs.spec.ts --project=ipad
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+
+      - name: match-card-size.spec.ts
+        run: npx playwright test tests/playwright/match-card-size.spec.ts --project=ipad
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+
+      - name: language-switcher.spec.ts
+        run: npx playwright test tests/playwright/language-switcher.spec.ts --project=ipad
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+
+      - name: accessibility.spec.ts (warning only)
+        run: |
+          npx playwright install chromium --with-deps
+          npx playwright test tests/playwright/accessibility.spec.ts --project=desktop
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+        continue-on-error: true
+
+      - name: Generate JSON report for log-agent
+        run: npx playwright test tests/playwright/ --project=ipad --reporter=json --output=tests/reports/results.json
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+        continue-on-error: true
+
+      - name: Upload Playwright HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-ipad
+          path: tests/reports/html/
+          retention-days: 7
+
+      - name: Upload failures on red
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-failures
+          path: test-results/
+          retention-days: 3
+
+  # ── Job 3: log-agent — parse results → bug-queue.json ───────────────────
+  log_agent:
+    name: log-agent — Parse + generate bug-queue
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: verify_agent
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Install multi-agent deps
+        run: npm ci
+        working-directory: tests/playwright/multi-agent
+      - name: Download Playwright JSON report
+        uses: actions/download-artifact@v4
+        with:
+          name: playwright-report-ipad
+          path: tests/reports/
+        continue-on-error: true
+      - name: Run log-agent
+        run: npx ts-node agents/log-agent.ts
+        working-directory: tests/playwright/multi-agent
+        continue-on-error: true
+      - name: Upload bug-queue.json
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bug-queue
+          path: tests/playwright/multi-agent/reports/bug-queue.json
+          retention-days: 14
+
+  # ── Job 4: docs-agent — auto-update CHANGELOG on every push ─────────────
+  # Per QA_STANDARDS Section 8.5 — doc agent runs same session as fix
+  docs_agent:
+    name: docs-agent — Auto-update CHANGELOG
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: verify_agent
+    if: always() && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Install multi-agent deps
+        run: npm ci
+        working-directory: tests/playwright/multi-agent
+      - name: Extract commit type + message
+        id: commit
+        run: |
+          MSG=$(git log -1 --pretty=%s)
+          TYPE=$(echo "$MSG" | grep -oE '^(feat|fix|docs|test|refactor|chore)' || echo 'chore')
+          echo "msg=$MSG" >> $GITHUB_OUTPUT
+          echo "type=$TYPE" >> $GITHUB_OUTPUT
+      - name: Run docs-agent
+        run: |
+          npx ts-node agents/docs-agent.ts \
+            --version "${{ github.event.inputs.version || '1.60.0' }}" \
+            --type "${{ steps.commit.outputs.type }}" \
+            --description "${{ steps.commit.outputs.msg }}"
+        working-directory: tests/playwright/multi-agent
+        continue-on-error: true
+      - name: Commit CHANGELOG update
+        run: |
+          git config user.name "docs-agent[bot]"
+          git config user.email "docs-agent@idris-learning-app"
+          git add CHANGELOG.md AGENTS.md 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "docs: auto-update CHANGELOG [docs-agent]"
+          git push || true
+        continue-on-error: true
+
+  # ── Job 5: language-agent full suite — MANUAL DISPATCH ONLY ─────────────
+  language_agent:
+    name: language-agent — EN/RU/TG/UZ/AR/ES/FR
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: github.event_name == 'workflow_dispatch' && inputs.run_multiagent == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Install multi-agent deps
+        run: npm ci
+        working-directory: tests/playwright/multi-agent
+      - name: Install browsers
+        run: npx playwright install webkit chromium --with-deps
+        working-directory: tests/playwright/multi-agent
+
+      - name: language-agent EN
+        run: npm run test:en
+        working-directory: tests/playwright/multi-agent
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+
+      - name: language-agent RU
+        run: npm run test:ru
+        working-directory: tests/playwright/multi-agent
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+
+      - name: language-agent TG
+        run: npm run test:tg
+        working-directory: tests/playwright/multi-agent
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+
+      - name: language-agent UZ
+        run: npm run test:uz
+        working-directory: tests/playwright/multi-agent
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+        continue-on-error: true
+
+      - name: language-agent AR
+        run: npm run test:ar
+        working-directory: tests/playwright/multi-agent
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+        continue-on-error: true
+
+      - name: language-agent ES
+        run: npm run test:es
+        working-directory: tests/playwright/multi-agent
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+        continue-on-error: true
+
+      - name: language-agent FR
+        run: npm run test:fr
+        working-directory: tests/playwright/multi-agent
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+        continue-on-error: true
+
+      - name: Run log-agent after full suite
+        run: npx ts-node agents/log-agent.ts
+        working-directory: tests/playwright/multi-agent
+        continue-on-error: true
+
+      - name: Upload full suite reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: language-agent-reports
+          path: tests/playwright/multi-agent/reports/
+          retention-days: 14
