@@ -1,7 +1,7 @@
 # WORK_QUEUE.md — idris-learning-app
 # Queued tasks for Claude Code (in order)
 # Read this file at the start of every session
-# Last updated: 2026-05-17 (added BUG-017 with Islamic praise + marked Task A done)
+# Last updated: 2026-06-14 (added Tier 8 self-evolving system design + marked BUG-016 done)
 
 ---
 
@@ -39,6 +39,7 @@ Per CLAUDE.md Rule 7 (One Task at a Time) and AGENTS.md Workflow Rule:
 - Tier 5: Drag-and-drop shapes game
 - Tier 6: Weekly PDF progress report
 - Tier 7: ElevenLabs voice enrollment (Mama, Papa, Deda, Babushka) — also relevant to Path C for video reward replacement
+- Tier 8: Self-evolving system (weekly agent self-education + parent-suggested feature evolution) — see detailed design below
 
 ---
 
@@ -182,6 +183,75 @@ For multilingual "Correct" support, add a `correct:` key to each language config
 - Commit format: `feat: TTS speaks 'Correct, {content}' on right answer in all games [vX.X.X]`
 - No push until iPad tests pass locally — Workflow C
 - Per Rule 7: do this as ONE atomic feature commit, not split across games
+
+---
+
+## Tier 8 — Self-evolving system (DESIGN ONLY, deferred)
+
+**Reported:** 2026-06-14 (Farhod, post-Hajj, after Task B shipped)
+**Priority:** Future — design captured, build deferred minimum 3-6 months
+**Type:** Architecture / new agent subsystem
+**Status:** Idea captured. NOT to be built until Tier 3 (session log → Supabase) ships AND we have 3-6 months of FIX_PATTERNS data + real-user session signal to justify the agents.
+
+### Why deferred (read this before considering building)
+1. Building self-evolving agents on top of empty data is theater. They need a real signal stream (FIX_PATTERNS.md history, child_progress table, parent feedback events) to learn from. Tier 3 must ship first.
+2. The system is tooling-on-tooling — it makes the developer experience better, not Idris's experience. Idris benefits from Tier 4 (adaptive task difficulty) and Tier 5 (new games), not from a self-updating CLAUDE.md.
+3. Running the app on real data for a few months reveals where friction actually lives. Building the self-improvement loop before that risks optimizing the wrong things.
+4. Maintenance cost is real: a system that auto-proposes changes to its own constitution can drift, hallucinate "best practices," or chase changelog noise. The PR-review burden falls on Farhod.
+
+### Two sub-systems
+
+**Sub-system A — Weekly agent self-education loop**
+Goal: keep agent prompts, FIX_PATTERNS.md, and CLAUDE.md aligned with current best practices in our actual stack.
+
+Components:
+- **GitHub Action `agent-self-update.yml`** — runs weekly (Sunday 02:00 UTC, before sessions start)
+- **Sources to monitor:** Anthropic docs (claude.com/docs), Playwright changelog (github.com/microsoft/playwright/releases), Next.js release notes, Supabase changelog, WCAG updates, ASD therapy research (Autism Research Institute, Autism Speaks Science Digest — VERIFY citation policies before fetching), MDN web docs for any APIs we use
+- **`self-improvement-agent`** (new agent, sits alongside the existing 7):
+  - Reads each source delta since last run
+  - Cross-references against current FIX_PATTERNS.md (50+ entries) and CLAUDE.md constitution
+  - Detects: (a) patterns that are now obsolete (e.g. "use --break-system-packages" if pip syntax changes), (b) new best practices we don't have, (c) deprecation warnings in our stack
+  - Opens a PR titled `chore(self-update): {source} {date}` with proposed diffs
+- **Critical:** never auto-merge. Farhod reviews every PR. Default to conservative — propose only when high confidence.
+- **Failure mode to prevent:** the agent drifts our constitution toward generic web-dev best practices and away from our ASD-specific principles (effort-based rewards, no countdown timers, 72px touch targets). The self-improvement-agent must read CLAUDE.md's ASD principles section first and explicitly preserve them.
+
+**Sub-system B — Parent-suggested feature evolution loop**
+Goal: when Gavkhar or Ms. Brower Kaitlin says "Idris is bored of counting 1-10, try 1-50" or "He needs more drag-and-drop practice," the suggestion becomes a tracked task proposal that the system evaluates against Idris's actual session data.
+
+Components:
+- **Parent input mechanism:** simple form in profile screen → POST to `/api/suggestions` → Supabase `parent_suggestions` table
+  - Fields: `suggester_role` (mom/dad/grandma/therapist), `target_game`, `suggestion_text`, `created_at`
+- **`task-proposal-agent`** (new agent — already partially designed in Tier 4):
+  - Fires nightly cron
+  - Reads new suggestions + last 7 days of session log (Tier 3 prerequisite)
+  - Uses Claude API to evaluate: does the data support this suggestion? (e.g. "is Idris actually mastering counting 1-10 → ready for 1-50?")
+  - Generates structured proposal: config change diff + rationale + supporting metrics
+- **Doctor portal review screen** (Tier 4 component):
+  - Ms. Brower Kaitlin sees pending proposals
+  - Approve / Reject / Request modification
+  - Approved proposals create a config change PR (or direct Supabase config row, depending on implementation)
+- **Roll-out cadence:** approved changes go live next Monday (children with ASD benefit from predictable, scheduled change — not surprise mid-week updates)
+
+### Data dependencies (gate ordering)
+Tier 3 must ship before Tier 8 makes sense:
+- Sub-system A needs FIX_PATTERNS.md to have 6+ months of entries (~100+) to detect patterns
+- Sub-system B needs child_progress table (Tier 3) populated with real session data (mastery, boredom, error patterns) to evaluate suggestions against
+
+### Open questions to resolve before building
+1. **Who owns PR review when Farhod is unavailable?** A self-evolving system that nobody reviews becomes a self-rotting system. Need a fallback reviewer or auto-stale rule (close PR if open >14 days).
+2. **How does the system handle conflicting suggestions** (mom wants more counting, therapist wants more matching)? Default: therapist wins. Document this explicitly.
+3. **What's the cost ceiling?** Weekly Claude API calls + nightly proposal generation could rack up. Set a monthly budget cap, fail-closed when exceeded.
+4. **Privacy:** parent suggestions may contain PHI (e.g. "Idris had a meltdown during counting"). The `parent_suggestions` table must follow COPPA/GDPR pattern from FP-001 — RLS on, parent-scoped reads only, no LLM training opt-in.
+5. **Therapist workflow load:** if the system generates 5+ proposals/week, Ms. Brower Kaitlin will burn out reviewing them. Cap proposals at 1-2/week, require strong signal.
+
+### When to actually start building this
+Concrete triggers (any ONE of these):
+- FIX_PATTERNS.md hits 100+ entries (currently ~50) — enough signal to detect stale patterns
+- 3+ months of real session log data in child_progress table (Tier 3 prerequisite)
+- Gavkhar or Ms. Brower Kaitlin explicitly requests it ("I want a way to suggest changes from the app")
+- Farhod has 2+ uninterrupted weeks of focus available (this is not a weekend project)
+
+Until then: this design lives here. Don't build. Don't expand. Refer back when one of the triggers fires.
 
 ---
 
@@ -359,3 +429,13 @@ If at any point a step fails, STOP and ask. Do not invent fixes.
 - Task B (BUG-016) documented and queued for Claude Code
 - Task C (BUG-017) documented and queued — new feature: "Correct, {content}" TTS feedback
 - Farhod departs for Hajj 2026-05-19, returns 2026-06-06
+
+### 2026-06-14 (Farhod, post-Hajj first session)
+- Fixed .claude/settings.json schema migration (object → array of matchers per new Claude Code hooks API)
+- v1.62.2 shipped (settings.json migration)
+- Task B / BUG-016 shipped (Claude Code with diff-review-approve loop per Rule 7)
+- Critical UX correction during review: tapDot() popup-open moved into completion branch (don't open per-tap, open once on activity completion)
+- v1.63.0 shipped (do-now + sing-along open filtered video popups, 29/29 iPad tests green)
+- v1.63.1 shipped (docs: marked BUG-016 done in WORK_QUEUE.md + CLAUDE.md BUG log)
+- Tier 8 design captured (self-evolving system) — deferred minimum 3-6 months until Tier 3 ships
+- Task C (BUG-017) remains queued as next item
