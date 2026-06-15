@@ -31,16 +31,7 @@
         ]
       }
     ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node .claude/hooks/log-session.js || true"
-          }
-        ]
-      }
-    ],
+    "Stop": [],
     "SessionStart": [
       {
         "hooks": [

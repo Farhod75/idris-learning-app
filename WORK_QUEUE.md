@@ -1,7 +1,7 @@
 # WORK_QUEUE.md — idris-learning-app
 # Queued tasks for Claude Code (in order)
 # Read this file at the start of every session
-# Last updated: 2026-06-14 (added Tier 8 self-evolving system design + marked BUG-016 done)
+# Last updated: 2026-06-15 (added BUG-018 (Stop hook duplication))
 
 ---
 
@@ -24,14 +24,13 @@ Per CLAUDE.md Rule 7 (One Task at a Time) and AGENTS.md Workflow Rule:
 - v1.62.0 — Seed reward_videos with 15 oEmbed-verified clips (Task A done; video popup works end-to-end)
 - docs — CLAUDE.md Rule 7 + AGENTS.md Workflow Rule (One Task at a Time)
 - v1.63.0 — Do This Now + Sing Along open filtered video popups (Task B / BUG-016 done)
+- v1.64.0 — Islamic praise + "Correct, {content}" TTS on correct answers (Task C / BUG-017 done)
 
 ### 🔄 IN PROGRESS
 - _Nothing currently in progress_
 
 ### 📋 NEXT UP
-- **Task C — Replace generic TTS celebrations with meaningful content** (BUG-017)
-  - See task prompt below
-  - Standalone — no dependencies on Task A or B
+- **BUG-018 — Fix Stop hook idempotency (re-enable after fix)** — see detailed section below
 
 ### 🔮 POST-HAJJ (June 6+)
 - Tier 3: Supabase migration for session log (localStorage → child_progress table)
@@ -183,6 +182,47 @@ For multilingual "Correct" support, add a `correct:` key to each language config
 - Commit format: `feat: TTS speaks 'Correct, {content}' on right answer in all games [vX.X.X]`
 - No push until iPad tests pass locally — Workflow C
 - Per Rule 7: do this as ONE atomic feature commit, not split across games
+
+---
+
+## BUG-018 — Stop hook fires every assistant turn, causing CHANGELOG/AGENTS duplication
+
+**Reported:** 2026-06-14 (Farhod + Claude Code investigation in same session as BUG-017 ship)
+**Priority:** Medium — currently disabled to prevent damage
+**Type:** Hook misconfiguration
+**Status:** Hook DISABLED in .claude/settings.json pending proper fix
+
+### Symptom
+After today's BUG-016 + BUG-017 session, AGENTS.md and CHANGELOG.md showed duplicate entries:
+- [1.63.2] appeared 7 times in CHANGELOG
+- [1.62.2] appeared 3 times
+- Multiple session-log entries for the same commit hashes in AGENTS.md
+
+### Root cause
+Claude Code's "Stop" hook fires at the end of EACH assistant turn (each tool-loop boundary), not just at
+session-exit. The hook script (.claude/hooks/log-session.js) appends an entry every time without checking
+if an identical entry already exists. Result: a session with N assistant turns produces N duplicate
+appends per commit.
+
+### Fix required (when picked up)
+Either:
+Option A — Make log-session.js IDEMPOTENT: read existing AGENTS.md/CHANGELOG.md content, only append if
+            the new entry isn't already present (match by commit hash or version tag).
+Option B — Change the hook trigger to a different event that fires once per session (if Claude Code has
+            one that fits — investigate the hooks API).
+Option C — Add a state file (e.g. .claude/.last-logged-commit) that the hook updates after writing, and
+            the hook short-circuits if current HEAD == last-logged-commit.
+
+### Acceptance criteria for fix
+1. Stop hook re-enabled in .claude/settings.json
+2. Hook produces AT MOST one entry per commit, regardless of how many assistant turns happened
+3. Existing duplicates in AGENTS.md and CHANGELOG.md are cleaned in the same PR
+4. Add a Playwright/Node test verifying idempotency: run the hook N times in a row, assert file is touched
+   only once (or content has only one entry for the current commit)
+
+### Workaround until fixed
+Stop hook disabled in .claude/settings.json (Stop: []). Manual CHANGELOG/AGENTS updates per commit as
+needed.
 
 ---
 
