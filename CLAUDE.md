@@ -174,36 +174,20 @@ When fixing a bug, Claude Code MUST append an entry here:
 
 <!-- Claude Code: prepend new bug entries below this line -->
 
+## [2026-06-15] BUG-017 — Generic TTS celebrations dont reinforce learning
+**Symptom:** Random generic phrases (Amazing, You did it, Dizzy star) played on every correct answer regardless of game; missed teaching opportunity to reinforce the content (number/word/shape just identified)
+**Root cause:** addStar() always called speak(L().celebrate[random]) instead of speaking the meaningful content
+**Fix:** New speakCorrect(content) function alternates 50/50 between "{localized Correct}, {content}" and "{islamic_praise}, {content}". New ISLAMIC_PRAISE constant with 8 transliterated phrases (Ma sha Allah, Subhanallah, Tabarakallah, Allahu Akbar, Barakallah, Ahsantum, Mumtaz, Alhamdulillah). New correct: translation key in all 7 languages. All game correct-answer paths refactored.
+**Files:** index.html, tests/playwright/speak-correct.spec.ts (new)
+**Version:** v1.64.0
+**Commit:** d444320
+
 ## [2026-06-14] BUG-016 — Do This Now + Sing Along don't open video popups
 **Symptom:** Tapping Sing Along strip spoke song name but never opened video panel; tapping Do This Now dots showed checkmark + "Yes!" but never opened video panel
 **Root cause:** `singAlong()` and `tapDot()` had no calls to `openVidPopup()` or `loadRewardVideos()`
 **Fix:** `singAlong()` now calls `loadRewardVideos('sing'); openVidPopup()` after existing behavior; `tapDot()` now calls `loadRewardVideos('do_now'); openVidPopup()` inside the all-dots-complete branch
 **Files:** index.html
 **Version:** v1.63.0
-
-
-## [2026-06-15] BUG-016 — fix: migrate .claude/settings.json hooks to new schema (matcher/hooks arrays)
-**Commit:** e3d569f
-**Type:** fix
-**Files:** .claude/settings.json
-**Version:** v1.62.2
-**Auto-logged:** by Claude Code Stop hook
-
-
-## [2026-06-15] BUG-015 — fix: migrate .claude/settings.json hooks to new schema (matcher/hooks arrays)
-**Commit:** e3d569f
-**Type:** fix
-**Files:** .claude/settings.json
-**Version:** v1.62.2
-**Auto-logged:** by Claude Code Stop hook
-
-
-## [2026-06-15] BUG-014 — fix: migrate .claude/settings.json hooks to new schema (matcher/hooks arrays)
-**Commit:** e3d569f
-**Type:** fix
-**Files:** .claude/settings.json
-**Version:** v1.62.2
-**Auto-logged:** by Claude Code Stop hook
 
 
 ## [2026-05-17] BUG-013 — Match cards too wide on desktop
