@@ -103,3 +103,12 @@ tests/reports/
 diag.js
 
 .claude/settings.local.json
+
+# Cleanup additions 2026-06-15
+tests/playwright/multi-agent/reports/bugs/
+test_*.html
+build-test.py
+embed-test.html
+vercel_check.html
+check.py
+apply_*.py

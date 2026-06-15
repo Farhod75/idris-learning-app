@@ -1,0 +1,65 @@
+EMBED+DUR    | OinudV2LWlo | counting   |    36s | Khan Academy Kids      | Count to 10 | Counting 1-10 | Khan Academy Ki
+EMBED+DUR    | SGa_nBw5dB8 | counting   |    28s | Khan Academy Kids      | Count to 8 | Counting 1-10 | Khan Academy Kid
+EMBED+DUR    | Z4oXURYsbZk | counting   |    31s | Khan Academy Kids      | Count to 13 | Learn to Count Numbers | Khan A
+EMBED+DUR    | e9jMgN5gtlg | counting   |    33s | Khan Academy Kids      | Count to 7 | Counting 1-10 | Khan Academy Kid
+EMBED+DUR    | fsnf6e9SZrg | counting   |    27s | Khan Academy Kids      | Count to 3 | Counting 1-10 | Khan Academy Kid
+EMBED+DUR    | N8Yba7GEbV4 | counting   |    28s | Khan Academy Kids      | Count to 2 | Counting 1-10 | Khan Academy Kid
+EMBED+DUR    | 60zbfRwSRCg | counting   |    29s | Khan Academy Kids      | Count to 5 | Counting 1-10 | Khan Academy Kid
+EMBED+DUR    | JYKUfwXI55I | counting   |    25s | Khan Academy Kids      | Count to 11 | Learn to Count Numbers | Khan A
+EMBED+DUR    | oTPc67Z8lrE | counting   |    22s | Khan Academy Kids      | Learn to count to 9 with Khan Academy Kids! #
+EMBED+DUR    | yS8drXt6rkw | counting   |    29s | Khan Academy Kids      | Learn to count to 10 with Khan Academy Kids! 
+EMBED+DUR    | n60QQp01-ms | counting   |    25s | Khan Academy Kids      | Count to 12 | Learn to Count Numbers | Khan A
+EMBED_ONLY   | 0Zi8KbgVhFc | counting   |  1348s | Sesame Street          | Sesame Street: 0-20 Counting Songs! | Number 
+EMBED+DUR    | kRiUEr89ep0 | counting   |    79s | Sesame Street          | Sesame Street: Number 10 (Number of the Day S
+EMBED_ONLY   | vDXdg7Mmt_U | counting   |  3681s | Sesame Street          | Counting is Fun with Elmo! | 1 HOUR Sesame St
+EMBED_ONLY   | 3tOJLzvhtPk | counting   |  1340s | Sesame Street          | 1234! Counting with Elmo & Friends | Sesame S
+EMBED_ONLY   | 6_1P1qdDHBc | counting   |  1123s | Sesame Street          | Sesame Street: Elmo & Abby's Number of the Da
+EMBED+DUR    | 33Wy8n-7uoQ | matching   |    84s | CBeebies               | Learn 2D Shapes with Numberblocks! | CBeebies
+EMBED+DUR    | 9eTFH7gvhbo | matching   |    80s | CBeebies               | Learning 3D and 2D Geometric Shapes with Numb
+EMBED_ONLY   | __OFFA-wRdY | matching   |   285s | Numberblocks           | 🟨🔺 Shape Party | Full Episode - S6 E6 ⭐ | Lea
+EMBED_ONLY   | 5sdK4GjjW-8 | matching   |   684s | Numberblocks           | @Numberblocks- Different Shapes | Learn to Co
+EMBED_ONLY   | I4Sl81Q60E4 | matching   |   709s | Numberblocks           | @Numberblocks- Numbers & Shapes | Learn to Co
+EMBED_ONLY   | 0F6UnQ-M1VY | matching   |   356s | Rainbow Whale - Learni | Sesame Street Colors & Shapes: Matching Fun &
+EMBED_ONLY   | Az4xiSPH19M | matching   |   627s | Games Gameplay         | Sesame Street Learn Play and Grow : Colors an
+FAIL(404)    | 8kv7BcXOQwU | matching   |     ?s |                        | 
+EMBED+DUR    | O6i-l1MywkQ | speaking   |    28s | Khan Academy Kids      | The Word "All"  | Sight Words | Learn to Read
+EMBED+DUR    | 02n4bI7YDnk | speaking   |    27s | Khan Academy Kids      | The Word "Get"  | Sight Words | Learn to Read
+EMBED+DUR    | cuLxMF-70l4 | speaking   |    26s | Khan Academy Kids      | The Word "As"  | Sight Words | Learn to Read 
+EMBED+DUR    | mc9Qq1YMjU4 | speaking   |    22s | Khan Academy Kids      | The Word "If"  | Sight Words | Learn to Read 
+EMBED+DUR    | _09q8NvCPrQ | speaking   |    27s | Khan Academy Kids      | The Word "Has"  | Sight Words | Learn to Read
+EMBED+DUR    | XJBFuY_bsqA | speaking   |    30s | Khan Academy Kids      | The Word "Be"  | Sight Words | Learn to Read 
+EMBED_ONLY   | G6YkNazhdFU | any        |   238s | PBS KIDS               | PBS KIDS for Teachers | Expressing Emotions: 
+EMBED_ONLY   | mR-EBeRraps | any        |   549s | VICKY FOR KIDS         | Daniel Tiger's Neighborhood - Guess The Feeli
+EMBED_ONLY   | w0VQIJVnoxU | any        |   368s | PBS KIDS               | DANIEL TIGER'S NEIGHBORHOOD | Daniel's Feelin
+EMBED_ONLY   | KqacDp4XvE4 | any        |  3795s | Daniel Tiger's Neighbo | Learning How to Deal with Emotions | Cartoons
+EMBED_ONLY   | eUunYTYia3I | any        |  3518s | Nat Geo Kids           | AMAZING ANIMALS! | 1 Hour | Nat Geo Kids Comp
+EMBED_ONLY   | h51XRnmHxR4 | any        |  2610s | Nat Geo Kids           | Wild Babies of America's National Parks! | Fu
+EMBED_ONLY   | ENvfcrWETJE | any        |   607s | Nat Geo Kids           | Rescuing Baby Animals! | Bandit Patrol | Nat 
+EMBED_ONLY   | onIk8sYYbXQ | any        |  2643s | Nat Geo Kids           | Relax with Cute Animals 🎶 | 4K | 40 Minutes |
+
+=== SUMMARY ===
+Total tested:   38
+oEmbed PASS:    37
+Duration 15-90s:20
+
+SHORT (15-90s) EMBEDDABLE:
+  OinudV2LWlo | counting   |  36s | Khan Academy Kids      | Count to 10 | Counting 1-10 | Khan Academy Ki
+  SGa_nBw5dB8 | counting   |  28s | Khan Academy Kids      | Count to 8 | Counting 1-10 | Khan Academy Kid
+  Z4oXURYsbZk | counting   |  31s | Khan Academy Kids      | Count to 13 | Learn to Count Numbers | Khan A
+  e9jMgN5gtlg | counting   |  33s | Khan Academy Kids      | Count to 7 | Counting 1-10 | Khan Academy Kid
+  fsnf6e9SZrg | counting   |  27s | Khan Academy Kids      | Count to 3 | Counting 1-10 | Khan Academy Kid
+  N8Yba7GEbV4 | counting   |  28s | Khan Academy Kids      | Count to 2 | Counting 1-10 | Khan Academy Kid
+  60zbfRwSRCg | counting   |  29s | Khan Academy Kids      | Count to 5 | Counting 1-10 | Khan Academy Kid
+  JYKUfwXI55I | counting   |  25s | Khan Academy Kids      | Count to 11 | Learn to Count Numbers | Khan A
+  oTPc67Z8lrE | counting   |  22s | Khan Academy Kids      | Learn to count to 9 with Khan Academy Kids! #
+  yS8drXt6rkw | counting   |  29s | Khan Academy Kids      | Learn to count to 10 with Khan Academy Kids! 
+  n60QQp01-ms | counting   |  25s | Khan Academy Kids      | Count to 12 | Learn to Count Numbers | Khan A
+  kRiUEr89ep0 | counting   |  79s | Sesame Street          | Sesame Street: Number 10 (Number of the Day S
+  33Wy8n-7uoQ | matching   |  84s | CBeebies               | Learn 2D Shapes with Numberblocks! | CBeebies
+  9eTFH7gvhbo | matching   |  80s | CBeebies               | Learning 3D and 2D Geometric Shapes with Numb
+  O6i-l1MywkQ | speaking   |  28s | Khan Academy Kids      | The Word "All"  | Sight Words | Learn to Read
+  02n4bI7YDnk | speaking   |  27s | Khan Academy Kids      | The Word "Get"  | Sight Words | Learn to Read
+  cuLxMF-70l4 | speaking   |  26s | Khan Academy Kids      | The Word "As"  | Sight Words | Learn to Read 
+  mc9Qq1YMjU4 | speaking   |  22s | Khan Academy Kids      | The Word "If"  | Sight Words | Learn to Read 
+  _09q8NvCPrQ | speaking   |  27s | Khan Academy Kids      | The Word "Has"  | Sight Words | Learn to Read
+  XJBFuY_bsqA | speaking   |  30s | Khan Academy Kids      | The Word "Be"  | Sight Words | Learn to Read 
