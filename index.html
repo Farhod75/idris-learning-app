@@ -1447,6 +1447,7 @@ function singAlong(){
   if(!nm)return;
   speak(nm.textContent);
   if(strip){strip.style.borderColor='var(--orange)';setTimeout(()=>strip.style.borderColor='',2500);}
+  loadRewardVideos('sing');openVidPopup();
 }
 // ── triggerReward ──────────────────────────────────────────────────────────
 function triggerReward(taskType){
@@ -1483,7 +1484,10 @@ function tapDot(i){
   dot.textContent='✓';
   S.actDone++;
   speak('Yes!');
-  if(S.actDone>=S.actDots.length)setTimeout(()=>speak(L().celebrate[0]),600);
+  if(S.actDone>=S.actDots.length){
+    setTimeout(()=>speak(L().celebrate[0]),600);
+    loadRewardVideos('do_now');openVidPopup();
+  }
 }
 function spawnConfetti(){
   const w=document.getElementById('confettiLayer');w.innerHTML='';
