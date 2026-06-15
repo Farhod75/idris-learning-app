@@ -657,6 +657,7 @@ const LANGS_CFG = {
     family_title:"Family Challenge!",next_challenge:"Next! →",done_challenge:"Done! ✓",
     aac_title:"Talk Board",
     celebrate:["Amazing! 🌟","Brilliant! 💫","Superstar! ⭐","You did it! 🎉"],
+    correct:"Correct",
     act_lbl:"🤸 Do this now!",song_lbl:"🎵 Sing along!",cart_lbl:"🎬 Watch reward!",continue_btn:"Keep going! 🚀",
     fam_members:["Mama","Papa","Grandpa","Grandma","Sister","Brother"],
     fam_emojis:["👩","👨","👴","👵","👧","👦"],
@@ -691,6 +692,7 @@ const LANGS_CFG = {
     family_title:"Семейное задание!",next_challenge:"Следующее! →",done_challenge:"Готово! ✓",
     aac_title:"Говорилка",
     celebrate:["Молодец! 🌟","Умница! 💫","Суперзвезда! ⭐","Получилось! 🎉"],
+    correct:"Правильно",
     act_lbl:"🤸 А теперь сделай это!",song_lbl:"🎵 Пой вместе!",cart_lbl:"🎬 Смотри награду!",continue_btn:"Продолжаем! 🚀",
     fam_members:["Мама","Папа","Дедушка","Бабушка","Сестра","Брат"],
     fam_emojis:["👩","👨","👴","👵","👧","👦"],
@@ -725,6 +727,7 @@ const LANGS_CFG = {
     family_title:"Oilaviy vazifa!",next_challenge:"Keyingisi! →",done_challenge:"Bajarildi! ✓",
     aac_title:"Gapirish taxtasi",
     celebrate:["Barakalla! 🌟","Zo'r! 💫","Superstar! ⭐","Bajardi! 🎉"],
+    correct:"Toʼgʼri",
     act_lbl:"🤸 Endi buni qiling!",song_lbl:"🎵 Birga kuylaymiz!",cart_lbl:"🎬 Mukofotni ko'ring!",continue_btn:"Davom etamiz! 🚀",
     fam_members:["Ona","Ota","Bobo","Buvi","Singil","Aka"],
     fam_emojis:["👩","👨","👴","👵","👧","👦"],
@@ -757,6 +760,7 @@ const LANGS_CFG = {
     family_title:"Вазифаи оилавӣ!",next_challenge:"Баъдӣ! →",done_challenge:"Шуд! ✓",
     aac_title:"Тахтаи гуфтугӯ",
     celebrate:["Офарин! 🌟","Зӯр! 💫","Суперситора! ⭐","Шуд! 🎉"],
+    correct:"Дуруст",
     act_lbl:"🤸 Ҳоло инро кун!",song_lbl:"🎵 Бо ҳам бихон!",cart_lbl:"🎬 Мукофотатро тамошо кун!",continue_btn:"Идома медиҳем! 🚀",
     fam_members:["Модар","Падар","Бобо","Момо","Хоҳар","Бародар"],
     fam_emojis:["👩","👨","👴","👵","👧","👦"],
@@ -789,6 +793,7 @@ const LANGS_CFG = {
     family_title:"تحدي العائلة!",next_challenge:"التالي! →",done_challenge:"تم! ✓",
     aac_title:"لوحة الحديث",
     celebrate:["رائع! 🌟","ممتاز! 💫","نجم! ⭐","أحسنت! 🎉"],
+    correct:"صحيح",
     act_lbl:"🤸 افعل هذا الآن!",song_lbl:"🎵 غنِّ معي!",cart_lbl:"🎬 شاهد المكافأة!",continue_btn:"نكمل! 🚀",
     fam_members:["ماما","بابا","جدو","جدة","أخت","أخ"],
     fam_emojis:["👩","👨","👴","👵","👧","👦"],
@@ -823,6 +828,7 @@ const LANGS_CFG = {
     family_title:"¡Reto Familiar!",next_challenge:"¡Siguiente! →",done_challenge:"¡Listo! ✓",
     aac_title:"Tablero de habla",
     celebrate:["¡Increíble! 🌟","¡Brillante! 💫","¡Superestrella! ⭐","¡Lo lograste! 🎉"],
+    correct:"Correcto",
     act_lbl:"🤸 ¡Haz esto ahora!",song_lbl:"🎵 ¡Canta conmigo!",cart_lbl:"🎬 ¡Ver recompensa!",continue_btn:"¡Seguir! 🚀",
     fam_members:["Mamá","Papá","Abuelo","Abuela","Hermana","Hermano"],
     fam_emojis:["👩","👨","👴","👵","👧","👦"],
@@ -857,6 +863,7 @@ const LANGS_CFG = {
     family_title:"Défi Famille!",next_challenge:"Suivant! →",done_challenge:"Fait! ✓",
     aac_title:"Tableau de parole",
     celebrate:["Incroyable! 🌟","Brillant! 💫","Superstar! ⭐","Tu l'as fait! 🎉"],
+    correct:"Correct",
     act_lbl:"🤸 Fais ça maintenant!",song_lbl:"🎵 Chante avec moi!",cart_lbl:"🎬 Voir la récompense!",continue_btn:"On continue! 🚀",
     fam_members:["Maman","Papa","Grand-père","Grand-mère","Sœur","Frère"],
     fam_emojis:["👩","👨","👴","👵","👧","👦"],
@@ -876,6 +883,11 @@ const LANGS_CFG = {
     ],
   },
 };
+
+const ISLAMIC_PRAISE = [
+  'Masha Allah','Subhanallah','Tabarakallah','Allahu Akbar',
+  'Barakallah','Ahsantum','Mumtaz','Alhamdulillah'
+];
 
 const LANG_LIST = [
   {code:"en",flag:"🇬🇧",label:"English"},
@@ -1249,7 +1261,7 @@ function nextCount(){
 function checkCount(el,chosen,ans){
   document.querySelectorAll('.count-opt').forEach(o=>o.style.pointerEvents='none');
   if(chosen===ans){
-    el.classList.add('correct');addStar();S.countStep++;
+    el.classList.add('correct');addStar();speakCorrect(String(ans));S.countStep++;
     if(S.countStep>=S.countTotal){setTimeout(()=>{closeGame('game-count');triggerReward('counting');},1200);}
     else setTimeout(nextCount,1200);
   }else{
@@ -1284,7 +1296,13 @@ function startSpeak2(){
   const btn=document.getElementById('micBtn');
   const dot=document.getElementById('recDot');
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){document.getElementById('speak-result').textContent='✅ '+L().celebrate[0];addStar();return;}
+  if(!SR){
+    const w=L().words[S.speakIdx%L().words.length];
+    document.getElementById('speak-result').textContent='✅ '+L().correct;
+    addStar();
+    speakCorrect(w.w);
+    return;
+  }
   btn.classList.add('listening');
   if(dot)dot.classList.add('on');
   document.getElementById('speak-result').textContent='🎙️ ...';
@@ -1294,9 +1312,9 @@ function startSpeak2(){
     _recog.lang=lm[S.lang]||'en-US';
     _recog.onresult=()=>{
       btn.classList.remove('listening');if(dot)dot.classList.remove('on');
-      const msg=L().celebrate[Math.floor(Math.random()*L().celebrate.length)];
-      document.getElementById('speak-result').textContent='✅ '+msg;
-      addStar();speak(msg);
+      const w=L().words[S.speakIdx%L().words.length];
+      document.getElementById('speak-result').textContent='✅ '+L().correct;
+      addStar();speakCorrect(w.w);
     };
     _recog.onerror=()=>{btn.classList.remove('listening');if(dot)dot.classList.remove('on');document.getElementById('speak-result').textContent='Try again! 🎤';};
     _recog.onend=()=>{btn.classList.remove('listening');if(dot)dot.classList.remove('on');};
@@ -1360,7 +1378,7 @@ function selectMatch(idx){
   }else{
     const a=mState[S.matchSel],b=mState[idx];
     if(a.l===b.l&&a.type!==b.type){
-      a.matched=b.matched=true;a.sel=b.sel=false;S.matchMatched++;S.matchSel=null;addStar();renderMatchGrid();
+      a.matched=b.matched=true;a.sel=b.sel=false;S.matchMatched++;S.matchSel=null;addStar();speakCorrect(a.l);renderMatchGrid();
       if(S.matchMatched>=3)setTimeout(()=>{closeGame('game-match');triggerReward('matching');},800);
     }else{
       b.sel=true;renderMatchGrid();
@@ -1384,7 +1402,7 @@ function loadChallenge(){
   document.getElementById('challenge-text').textContent=ch.t.replace('{fam}',getFamName());
   document.getElementById('challenge-helper').textContent=ch.h;
 }
-function nextChallenge(){S.challengeIdx++;addStar();loadChallenge();}
+function nextChallenge(){S.challengeIdx++;addStar();speakCorrect(getFamName());loadChallenge();}
 
 // ═══════════════════════════════════════════
 // AAC FULL
@@ -1548,7 +1566,13 @@ function showVidList(){
 function addStar(){
   S.totalStars++;setText('starsCount',S.totalStars);
   if(S.currentProfile){S.currentProfile.stars=S.totalStars;saveProfiles();}
-  speak(L().celebrate[Math.floor(Math.random()*L().celebrate.length)]);
+}
+function speakCorrect(content){
+  const useIslamic=Math.random()<0.5;
+  const prefix=useIslamic
+    ?ISLAMIC_PRAISE[Math.floor(Math.random()*ISLAMIC_PRAISE.length)]
+    :L().correct;
+  speak(prefix+', '+content);
 }
 
 // ═══════════════════════════════════════════
@@ -1672,7 +1696,7 @@ function submitDraw(){
   }
   addStar();
   document.getElementById('draw-helper').textContent = '⭐ Great job! ⭐';
-  speak(L().celebrate[Math.floor(Math.random()*L().celebrate.length)]);
+  speakCorrect(String(drawState.currentNum));
   setTimeout(()=>{
     document.getElementById('draw-helper').textContent = '👆 Trace the number!';
     nextDrawNum();
