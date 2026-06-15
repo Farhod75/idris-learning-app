@@ -23,14 +23,12 @@ Per CLAUDE.md Rule 7 (One Task at a Time) and AGENTS.md Workflow Rule:
 - v1.61.5 — Fix draw mode card cls collision (`count` → `draw`)
 - v1.62.0 — Seed reward_videos with 15 oEmbed-verified clips (Task A done; video popup works end-to-end)
 - docs — CLAUDE.md Rule 7 + AGENTS.md Workflow Rule (One Task at a Time)
+- v1.63.0 — Do This Now + Sing Along open filtered video popups (Task B / BUG-016 done)
 
 ### 🔄 IN PROGRESS
 - _Nothing currently in progress_
 
-### 📋 NEXT UP (start AFTER Task A is verified done)
-- **Task B — Wire Do This Now + Sing Along to filtered video popups** (BUG-016)
-  - See task prompt below
-  - Depends on Task A: needs `task_type='sing'` and `task_type='do_now'` to exist in seed
+### 📋 NEXT UP
 - **Task C — Replace generic TTS celebrations with meaningful content** (BUG-017)
   - See task prompt below
   - Standalone — no dependencies on Task A or B
