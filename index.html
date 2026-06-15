@@ -1700,7 +1700,7 @@ function submitDraw(){
   setTimeout(()=>{
     document.getElementById('draw-helper').textContent = '👆 Trace the number!';
     nextDrawNum();
-  }, 1800);
+  }, 2500);
 }
 
 // ═══════════════════════════════════════════
@@ -1901,7 +1901,7 @@ function speak(text){
     let m=vs.find(v=>v.lang.startsWith(utt.lang.split('-')[0]));
     if(!m&&utt.lang==='uz-UZ')m=vs.find(v=>v.lang.startsWith('tr'));
     if(m)utt.voice=m;
-    window.speechSynthesis.speak(utt);
+    setTimeout(()=>window.speechSynthesis.speak(utt),50);
   }
   const vs=speechSynthesis.getVoices();
   if(vs.length>0){trySpeak();}
